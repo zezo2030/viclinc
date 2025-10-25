@@ -9,6 +9,18 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/contexts/auth-context';
 import { AuthModal } from '@/components/auth';
 
+// إضافة دالة مساعدة لاستخراج الاسم
+const getDisplayName = (user: any) => {
+  if (user?.name) return user.name;
+  if (user?.email) {
+    // استخراج الجزء قبل @ من البريد الإلكتروني
+    const emailName = user.email.split('@')[0];
+    // تحويل إلى اسم مناسب (إزالة الأرقام والرموز)
+    return emailName.replace(/[0-9._-]/g, ' ').replace(/\s+/g, ' ').trim() || 'مستخدم';
+  }
+  return 'مستخدم';
+};
+
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -58,13 +70,13 @@ export const Header: React.FC = () => {
                   <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-sm font-medium">{user?.name || user?.email}</span>
+                  <span className="text-sm font-medium">{getDisplayName(user)}</span>
                 </button>
 
                 {showUserMenu && (
                   <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
                     <div className="px-4 py-2 text-sm text-gray-700 border-b">
-                      <p className="font-medium">{user?.name || user?.email}</p>
+                      <p className="font-medium">{getDisplayName(user)}</p>
                       <p className="text-gray-500 capitalize">{user?.role?.toLowerCase()}</p>
                     </div>
                     <Link
@@ -151,7 +163,7 @@ export const Header: React.FC = () => {
                 {isAuthenticated ? (
                   <>
                     <div className="px-3 py-2 text-sm text-gray-700">
-                      <p className="font-medium">{user?.name || user?.email}</p>
+                      <p className="font-medium">{getDisplayName(user)}</p>
                       <p className="text-gray-500 capitalize">{user?.role?.toLowerCase()}</p>
                     </div>
                     <Link
