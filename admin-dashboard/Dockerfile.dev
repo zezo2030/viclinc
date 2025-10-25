@@ -1,0 +1,28 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY admin-dashboard/package*.json ./
+COPY shared/package*.json ./shared/
+
+# Install dependencies for shared library first
+RUN cd shared && npm install
+
+# Copy shared source code
+COPY shared/ ./shared/
+
+# Build shared library
+RUN cd shared && npm run build
+
+# Install dependencies for admin-dashboard
+RUN npm install
+
+# Copy admin-dashboard source code
+COPY admin-dashboard/ .
+
+# Expose port
+EXPOSE 3002
+
+# Start development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3002"]

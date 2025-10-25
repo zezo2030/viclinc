@@ -105,6 +105,7 @@ goto end
 call :dev-build
 echo ✅ Development environment is ready!
 echo 🌐 Website: http://localhost:3001
+echo 🎛️ Admin Dashboard: http://localhost:3002/admin
 echo 🔧 API: http://localhost:3000
 echo 📧 MailHog: http://localhost:8025
 goto end

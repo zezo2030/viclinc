@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   # الباك إند API للإنتاج
   api:
@@ -31,6 +30,22 @@ services:
       - api
     ports:
       - '3001:3000'
+    restart: unless-stopped
+
+  # لوحة الإدارة للإنتاج
+  admin-dashboard:
+    build: 
+      context: .
+      dockerfile: admin-dashboard/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost:3000/v1
+      - VITE_SITE_URL=http://localhost:3002
+      - VITE_SITE_NAME=Admin Dashboard
+    depends_on:
+      - api
+    ports:
+      - '3002:80'
     restart: unless-stopped
 
   # قاعدة البيانات MongoDB

@@ -49,6 +49,72 @@ export class AuthService {
       }
     };
   }
+
+  /**
+   * Generate impersonation token for admin login-as functionality
+   */
+  async generateImpersonationToken(
+    targetUserId: string,
+    originalUserId: string,
+    expiresIn: string = '1h'
+  ): Promise<string> {
+    const targetUser = await this.userModel.findById(targetUserId);
+    if (!targetUser) {
+      throw new UnauthorizedException('Target user not found');
+    }
+
+    // Create impersonation token with special claims
+    return this.jwt.signAsync({
+      sub: targetUserId,
+      role: targetUser.role,
+      originalUserId: originalUserId,
+      isImpersonation: true,
+      sessionId: `imp_${Date.now()}`,
+    } as any, {
+      expiresIn: expiresIn as any,
+    });
+  }
+
+  /**
+   * Validate impersonation token and return user info
+   */
+  async validateImpersonationToken(token: string) {
+    try {
+      const payload = await this.jwt.verifyAsync(token);
+      
+      if (!payload.isImpersonation) {
+        throw new UnauthorizedException('Invalid impersonation token');
+      }
+
+      const targetUser = await this.userModel.findById(payload.sub).select('-passwordHash');
+      if (!targetUser) {
+        throw new UnauthorizedException('Target user not found');
+      }
+
+      return {
+        isValid: true,
+        targetUserId: payload.sub,
+        originalUserId: payload.originalUserId,
+        role: payload.role,
+        sessionId: payload.sessionId,
+        targetUser,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired impersonation token');
+    }
+  }
+
+  /**
+   * Check if token is impersonation token
+   */
+  async isImpersonationToken(token: string): Promise<boolean> {
+    try {
+      const payload = await this.jwt.verifyAsync(token);
+      return payload.isImpersonation === true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 

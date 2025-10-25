@@ -22,9 +22,17 @@ export class Service {
   @Prop()
   defaultDurationMin?: number;
 
+  @ApiProperty({ description: 'Base duration in minutes', example: 30, required: false })
+  @Prop()
+  baseDuration?: number;
+
   @ApiProperty({ description: 'Default price', example: 100, required: false })
   @Prop()
   defaultPrice?: number;
+
+  @ApiProperty({ description: 'Base price', example: 100, required: false })
+  @Prop()
+  basePrice?: number;
 
   @ApiProperty({ description: 'Whether the service is active', example: true })
   @Prop({ default: true })

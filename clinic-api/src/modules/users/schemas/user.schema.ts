@@ -41,6 +41,10 @@ export class User {
   @ApiProperty({ description: 'User status', enum: UserStatus, example: UserStatus.ACTIVE })
   @Prop({ required: true, enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
+
+  @ApiProperty({ description: 'Additional user metadata', example: { preferences: {}, settings: {} }, required: false })
+  @Prop({ type: Object })
+  metadata?: Record<string, any>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

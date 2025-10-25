@@ -1,0 +1,43 @@
+{
+  "name": "clinic-management-system",
+  "version": "1.0.0",
+  "description": "Comprehensive clinic management system with admin dashboard",
+  "private": true,
+  "workspaces": [
+    "websit",
+    "admin-dashboard",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:website\" \"npm run dev:admin\"",
+    "dev:website": "cd websit && npm run dev",
+    "dev:admin": "cd admin-dashboard && npm run dev",
+    "build": "npm run build:shared && npm run build:website && npm run build:admin",
+    "build:shared": "cd shared && npm run build",
+    "build:website": "cd websit && npm run build",
+    "build:admin": "cd admin-dashboard && npm run build",
+    "start": "concurrently \"npm run start:website\" \"npm run start:admin\"",
+    "start:website": "cd websit && npm run start",
+    "start:admin": "cd admin-dashboard && npm run start",
+    "test": "npm run test:shared && npm run test:website && npm run test:admin",
+    "test:shared": "cd shared && npm run test",
+    "test:website": "cd websit && npm run test",
+    "test:admin": "cd admin-dashboard && npm run test",
+    "lint": "npm run lint:shared && npm run lint:website && npm run lint:admin",
+    "lint:shared": "cd shared && npm run lint",
+    "lint:website": "cd websit && npm run lint",
+    "lint:admin": "cd admin-dashboard && npm run lint",
+    "clean": "npm run clean:shared && npm run clean:website && npm run clean:admin",
+    "clean:shared": "cd shared && rm -rf dist node_modules",
+    "clean:website": "cd websit && rm -rf .next node_modules",
+    "clean:admin": "cd admin-dashboard && rm -rf .next node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

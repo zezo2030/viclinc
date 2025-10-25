@@ -9,7 +9,7 @@ const nextConfig = {
   // إعدادات Docker
   output: 'standalone',
   experimental: {
-    outputFileTracingRoot: undefined,
+    // إعدادات تجريبية
   },
 }
 

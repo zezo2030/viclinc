@@ -9,6 +9,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3001', // الويبسايت
       'http://localhost:3000', // الباك إند
+      'http://localhost:3002', // لوحة الإدارة (Vite dev)
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
