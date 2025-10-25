@@ -38,4 +38,6 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
+  // إضافة base للإنتاج
+  base: './',
 })
