@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument, Role, UserStatus } from '../../users/schemas/user.schema';
 import { DoctorProfile, DoctorProfileDocument } from '../../doctors/schemas/doctor-profile.schema';
 import { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersManagementService {
@@ -307,6 +309,46 @@ export class UsersManagementService {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async createUser(createUserDto: CreateUserDto) {
+    const { name, email, phone, password, role } = createUserDto;
+    
+    // التحقق من عدم وجود المستخدم
+    const exists = await this.userModel.findOne({ $or: [{ email }, { phone }] });
+    if (exists) {
+      throw new ConflictException('Email or phone already exists');
+    }
+    
+    // تشفير كلمة المرور
+    const passwordHash = await bcrypt.hash(password, 12);
+    
+    // إنشاء المستخدم
+    const user = await this.userModel.create({
+      name,
+      email,
+      phone,
+      passwordHash,
+      role,
+      status: UserStatus.ACTIVE,
+    });
+    
+    // جلب المستخدم مع الحقول المحدثة
+    const createdUser = await this.userModel.findById(user._id).lean();
+    
+    if (!createdUser) {
+      throw new NotFoundException('Failed to create user');
+    }
+    
+    return {
+      id: createdUser._id,
+      name: createdUser.name,
+      email: createdUser.email,
+      phone: createdUser.phone,
+      role: createdUser.role,
+      status: createdUser.status,
+      createdAt: (createdUser as any).createdAt || new Date(),
     };
   }
 }

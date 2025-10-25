@@ -13,6 +13,7 @@ import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { ImportDataDto } from './dto/import-data.dto';
 import { AdminAppointmentQueryDto } from './dto/admin-appointment-query.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import type { Response } from 'express';
 
 @ApiTags('Admin')
@@ -71,6 +72,13 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   async getUsers(@Query() query: any) {
     return this.usersManagementService.getAllUsers(query);
+  }
+
+  @Post('users')
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return this.usersManagementService.createUser(createUserDto);
   }
 
   @Patch('users/:id/role')

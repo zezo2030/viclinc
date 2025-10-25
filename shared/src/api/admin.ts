@@ -19,6 +19,14 @@ export interface UserQuery {
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface CreateUserDto {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
+}
+
 export interface AppointmentQuery {
   status?: string;
   doctorId?: string;
@@ -50,6 +58,9 @@ export const adminService = {
   // Users Management
   getUsers: (params?: UserQuery) => 
     apiClient.get('/admin/users', { params }),
+  
+  createUser: (userData: CreateUserDto) => 
+    apiClient.post('/admin/users', userData),
   
   updateUserRole: (userId: string, role: string) => 
     apiClient.patch(`/admin/users/${userId}/role`, { role }),

@@ -10,6 +10,14 @@ export interface AdminUser {
   doctorProfile?: DoctorProfile;
 }
 
+export interface UsersResponse {
+  users: AdminUser[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface DoctorProfile {
   id: string;
   name: string;
