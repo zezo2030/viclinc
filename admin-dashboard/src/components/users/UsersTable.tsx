@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminService, AdminUser, UsersResponse } from '@clinic/shared';
+import { adminService, UsersResponse } from '@clinic/shared';
 import { 
   Search, 
   Filter, 
-  MoreVertical, 
   Edit, 
   UserCheck, 
-  UserX, 
-  Eye,
+  UserX,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';

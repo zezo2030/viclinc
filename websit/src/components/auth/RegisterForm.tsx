@@ -54,7 +54,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       // دمج الاسم الأول والأخير
       const name = `${firstName} ${lastName}`;
       
-      await registerUser({ ...restData, name });
+      await registerUser({ 
+        firstName,
+        lastName,
+        email: restData.email,
+        password: restData.password,
+        phone: restData.phone
+      });
       onSuccess?.();
     } catch (error: any) {
       setError(error.message || 'حدث خطأ أثناء إنشاء الحساب');

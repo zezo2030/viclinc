@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardContent, Button } from '@clinic/shared';
+import { Card, CardContent, Button } from '@clinic/shared';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 

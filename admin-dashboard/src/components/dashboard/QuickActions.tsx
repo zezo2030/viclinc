@@ -6,8 +6,7 @@ import {
   Calendar, 
   Download, 
   Upload, 
-  FileText,
-  Settings
+  FileText
 } from 'lucide-react';
 
 const actions = [

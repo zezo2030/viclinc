@@ -92,7 +92,7 @@ export function RecentActivity() {
       <CardHeader title="النشاط الأخير" />
       <CardContent>
         <div className="space-y-4">
-          {auditLogs?.auditLogs?.map((log: any, index: number) => {
+          {auditLogs?.data?.auditLogs?.map((log: any, index: number) => {
             const Icon = getActivityIcon(log.action);
             const color = getActivityColor(log.action);
             

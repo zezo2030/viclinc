@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
-COPY admin-dashboard/package*.json ./
+COPY admin-dashboard/package*.json ./admin-dashboard/
 COPY shared/package*.json ./shared/
 
 # Install dependencies for shared library first
@@ -18,15 +18,16 @@ COPY shared/ ./shared/
 # Build shared library
 RUN cd shared && npm run build
 
-# Install dependencies for admin-dashboard
-RUN npm ci --only=production
+# Install dependencies for admin-dashboard (include devDependencies for build tools like tsc)
+RUN cd admin-dashboard && npm install
 
 # Rebuild the source code only when needed
 FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+WORKDIR /app/admin-dashboard
+COPY --from=deps /app/admin-dashboard/node_modules ./node_modules
+COPY --from=deps /app/shared/src ../shared/src
+COPY --from=deps /app/shared/node_modules ../shared/node_modules
 COPY admin-dashboard/ .
-COPY shared/ ./shared/
 
 # Build admin dashboard
 RUN npm run build
@@ -38,7 +39,7 @@ FROM nginx:alpine AS runner
 COPY admin-dashboard/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built files
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/admin-dashboard/dist /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80

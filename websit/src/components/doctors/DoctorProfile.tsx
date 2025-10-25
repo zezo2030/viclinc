@@ -39,7 +39,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
       try {
         setLoading(true);
         setError(null);
-        const doctorData = await doctorsService.getDoctorById(doctorId);
+        const doctorData = await doctorsService.getDoctor(doctorId);
         if (!doctorData) {
           setError('الطبيب غير موجود');
           return;

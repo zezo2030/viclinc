@@ -30,7 +30,7 @@ function NewAppointmentContent() {
   // جلب الأطباء
   const { data: doctors, isLoading: doctorsLoading } = useQuery({
     queryKey: ['doctors', specialtyId],
-    queryFn: () => doctorsService.getDoctors({ specialtyId: specialtyId ? parseInt(specialtyId) : undefined }),
+    queryFn: () => doctorsService.getDoctors(),
   });
 
   // جلب بيانات الطبيب المحدد
@@ -57,7 +57,7 @@ function NewAppointmentContent() {
       setIsCreating(true);
       
       await appointmentsService.createAppointment({
-        patientId: parseInt(user.id),
+        patientId: parseInt(user?.id || '0'),
         doctorId: selectedDoctor.id,
         clinicId: selectedDoctor.clinic?.id || 1,
         specialtyId: selectedDoctor.specialty?.id || 1,

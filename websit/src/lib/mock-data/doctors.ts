@@ -3,7 +3,7 @@ import { Doctor } from '@/types';
 // بيانات وهمية للأطباء - حل مؤقت حتى إنشاء API endpoint
 export const mockDoctors: Doctor[] = [
   {
-    id: 1,
+    id: '1',
     userId: 101,
     clinicId: 1,
     departmentId: 1,
@@ -24,21 +24,21 @@ export const mockDoctors: Doctor[] = [
       }
     },
     clinic: {
-      id: 1,
+      id: '1',
       name: 'مستشفى الرياض التخصصي',
       address: 'الرياض، حي العليا، شارع الملك فهد'
     },
     department: {
-      id: 1,
+      id: '1',
       name: 'أمراض القلب'
     },
     specialty: {
-      id: 1,
+      id: '1',
       name: 'أمراض القلب والشرايين'
     }
   },
   {
-    id: 2,
+    id: '2',
     userId: 102,
     clinicId: 1,
     departmentId: 2,
@@ -59,21 +59,21 @@ export const mockDoctors: Doctor[] = [
       }
     },
     clinic: {
-      id: 1,
+      id: '1',
       name: 'مستشفى الرياض التخصصي',
       address: 'الرياض، حي العليا، شارع الملك فهد'
     },
     department: {
-      id: 2,
+      id: '2',
       name: 'طب الأطفال'
     },
     specialty: {
-      id: 2,
+      id: '2',
       name: 'طب الأطفال'
     }
   },
   {
-    id: 3,
+    id: '3',
     userId: 103,
     clinicId: 1,
     departmentId: 3,
@@ -94,21 +94,21 @@ export const mockDoctors: Doctor[] = [
       }
     },
     clinic: {
-      id: 1,
+      id: '1',
       name: 'مستشفى الرياض التخصصي',
       address: 'الرياض، حي العليا، شارع الملك فهد'
     },
     department: {
-      id: 3,
+      id: '3',
       name: 'الأمراض الجلدية'
     },
     specialty: {
-      id: 3,
+      id: '3',
       name: 'الأمراض الجلدية'
     }
   },
   {
-    id: 4,
+    id: '4',
     userId: 104,
     clinicId: 1,
     departmentId: 4,
@@ -129,21 +129,21 @@ export const mockDoctors: Doctor[] = [
       }
     },
     clinic: {
-      id: 1,
+      id: '1',
       name: 'مستشفى الرياض التخصصي',
       address: 'الرياض، حي العليا، شارع الملك فهد'
     },
     department: {
-      id: 4,
+      id: '4',
       name: 'جراحة العظام'
     },
     specialty: {
-      id: 4,
+      id: '4',
       name: 'جراحة العظام'
     }
   },
   {
-    id: 5,
+    id: '5',
     userId: 105,
     clinicId: 1,
     departmentId: 5,
@@ -164,16 +164,16 @@ export const mockDoctors: Doctor[] = [
       }
     },
     clinic: {
-      id: 1,
+      id: '1',
       name: 'مستشفى الرياض التخصصي',
       address: 'الرياض، حي العليا، شارع الملك فهد'
     },
     department: {
-      id: 5,
+      id: '5',
       name: 'طب الأسنان'
     },
     specialty: {
-      id: 5,
+      id: '5',
       name: 'طب الأسنان'
     }
   }

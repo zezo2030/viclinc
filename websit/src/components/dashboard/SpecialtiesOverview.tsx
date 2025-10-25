@@ -72,7 +72,7 @@ export const SpecialtiesOverview: React.FC = () => {
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {specialties?.slice(0, 6).map((specialty) => (
-            <div key={specialty.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+            <div key={(specialty as any)._id || (specialty as any).id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   {specialty.icon && (
@@ -92,7 +92,7 @@ export const SpecialtiesOverview: React.FC = () => {
               <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
                 <div className="flex items-center gap-1">
                   <Users className="w-3 h-3" />
-                  <span>{specialty.doctors.length} طبيب</span>
+                  <span>{(specialty as any).doctors?.length || 0} طبيب</span>
                 </div>
               </div>
 
@@ -101,14 +101,14 @@ export const SpecialtiesOverview: React.FC = () => {
                   size="sm" 
                   variant="outline"
                   className="flex-1 text-xs"
-                  onClick={() => router.push(`/specialties/${specialty.id}`)}
+                  onClick={() => router.push(`/specialties/${(specialty as any)._id || (specialty as any).id}`)}
                 >
                   عرض التفاصيل
                 </Button>
                 <Button 
                   size="sm"
                   className="flex-1 text-xs"
-                  onClick={() => router.push(`/appointments/new?specialtyId=${specialty.id}`)}
+                  onClick={() => router.push(`/appointments/new?specialtyId=${(specialty as any)._id || (specialty as any).id}`)}
                 >
                   حجز موعد
                 </Button>

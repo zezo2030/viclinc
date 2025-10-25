@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { CreateUserModal } from '@/components/users/CreateUserModal';
 import { UsersTable } from '@/components/users/UsersTable';
-import { adminService, UsersResponse } from '@clinic/shared';
+import { adminService } from '@clinic/shared';
 import { Plus, Users as UsersIcon, AlertCircle } from 'lucide-react';
 
 export function Users() {
@@ -85,7 +85,7 @@ export function Users() {
                 <div className="mr-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">إجمالي المستخدمين</dt>
-                    <dd className="text-lg font-medium text-gray-900">{usersData?.total || 0}</dd>
+                    <dd className="text-lg font-medium text-gray-900">{usersData?.data?.total || 0}</dd>
                   </dl>
                 </div>
               </div>
@@ -102,7 +102,7 @@ export function Users() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">الأطباء</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {usersData?.users?.filter(user => user.role === 'DOCTOR').length || 0}
+                      {usersData?.data?.users?.filter((user: any) => user.role === 'DOCTOR').length || 0}
                     </dd>
                   </dl>
                 </div>
@@ -120,7 +120,7 @@ export function Users() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">المرضى</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {usersData?.users?.filter(user => user.role === 'PATIENT').length || 0}
+                      {usersData?.data?.users?.filter((user: any) => user.role === 'PATIENT').length || 0}
                     </dd>
                   </dl>
                 </div>
@@ -138,7 +138,7 @@ export function Users() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">المعطلون</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {usersData?.users?.filter(user => user.status === 'DISABLED').length || 0}
+                      {usersData?.data?.users?.filter((user: any) => user.status === 'DISABLED').length || 0}
                     </dd>
                   </dl>
                 </div>
@@ -149,7 +149,7 @@ export function Users() {
 
         {/* Users Table */}
         <UsersTable
-          data={usersData || { users: [], total: 0, page: 1, limit: 10, totalPages: 0 }}
+          data={usersData?.data || { users: [], total: 0, page: 1, limit: 10, totalPages: 0 }}
           isLoading={isLoading}
           onSearch={handleSearch}
           onFilter={handleFilter}

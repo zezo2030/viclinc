@@ -18,7 +18,7 @@ export function RevenueChart() {
   }
 
   // Transform data for chart
-  const chartData = metrics?.dailyRevenue?.map((item: any) => ({
+  const chartData = metrics?.data?.dailyRevenue?.map((item: any) => ({
     date: item._id,
     revenue: item.totalAmount,
     count: item.count,

@@ -69,12 +69,12 @@ function AppointmentsContent() {
                   <h3 className="font-semibold">
                     {user?.role === 'PATIENT' 
                       ? appointment.doctor?.user?.profile?.firstName + ' ' + appointment.doctor?.user?.profile?.lastName
-                      : appointment.patient?.user?.profile?.firstName + ' ' + appointment.patient?.user?.profile?.lastName
+                      : appointment.patient?.profile?.firstName + ' ' + appointment.patient?.profile?.lastName
                     }
                   </h3>
                   <p className="text-sm text-gray-600">
                     {user?.role === 'PATIENT' 
-                      ? appointment.doctor?.specialty?.name 
+                      ? appointment.doctor?.specialization 
                       : 'مريض'
                     }
                   </p>
@@ -102,12 +102,12 @@ function AppointmentsContent() {
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   appointment.status === 'CONFIRMED' 
                     ? 'bg-green-100 text-green-800'
-                    : appointment.status === 'PENDING'
+                    : appointment.status === 'SCHEDULED'
                     ? 'bg-yellow-100 text-yellow-800'
                     : 'bg-red-100 text-red-800'
                 }`}>
                   {appointment.status === 'CONFIRMED' ? 'مؤكد' : 
-                   appointment.status === 'PENDING' ? 'في الانتظار' : 'ملغي'}
+                   appointment.status === 'SCHEDULED' ? 'مجدول' : 'ملغي'}
                 </span>
                 <Button variant="outline" size="sm">
                   تفاصيل

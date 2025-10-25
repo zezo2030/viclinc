@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 import {
@@ -10,11 +9,8 @@ import {
   BarChart3,
   FileText,
   Download,
-  Upload,
-  Shield,
   Settings,
   LogOut,
-  Menu,
   X,
 } from 'lucide-react';
 

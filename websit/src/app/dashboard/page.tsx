@@ -46,12 +46,12 @@ export default function DashboardPage() {
   // تحويل المواعيد إلى التنسيق المطلوب
   const formattedAppointments = appointments?.map(appointment => ({
     id: appointment.id.toString(),
-    doctor: `د. ${appointment.doctor.user.profile.firstName} ${appointment.doctor.user.profile.lastName}`,
-    specialty: appointment.doctor.specialization,
+    doctor: `د. ${appointment.doctor?.user?.profile?.firstName || ''} ${appointment.doctor?.user?.profile?.lastName || ''}`,
+    specialty: appointment.doctor?.specialization || '',
     date: new Date(appointment.appointmentDate).toLocaleDateString('ar-SA'),
     time: appointment.appointmentTime,
-    location: appointment.doctor.clinic.name,
-    phone: appointment.doctor.user.profile.phone || '',
+    location: 'مستشفى الرياض التخصصي', // TODO: إضافة clinic data
+    phone: '', // TODO: إضافة phone data
     status: appointment.status.toLowerCase() as 'confirmed' | 'pending' | 'cancelled',
   })) || [];
 

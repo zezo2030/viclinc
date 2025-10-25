@@ -129,9 +129,9 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
               <Users className="w-5 h-5 text-primary-600 ml-2" />
               <h2 className="text-xl font-semibold text-gray-900">الأطباء</h2>
             </div>
-            {specialty.doctors && specialty.doctors.length > 0 ? (
+            {(specialty as any).doctors && (specialty as any).doctors.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {specialty.doctors.map((doctor) => (
+                {(specialty as any).doctors.map((doctor: any) => (
                   <div key={doctor.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <h3 className="font-medium text-gray-900">
                       {doctor.user.profile.firstName} {doctor.user.profile.lastName}
@@ -151,9 +151,9 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
               <Stethoscope className="w-5 h-5 text-primary-600 ml-2" />
               <h2 className="text-xl font-semibold text-gray-900">الخدمات</h2>
             </div>
-            {specialty.services && specialty.services.length > 0 ? (
+            {(specialty as any).services && (specialty as any).services.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {specialty.services.map((service, index) => (
+                {(specialty as any).services.map((service: any, index: number) => (
                   <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <h3 className="font-medium text-gray-900">{service}</h3>
                   </div>

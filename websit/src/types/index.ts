@@ -14,17 +14,38 @@ export interface Service {
 
 export interface Doctor {
   id: string;
-  name: string;
-  specialty: string;
+  userId: number;
+  clinicId: number;
+  departmentId: number;
+  specialtyId: number;
+  specialization: string;
+  licenseNumber: string;
   experience: number;
-  rating: number;
-  image: string;
-  clinic: string;
-  languages: string[];
-  education: string;
-  certifications: string[];
   consultationFee: number;
   isAvailable: boolean;
+  avatar?: string;
+  user: {
+    id: number;
+    email: string;
+    profile: {
+      firstName: string;
+      lastName: string;
+      phone?: string;
+    };
+  };
+  clinic: {
+    id: string;
+    name: string;
+    address: string;
+  };
+  department: {
+    id: string;
+    name: string;
+  };
+  specialty: {
+    id: string;
+    name: string;
+  };
 }
 
 

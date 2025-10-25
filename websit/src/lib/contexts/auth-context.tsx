@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (error) {
           console.log('Token validation failed:', error);
           // مسح البيانات فقط إذا كان التوكن منتهي الصلاحية أو غير صالح
-          if (error.message?.includes('401') || error.message?.includes('غير مصرح') || error.message?.includes('Unauthorized')) {
+          if ((error as any).message?.includes('401') || (error as any).message?.includes('غير مصرح') || (error as any).message?.includes('Unauthorized')) {
             clearAuthData();
           }
         }
@@ -115,7 +115,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       // إضافة role='PATIENT' تلقائياً
-      const response = await authApi.register({ ...userData, role: 'PATIENT' });
+      const response = await authApi.register({ 
+        name: `${userData.firstName} ${userData.lastName}`,
+        email: userData.email,
+        password: userData.password,
+        phone: userData.phone || '',
+        role: 'PATIENT'
+      });
       // بعد التسجيل الناجح، قم بتسجيل الدخول التلقائي
       await login({ email: userData.email, password: userData.password });
     } catch (error) {

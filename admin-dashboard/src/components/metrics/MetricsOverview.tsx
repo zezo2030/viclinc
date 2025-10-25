@@ -6,9 +6,7 @@ import {
   Calendar, 
   Users, 
   UserCheck, 
-  DollarSign,
-  TrendingUp,
-  TrendingDown
+  DollarSign
 } from 'lucide-react';
 
 export function MetricsOverview() {
@@ -41,7 +39,7 @@ export function MetricsOverview() {
   const metricCards = [
     {
       title: 'إجمالي المواعيد',
-      value: metrics?.overview?.totalAppointments || 0,
+      value: metrics?.data?.overview?.totalAppointments || 0,
       change: 12,
       changeType: 'increase' as const,
       icon: Calendar,
@@ -49,7 +47,7 @@ export function MetricsOverview() {
     },
     {
       title: 'المواعيد المؤكدة',
-      value: metrics?.overview?.confirmedAppointments || 0,
+      value: metrics?.data?.overview?.confirmedAppointments || 0,
       change: 8,
       changeType: 'increase' as const,
       icon: UserCheck,
@@ -57,7 +55,7 @@ export function MetricsOverview() {
     },
     {
       title: 'إجمالي الأطباء',
-      value: metrics?.users?.totalDoctors || 0,
+      value: metrics?.data?.users?.totalDoctors || 0,
       change: 2,
       changeType: 'increase' as const,
       icon: Users,
@@ -65,7 +63,7 @@ export function MetricsOverview() {
     },
     {
       title: 'إجمالي الإيرادات',
-      value: `$${metrics?.revenue?.totalRevenue || 0}`,
+      value: `$${metrics?.data?.revenue?.totalRevenue || 0}`,
       change: 15,
       changeType: 'increase' as const,
       icon: DollarSign,

@@ -15,7 +15,10 @@ export const RatingSummary: React.FC<RatingSummaryProps> = ({ ratings }) => {
     ? ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length 
     : 0;
   
-  const distribution = doctorsService.getRatingDistribution(ratings);
+  const distribution = ratings.reduce((acc, rating) => {
+    acc[rating.rating] = (acc[rating.rating] || 0) + 1;
+    return acc;
+  }, {} as Record<number, number>);
   const totalRatings = ratings.length;
 
   const renderStars = (rating: number) => {

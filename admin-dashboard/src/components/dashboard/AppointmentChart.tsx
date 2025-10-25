@@ -18,7 +18,7 @@ export function AppointmentChart() {
   }
 
   // Transform data for chart
-  const chartData = metrics?.dailyBreakdown?.map((item: any) => ({
+  const chartData = metrics?.data?.dailyBreakdown?.map((item: any) => ({
     date: item._id,
     appointments: item.count,
     confirmed: item.confirmed,
