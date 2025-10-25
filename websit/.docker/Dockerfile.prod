@@ -1,0 +1,49 @@
+# مرحلة البناء
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# نسخ ملفات التبعيات
+COPY package*.json ./
+
+# تثبيت التبعيات
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm ci --only=production --legacy-peer-deps
+
+# نسخ الكود
+COPY . .
+
+# بناء التطبيق للإنتاج
+RUN npm run build
+
+# مرحلة الإنتاج
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+# إنشاء مستخدم غير root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# نسخ الملفات المبنية
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# تغيير ملكية الملفات
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+# فتح المنفذ
+EXPOSE 3000
+
+# متغيرات البيئة
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_URL=http://localhost:3000/v1
+ENV NEXT_PUBLIC_SITE_URL=http://localhost:3001
+ENV NEXT_PUBLIC_SITE_NAME="Smart Clinic"
+
+# تشغيل التطبيق
+CMD ["node", "server.js"]

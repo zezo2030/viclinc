@@ -1,0 +1,25 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# تثبيت التبعيات
+COPY package*.json ./
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm install --legacy-peer-deps
+
+# نسخ الكود
+COPY . .
+
+# فتح المنفذ
+EXPOSE 3000
+
+# متغيرات البيئة
+ENV NODE_ENV=development
+ENV NEXT_PUBLIC_API_URL=http://localhost:3000/v1
+ENV NEXT_PUBLIC_SITE_URL=http://localhost:3001
+ENV NEXT_PUBLIC_SITE_NAME="Smart Clinic"
+
+# تشغيل التطبيق
+CMD ["npm", "run", "dev"]

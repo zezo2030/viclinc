@@ -12,20 +12,42 @@ services:
       - redis
     ports:
       - '3000:3000'
+  
+  website:
+    build: 
+      context: ./websit
+      dockerfile: .docker/Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/v1
+      - NEXT_PUBLIC_SITE_URL=http://localhost:3001
+      - NEXT_PUBLIC_SITE_NAME=عيادة ذكية
+    depends_on:
+      - api
+    ports:
+      - '3001:3000'
+    volumes:
+      - ./websit:/app
+      - /app/node_modules
+      - /app/.next
+  
   mongo:
     image: mongo:7
     ports:
       - '27017:27017'
     volumes:
       - mongo_data:/data/db
+  
   redis:
     image: redis:7
     ports:
       - '6379:6379'
+  
   mailhog:
     image: mailhog/mailhog
     ports:
       - '8025:8025'
+
 volumes:
   mongo_data:
 

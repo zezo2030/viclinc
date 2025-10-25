@@ -99,6 +99,10 @@ export class Appointment {
   @ApiProperty({ description: 'Whether this appointment requires payment', example: false, required: false })
   @Prop({ default: false })
   requiresPayment?: boolean;
+
+  @ApiProperty({ description: 'Session ID for video/chat sessions', example: '64f1a2b3c4d5e6f7g8h9i0j5', required: false })
+  @Prop({ type: Types.ObjectId, ref: 'VideoSession' })
+  sessionId?: Types.ObjectId;
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);
