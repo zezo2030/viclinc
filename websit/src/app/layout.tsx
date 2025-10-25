@@ -10,12 +10,12 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: 'نظام إدارة العيادات المتطور',
+  title: 'Med Flow',
   description: 'احجز موعدك بسهولة، احصل على استشارات طبية افتراضية، وأدار صحتك بطريقة ذكية',
   keywords: ['عيادة', 'طبيب', 'حجز موعد', 'رعاية صحية', 'استشارة طبية'],
   authors: [{ name: 'MedFlow' }],
   openGraph: {
-    title: 'نظام إدارة العيادات المتطور',
+    title: 'Med Flow',
     description: 'احجز موعدك بسهولة، احصل على استشارات طبية افتراضية، وأدار صحتك بطريقة ذكية',
     type: 'website',
     locale: 'ar_SA',
