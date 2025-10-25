@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 
 interface Activity {
   id: string;
-  type: 'appointment' | 'message' | 'record' | 'notification';
+  type: 'appointment' | 'message' | 'record';
   title: string;
   description: string;
   time: string;
@@ -30,14 +30,12 @@ const activityIcons = {
   appointment: Calendar,
   message: MessageSquare,
   record: FileText,
-  notification: AlertCircle,
 };
 
 const activityColors = {
   appointment: 'text-blue-600 bg-blue-100',
   message: 'text-green-600 bg-green-100',
   record: 'text-purple-600 bg-purple-100',
-  notification: 'text-orange-600 bg-orange-100',
 };
 
 const statusIcons = {

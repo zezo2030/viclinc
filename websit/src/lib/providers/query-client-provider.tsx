@@ -2,7 +2,6 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { NotificationsProvider } from '@/lib/contexts/NotificationsContext';
 import { useState } from 'react';
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
@@ -20,10 +19,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <NotificationsProvider>
-        {children}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </NotificationsProvider>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

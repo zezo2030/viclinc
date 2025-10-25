@@ -10,7 +10,6 @@ import {
   MessageSquare, 
   FileText, 
   Settings,
-  Bell,
   Heart,
   Video,
   Users,
@@ -92,13 +91,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className }) => {
       icon: FileText,
       color: 'orange',
       onClick: () => console.log('السجلات الطبية'),
-    },
-    {
-      id: 'notifications',
-      label: 'الإشعارات',
-      icon: Bell,
-      color: 'blue',
-      onClick: () => console.log('الإشعارات'),
     },
     {
       id: 'health-tips',
