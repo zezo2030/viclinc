@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'medcodesa.cloud'],
+    unoptimized: true, // للصور المحلية
   },
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,

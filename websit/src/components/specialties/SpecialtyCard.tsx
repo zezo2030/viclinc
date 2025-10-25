@@ -22,7 +22,7 @@ export const SpecialtyCard: React.FC<SpecialtyCardProps> = ({ id, name, icon }) 
         {icon && (
           <div className="w-24 h-24 group-hover:scale-110 transition-transform">
             <img 
-              src={icon} 
+              src={icon.startsWith('/') ? icon : `/${icon}`} 
               alt={name}
               className="w-full h-full object-cover rounded-lg"
             />

@@ -77,7 +77,7 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
           {specialty.icon && (
             <div className="w-20 h-20">
               <img 
-                src={`/${specialty.icon}`}
+                src={specialty.icon.startsWith('/') ? specialty.icon : `/${specialty.icon}`}
                 alt={specialty.name}
                 className="w-full h-full object-cover rounded-lg"
               />

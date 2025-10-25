@@ -28,12 +28,9 @@ export const Footer: React.FC = () => {
           {/* معلومات الشركة */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-2 space-x-reverse mb-4">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">C</span>
+              <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">C</span>
               </div>
-              <span className="text-xl font-bold">
-                {SITE_CONFIG.name}
-              </span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
               نقدم حلول طبية متطورة لتحسين جودة الرعاية الصحية 
@@ -140,7 +137,7 @@ export const Footer: React.FC = () => {
           
           <div className="mt-6 pt-6 border-t border-gray-800 text-center">
             <p className="text-gray-400">
-              © {currentYear} {SITE_CONFIG.name}. جميع الحقوق محفوظة.
+              © {currentYear} MedFlow. جميع الحقوق محفوظة.
             </p>
           </div>
         </div>

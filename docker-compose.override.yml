@@ -1,0 +1,21 @@
+# Override for production deployment
+version: '3.8'
+
+services:
+  website:
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://medcodesa.cloud:3000/v1
+      - NEXT_PUBLIC_SITE_URL=http://medcodesa.cloud
+      - NEXT_PUBLIC_SITE_NAME=Smart Clinic
+    volumes:
+      - ./websit/public:/app/public:ro
+    restart: unless-stopped
+
+  api:
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017/clinic
+      - REDIS_URL=redis://redis:6379
+    restart: unless-stopped

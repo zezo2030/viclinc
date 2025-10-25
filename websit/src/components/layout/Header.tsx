@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { NAVIGATION_LINKS, SITE_CONFIG, CONTACT_INFO } from '@/lib/constants';
@@ -35,13 +36,15 @@ export const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* الشعار */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2 space-x-reverse">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">C</span>
+            <Link href="/" className="flex items-center">
+              <div className="w-16 h-16 relative">
+                <Image
+                  src="/medflow.png"
+                  alt="MedFlow Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                {SITE_CONFIG.name}
-              </span>
             </Link>
           </div>
 

@@ -1,7 +1,7 @@
 // الثوابت العامة للموقع
 
 export const SITE_CONFIG = {
-  name: 'عيادة ذكية',
+  name: 'MedFlow',
   description: 'نظام إدارة العيادات المتطور',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001',
   apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',

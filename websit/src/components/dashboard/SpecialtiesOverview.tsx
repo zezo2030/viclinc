@@ -77,7 +77,7 @@ export const SpecialtiesOverview: React.FC = () => {
                 <div className="flex items-center gap-3">
                   {specialty.icon && (
                     <img 
-                      src={specialty.icon} 
+                      src={specialty.icon.startsWith('/') ? specialty.icon : `/${specialty.icon}`} 
                       alt={specialty.name}
                       className="w-8 h-8 object-cover rounded"
                     />

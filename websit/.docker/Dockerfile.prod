@@ -30,6 +30,7 @@ RUN adduser --system --uid 1001 nextjs
 # نسخ الملفات المبنية
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 # تغيير ملكية الملفات
 RUN chown -R nextjs:nodejs /app
@@ -40,8 +41,8 @@ EXPOSE 3000
 
 # متغيرات البيئة
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=http://localhost:3000/v1
-ENV NEXT_PUBLIC_SITE_URL=http://localhost:3001
+ENV NEXT_PUBLIC_API_URL=http://medcodesa.cloud:3000/v1
+ENV NEXT_PUBLIC_SITE_URL=http://medcodesa.cloud
 ENV NEXT_PUBLIC_SITE_NAME="Smart Clinic"
 
 # تشغيل التطبيق
