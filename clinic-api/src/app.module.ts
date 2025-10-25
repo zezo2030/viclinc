@@ -15,6 +15,7 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { MedicalRecordsModule } from './modules/medical-records/medical-records.module';
 import { MongooseModule as Feature } from '@nestjs/mongoose';
 import { Department, DepartmentSchema } from './modules/departments/schemas/department.schema';
 import { Service as Svc, ServiceSchema } from './modules/services/schemas/service.schema';
@@ -59,6 +60,7 @@ const i18nPath = isProd
     PaymentsModule,
     SessionsModule,
     SettingsModule,
+    MedicalRecordsModule,
     Feature.forFeature([
       { name: Department.name, schema: DepartmentSchema },
       { name: Svc.name, schema: ServiceSchema },

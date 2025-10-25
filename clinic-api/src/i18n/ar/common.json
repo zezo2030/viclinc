@@ -25,6 +25,16 @@
   "appointment.notYourAppointment": "يمكنك فقط تأكيد/رفض مواعيدك الخاصة",
   "appointment.paymentRequired": "يجب إكمال الدفع قبل تأكيد الموعد",
   "appointment.slotNotAvailable": "الفتحة الزمنية لم تعد متاحة",
-  "appointment.conflictDetected": "تم اكتشاف تعارض في المواعيد"
+  "appointment.conflictDetected": "تم اكتشاف تعارض في المواعيد",
+  "medicalRecord.created": "تم إنشاء السجل الطبي بنجاح",
+  "medicalRecord.updated": "تم تحديث السجل الطبي بنجاح",
+  "medicalRecord.notFound": "السجل الطبي غير موجود",
+  "medicalRecord.noChanges": "لم يتم اكتشاف أي تغييرات",
+  "medicalRecord.noPermission": "ليس لديك صلاحية للوصول إلى هذا السجل",
+  "medicalRecord.noAppointment": "لا يوجد موعد صالح بين الطبيب والمريض",
+  "medicalRecord.patientOnly": "يمكنك فقط الوصول إلى سجلاتك الطبية",
+  "medicalRecord.doctorNoAccess": "ليس لديك صلاحية للوصول إلى سجلات هذا المريض",
+  "medicalRecord.auditRetrieved": "تم جلب سجل التدقيق بنجاح",
+  "medicalRecord.recordsRetrieved": "تم جلب السجلات الطبية بنجاح"
 }
 

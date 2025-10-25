@@ -17,6 +17,16 @@
   "availability.noSlots": "No available slots",
   "doctor.notFound": "Doctor not found",
   "service.notFound": "Service not found",
-  "doctor.serviceNotProvided": "Doctor does not provide this service"
+  "doctor.serviceNotProvided": "Doctor does not provide this service",
+  "medicalRecord.created": "Medical record created successfully",
+  "medicalRecord.updated": "Medical record updated successfully",
+  "medicalRecord.notFound": "Medical record not found",
+  "medicalRecord.noChanges": "No changes detected",
+  "medicalRecord.noPermission": "You do not have permission to access this record",
+  "medicalRecord.noAppointment": "No valid appointment found between doctor and patient",
+  "medicalRecord.patientOnly": "You can only access your own medical records",
+  "medicalRecord.doctorNoAccess": "You do not have permission to access this patient's records",
+  "medicalRecord.auditRetrieved": "Audit trail retrieved successfully",
+  "medicalRecord.recordsRetrieved": "Medical records retrieved successfully"
 }
 
