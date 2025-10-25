@@ -10,6 +10,8 @@ async function bootstrap() {
       'http://localhost:3001', // الويبسايت
       'http://localhost:3000', // الباك إند
       'http://localhost:3002', // لوحة الإدارة (Vite dev)
+      'http://medcodesa.cloud', // الموقع الإنتاجي
+      'https://medcodesa.cloud', // الموقع الإنتاجي HTTPS
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
