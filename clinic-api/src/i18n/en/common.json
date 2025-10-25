@@ -1,0 +1,22 @@
+{
+  "hello": "Hello",
+  "health.ok": "OK",
+  "schedule.created": "Schedule created successfully",
+  "schedule.updated": "Schedule updated successfully",
+  "schedule.notFound": "Schedule not found",
+  "schedule.invalidTime": "Invalid time",
+  "schedule.overlappingSlots": "Overlapping time slots",
+  "exception.added": "Exception added successfully",
+  "exception.removed": "Exception removed successfully",
+  "exception.notFound": "Exception not found",
+  "exception.alreadyExists": "Exception already exists for this date",
+  "holiday.added": "Holiday added successfully",
+  "holiday.removed": "Holiday removed successfully",
+  "holiday.notFound": "Holiday not found",
+  "holiday.invalidDateRange": "Start date must be before end date",
+  "availability.noSlots": "No available slots",
+  "doctor.notFound": "Doctor not found",
+  "service.notFound": "Service not found",
+  "doctor.serviceNotProvided": "Doctor does not provide this service"
+}
+
