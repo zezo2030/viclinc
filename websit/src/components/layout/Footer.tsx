@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Phone, 
   Mail, 
@@ -28,8 +29,13 @@ export const Footer: React.FC = () => {
           {/* معلومات الشركة */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-2 space-x-reverse mb-4">
-              <div className="w-16 h-16 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">C</span>
+              <div className="w-16 h-16 relative">
+                <Image
+                  src="/medflow.png"
+                  alt="MedFlow Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">

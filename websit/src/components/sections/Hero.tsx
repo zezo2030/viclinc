@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { ArrowRightIcon, PlayIcon } from 'lucide-react';
 import { APP_STATS } from '@/lib/constants';
@@ -55,13 +56,14 @@ export const Hero: React.FC = () => {
 
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <div className="w-full h-96 bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <PlayIcon className="w-12 h-12 text-white" />
-                  </div>
-                  <p className="text-gray-600">صورة لوحة التحكم</p>
-                </div>
+              <div className="w-full h-96 relative">
+                <Image
+                  src="/primary.jpg"
+                  alt="لوحة التحكم - MedFlow"
+                  fill
+                  className="object-cover"
+                />
+               
               </div>
             </div>
           </div>

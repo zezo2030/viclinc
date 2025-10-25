@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { ArrowRightIcon, CheckCircleIcon } from 'lucide-react';
 
@@ -56,13 +57,13 @@ export const ServicesHero: React.FC = () => {
 
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <div className="w-full h-96 bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-32 h-32 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white text-4xl">🏥</span>
-                  </div>
-                  <p className="text-gray-600">صورة الخدمات الطبية</p>
-                </div>
+              <div className="w-full h-96 relative">
+                <Image
+                  src="/service.jpg"
+                  alt="الخدمات الطبية - MedFlow"
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
           </div>

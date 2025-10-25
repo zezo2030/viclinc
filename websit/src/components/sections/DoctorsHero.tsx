@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { ArrowRightIcon, StarIcon } from 'lucide-react';
 
@@ -58,13 +59,13 @@ export const DoctorsHero: React.FC = () => {
 
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <div className="w-full h-96 bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-32 h-32 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white text-4xl">👨‍⚕️</span>
-                  </div>
-                  <p className="text-gray-600">صورة الأطباء المتخصصين</p>
-                </div>
+              <div className="w-full h-96 relative">
+                <Image
+                  src="/doctor.jpg"
+                  alt="الأطباء المتخصصين - MedFlow"
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
           </div>
