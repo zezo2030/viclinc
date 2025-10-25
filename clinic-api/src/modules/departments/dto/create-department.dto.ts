@@ -12,6 +12,11 @@ export class CreateDepartmentDto {
   @IsString()
   description?: string;
 
+  @ApiProperty({ description: 'Department icon path', example: '/brain_11666594 copy.webp', required: false })
+  @IsOptional()
+  @IsString()
+  icon?: string;
+
   @ApiProperty({ description: 'Whether the department is active', example: true, required: false })
   @IsOptional()
   @IsBoolean()

@@ -18,7 +18,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "ts-node src/seed-data.ts"
+    "seed": "ts-node src/seed-data.ts",
+    "seed:departments": "ts-node src/seed-departments.ts",
+    "clean:departments": "ts-node src/clean-departments.ts"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",

@@ -42,8 +42,8 @@ export const SpecialtiesList: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {specialties?.map((specialty) => (
         <SpecialtyCard
-          key={specialty.id}
-          id={specialty.id}
+          key={specialty._id}
+          id={specialty._id}
           name={specialty.name}
           icon={specialty.icon}
         />

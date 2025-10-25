@@ -1,0 +1,40 @@
+import { BlogPost } from '@/types';
+
+export const mockBlogPosts: BlogPost[] = [
+  {
+    id: '1',
+    title: 'نصائح للحفاظ على صحة القلب',
+    excerpt: 'تعرف على أهم النصائح للحفاظ على صحة القلب والوقاية من أمراض القلب والأوعية الدموية',
+    content: 'محتوى المقال الكامل...',
+    author: 'د. أحمد محمد العلي',
+    publishedAt: '2024-01-15',
+    image: '/images/blog/blog-1.jpg',
+    tags: ['صحة القلب', 'نصائح طبية', 'الوقاية'],
+    readTime: 5,
+    slug: 'heart-health-tips',
+  },
+  {
+    id: '2',
+    title: 'أهمية الفحوصات الدورية',
+    excerpt: 'لماذا تعتبر الفحوصات الدورية مهمة للحفاظ على صحتك واكتشاف الأمراض مبكراً',
+    content: 'محتوى المقال الكامل...',
+    author: 'د. فاطمة السعد',
+    publishedAt: '2024-01-10',
+    image: '/images/blog/blog-2.jpg',
+    tags: ['الفحوصات', 'الوقاية', 'الصحة العامة'],
+    readTime: 7,
+    slug: 'importance-regular-checkups',
+  },
+  {
+    id: '3',
+    title: 'التغذية السليمة للأطفال',
+    excerpt: 'دليل شامل للتغذية السليمة للأطفال في مختلف المراحل العمرية',
+    content: 'محتوى المقال الكامل...',
+    author: 'د. نورا أحمد الزهراني',
+    publishedAt: '2024-01-05',
+    image: '/images/blog/blog-3.jpg',
+    tags: ['تغذية الأطفال', 'صحة الأطفال', 'التغذية'],
+    readTime: 8,
+    slug: 'healthy-nutrition-children',
+  },
+];

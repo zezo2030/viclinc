@@ -10,7 +10,7 @@ COPY admin-dashboard/package*.json ./
 COPY shared/package*.json ./shared/
 
 # Install dependencies for shared library first
-RUN cd shared && npm ci --only=production
+RUN cd shared && npm install
 
 # Copy shared source code
 COPY shared/ ./shared/

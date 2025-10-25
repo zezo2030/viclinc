@@ -1,22 +1,13 @@
 import { apiClient } from './client';
 
 export interface Specialty {
-  id: number;
+  _id: string;
   name: string;
   description?: string;
   icon?: string;
-  services: string[];
   isActive: boolean;
-  doctors: {
-    id: number;
-    specialization: string;
-    user: {
-      profile: {
-        firstName: string;
-        lastName: string;
-      };
-    };
-  }[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateSpecialtyDto {
@@ -29,12 +20,12 @@ export interface CreateSpecialtyDto {
 
 export const specialtyService = {
   async getSpecialties(): Promise<Specialty[]> {
-    const response = await apiClient.get('/specialties/public');
+    const response = await apiClient.get('/departments/public');
     return response as Specialty[];
   },
 
-  async getSpecialty(id: number): Promise<Specialty> {
-    const response = await apiClient.get(`/specialties/${id}`);
+  async getSpecialty(id: string): Promise<Specialty> {
+    const response = await apiClient.get(`/departments/public/${id}`);
     return response as Specialty;
   },
 

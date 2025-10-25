@@ -17,11 +17,9 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { MedicalRecordsModule } from './modules/medical-records/medical-records.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
 import { MongooseModule as Feature } from '@nestjs/mongoose';
-import { Department, DepartmentSchema } from './modules/departments/schemas/department.schema';
 import { Service as Svc, ServiceSchema } from './modules/services/schemas/service.schema';
-import { DepartmentsService } from './modules/departments/departments.service';
-import { DepartmentsController } from './modules/departments/departments.controller';
 import { ServicesService } from './modules/services/services.service';
 import { ServicesController } from './modules/services/services.controller';
 import { RedisModule } from './modules/shared/redis/redis.module';
@@ -63,12 +61,12 @@ const i18nPath = isProd
     SettingsModule,
     MedicalRecordsModule,
     AdminModule,
+    DepartmentsModule,
     Feature.forFeature([
-      { name: Department.name, schema: DepartmentSchema },
       { name: Svc.name, schema: ServiceSchema },
     ]),
   ],
-  controllers: [AppController, HealthController, DepartmentsController, ServicesController],
-  providers: [AppService, DepartmentsService, ServicesService],
+  controllers: [AppController, HealthController, ServicesController],
+  providers: [AppService, ServicesService],
 })
 export class AppModule {}

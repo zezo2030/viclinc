@@ -25,6 +25,22 @@ export class DepartmentsService {
     return this.deptModel.find().sort({ name: 1 }).lean();
   }
 
+  async findActive() {
+    return this.deptModel.find({ isActive: true }).sort({ name: 1 }).lean();
+  }
+
+  async findWithDetails(id: string) {
+    const department = await this.deptModel.findById(id).lean();
+    if (!department) throw new NotFoundException('Department not found');
+    
+    // TODO: Add doctors and services population when those modules are ready
+    return {
+      ...department,
+      doctors: [], // Will be populated when doctors module is integrated
+      services: [] // Will be populated when services module is integrated
+    };
+  }
+
   async findOne(id: string) {
     const doc = await this.deptModel.findById(id).lean();
     if (!doc) throw new NotFoundException('Department not found');

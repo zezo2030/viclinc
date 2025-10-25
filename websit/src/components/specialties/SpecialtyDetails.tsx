@@ -1,21 +1,20 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { useQuery } from '@tanstack/react-query';
 import { specialtyService } from '@/lib/api/specialties';
-import { Users, Calendar, Star, Briefcase, DollarSign, MapPin, CheckCircle } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { ArrowLeft, Users, Stethoscope, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface SpecialtyDetailsProps {
-  specialtyId: number;
+  specialtyId: string;
 }
 
 export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId }) => {
   const router = useRouter();
-  
-  // الحصول على التخصص من API
+
   const { data: specialty, isLoading, error } = useQuery({
     queryKey: ['specialty', specialtyId],
     queryFn: () => specialtyService.getSpecialty(specialtyId),
@@ -24,155 +23,181 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center py-20">
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">جاري تحميل التخصص...</p>
+          <p className="text-gray-600">جاري تحميل تفاصيل التخصص...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !specialty) {
+  if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center py-20">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">التخصص غير موجود</h1>
-          <Button onClick={() => router.push('/specialties')}>
-            العودة إلى التخصصات
-          </Button>
-        </div>
+      <div className="text-center py-12">
+        <p className="text-red-600 mb-4">حدث خطأ في تحميل تفاصيل التخصص</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    );
+  }
+
+  if (!specialty) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">التخصص غير موجود</p>
+        <Button 
+          onClick={() => router.push('/specialties')}
+          className="mt-4"
+        >
+          العودة إلى التخصصات
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header Section */}
-      <Card className="p-8 mb-8">
-        <div className="flex items-start gap-6">
+      {/* Header */}
+      <div className="mb-8">
+        <Button
+          variant="outline"
+          onClick={() => router.push('/specialties')}
+          className="mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 ml-2" />
+          العودة إلى التخصصات
+        </Button>
+        
+        <div className="flex items-center space-x-4 space-x-reverse">
           {specialty.icon && (
-            <img 
-              src={specialty.icon} 
-              alt={specialty.name}
-              className="w-32 h-32 object-cover rounded-lg"
-            />
-          )}
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {specialty.name}
-            </h1>
-            {specialty.description && (
-              <p className="text-lg text-gray-600 mb-4">
-                {specialty.description}
-              </p>
-            )}
-            <div className="flex items-center gap-2 text-gray-500">
-              <Users className="w-5 h-5" />
-              <span>{specialty.doctors.length} طبيب متخصص</span>
+            <div className="w-20 h-20">
+              <img 
+                src={`/${specialty.icon}`}
+                alt={specialty.name}
+                className="w-full h-full object-cover rounded-lg"
+              />
             </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{specialty.name}</h1>
+            {specialty.description && (
+              <p className="text-lg text-gray-600 mt-2">{specialty.description}</p>
+            )}
           </div>
         </div>
-      </Card>
+      </div>
 
-      {/* Services Section */}
-      <Card className="p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          الخدمات المقدمة
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {specialty.services.map((service, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
-              <span className="text-gray-700">{service}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Doctors Section */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          الأطباء المتخصصون
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {specialty.doctors.map((doctor) => (
-            <Card key={doctor.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex flex-col">
-                {/* صورة الطبيب */}
-                <div className="flex items-start gap-4 mb-4">
-                  {(doctor as any).avatar ? (
-                    <img 
-                      src={(doctor as any).avatar} 
-                      alt={`د. ${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`}
-                      className="w-20 h-20 rounded-full object-cover" 
-                    />
-                  ) : (
-                    <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                      <Users className="w-10 h-10 text-gray-400" />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                      د. {doctor.user.profile.firstName} {doctor.user.profile.lastName}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-2">
-                      {doctor.specialization}
-                    </p>
-                    {/* التقييم */}
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm font-medium">{(doctor as any).averageRating || 0}</span>
-                      <span className="text-xs text-gray-500">({(doctor as any).totalRatings || 0} تقييم)</span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* معلومات إضافية */}
-                <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-gray-400" />
-                    <span>{(doctor as any).experience || 0} سنوات خبرة</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-400" />
-                    <span>{(doctor as any).consultationFee || 0} ريال</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                    <span className="truncate">{(doctor as any).clinic?.name || 'غير محدد'}</span>
-                  </div>
-                  <div>
-                    {(doctor as any).isAvailable ? (
-                      <span className="text-green-600 flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4" /> متاح
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">غير متاح</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* الأزرار */}
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => router.push(`/doctors/${doctor.id}`)}
-                  >
-                    عرض الملف الشخصي
-                  </Button>
-                  <Button 
-                    className="flex-1"
-                    onClick={() => router.push(`/appointments/new?doctorId=${doctor.id}&specialtyId=${specialty.id}`)}
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    حجز موعد
-                  </Button>
-                </div>
+      {/* Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Department Info */}
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">معلومات القسم</h2>
+            <div className="space-y-3">
+              <div>
+                <span className="font-medium text-gray-700">اسم القسم:</span>
+                <span className="mr-2 text-gray-900">{specialty.name}</span>
               </div>
-            </Card>
-          ))}
+              {specialty.description && (
+                <div>
+                  <span className="font-medium text-gray-700">الوصف:</span>
+                  <p className="mr-2 text-gray-900 mt-1">{specialty.description}</p>
+                </div>
+              )}
+              <div>
+                <span className="font-medium text-gray-700">الحالة:</span>
+                <span className={`mr-2 px-2 py-1 rounded-full text-sm ${
+                  specialty.isActive 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {specialty.isActive ? 'نشط' : 'غير نشط'}
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Doctors Section */}
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <Users className="w-5 h-5 text-primary-600 ml-2" />
+              <h2 className="text-xl font-semibold text-gray-900">الأطباء</h2>
+            </div>
+            {specialty.doctors && specialty.doctors.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {specialty.doctors.map((doctor) => (
+                  <div key={doctor.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <h3 className="font-medium text-gray-900">
+                      {doctor.user.profile.firstName} {doctor.user.profile.lastName}
+                    </h3>
+                    <p className="text-sm text-gray-600">{doctor.specialization}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">لا يوجد أطباء متاحين حالياً</p>
+            )}
+          </Card>
+
+          {/* Services Section */}
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <Stethoscope className="w-5 h-5 text-primary-600 ml-2" />
+              <h2 className="text-xl font-semibold text-gray-900">الخدمات</h2>
+            </div>
+            {specialty.services && specialty.services.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {specialty.services.map((service, index) => (
+                  <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <h3 className="font-medium text-gray-900">{service}</h3>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">لا توجد خدمات متاحة حالياً</p>
+            )}
+          </Card>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">إجراءات سريعة</h3>
+            <div className="space-y-3">
+              <Button 
+                className="w-full justify-start"
+                onClick={() => router.push(`/appointments/new?specialtyId=${specialtyId}`)}
+              >
+                <Calendar className="w-4 h-4 ml-2" />
+                حجز موعد
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => router.push('/doctors')}
+              >
+                <Users className="w-4 h-4 ml-2" />
+                عرض جميع الأطباء
+              </Button>
+            </div>
+          </Card>
+
+          {/* Contact Info */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">معلومات الاتصال</h3>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>📞 01234567890</p>
+              <p>📧 info@clinic.com</p>
+              <p>📍 العنوان، المدينة، البلد</p>
+            </div>
+          </Card>
         </div>
       </div>
     </div>

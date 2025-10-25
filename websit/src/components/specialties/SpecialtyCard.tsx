@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { useRouter } from 'next/navigation';
 
 interface SpecialtyCardProps {
-  id: number;
+  id: string;
   name: string;
   icon?: string;
 }

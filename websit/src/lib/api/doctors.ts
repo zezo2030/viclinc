@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { mockDoctors } from '../mock-data';
 
 export interface Doctor {
   id: number;
@@ -51,9 +52,14 @@ export interface CreateDoctorDto {
 
 export const doctorsService = {
   // الحصول على جميع الأطباء
+  // TODO: هذا حل مؤقت - سيتم استبداله بـ API endpoint حقيقي
   async getDoctors(): Promise<Doctor[]> {
-    const response = await apiClient.get('/doctors');
-    return response as Doctor[];
+    // استخدام البيانات الوهمية مؤقتاً
+    return mockDoctors;
+    
+    // الكود الأصلي (معلق للرجوع إليه لاحقاً):
+    // const response = await apiClient.get('/doctors');
+    // return response as Doctor[];
   },
 
   // الحصول على طبيب محدد
