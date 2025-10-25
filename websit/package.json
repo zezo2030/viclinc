@@ -6,7 +6,7 @@
     "dev": "NODE_OPTIONS='--max-old-space-size=4096' next dev",
     "dev:memory": "NODE_OPTIONS='--max-old-space-size=8192' next dev",
     "dev:optimized": "NODE_OPTIONS='--max-old-space-size=4096 --optimize-for-size' next dev",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "build": "set NODE_OPTIONS=--max-old-space-size=4096 && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

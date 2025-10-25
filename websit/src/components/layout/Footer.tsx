@@ -122,19 +122,6 @@ export const Footer: React.FC = () => {
               ))}
             </div>
             
-            {FOOTER_LINKS.legal.length > 0 && (
-              <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-                {FOOTER_LINKS.legal.map((link) => (
-                  <Link 
-                    key={link.name}
-                    href={link.href}
-                    className="hover:text-primary-400 transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-              </div>
-            )}
           </div>
           
           <div className="mt-6 pt-6 border-t border-gray-800 text-center">

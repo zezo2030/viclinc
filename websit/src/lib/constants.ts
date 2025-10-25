@@ -44,9 +44,7 @@ export const FOOTER_LINKS = {
   support: [
     { name: 'تواصل معنا', href: '/contact' },
   ],
-  legal: [
-    // سيتم إضافة الروابط القانونية لاحقاً
-  ],
+  legal: [] as const,
 } as const;
 
 export const APP_STATS = {
