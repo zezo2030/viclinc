@@ -37,7 +37,7 @@ export const Header: React.FC = () => {
           {/* الشعار */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <div className="w-16 h-16 relative">
+              <div className="w-30 h-24 relative">
                 <Image
                   src="/medflow.png"
                   alt="MedFlow Logo"
