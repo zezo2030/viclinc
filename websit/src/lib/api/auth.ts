@@ -6,11 +6,10 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
   role?: 'PATIENT' | 'DOCTOR';
 }
 

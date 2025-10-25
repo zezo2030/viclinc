@@ -15,7 +15,7 @@ const registerSchema = z.object({
   email: z.string().email('يرجى إدخال بريد إلكتروني صحيح'),
   password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
   confirmPassword: z.string(),
-  phone: z.string().optional(),
+  phone: z.string().min(1, 'رقم الهاتف مطلوب').regex(/^\+?[0-9]{6,15}$/, 'رقم الهاتف غير صحيح'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'كلمات المرور غير متطابقة',
   path: ['confirmPassword'],
@@ -49,9 +49,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setError('');
-      const { confirmPassword, ...registerData } = data;
-
-      await registerUser(registerData);
+      const { confirmPassword, firstName, lastName, ...restData } = data;
+      
+      // دمج الاسم الأول والأخير
+      const name = `${firstName} ${lastName}`;
+      
+      await registerUser({ ...restData, name });
       onSuccess?.();
     } catch (error: any) {
       setError(error.message || 'حدث خطأ أثناء إنشاء الحساب');
@@ -97,7 +100,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           />
 
           <Input
-            label="رقم الهاتف (اختياري)"
+            label="رقم الهاتف"
             type="tel"
             placeholder="+966501234567"
             {...register('phone')}
