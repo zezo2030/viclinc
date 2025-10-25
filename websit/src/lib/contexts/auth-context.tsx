@@ -34,7 +34,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await authApi.verifyToken();
         } catch (error) {
           console.log('Token validation failed:', error);
-          clearAuthData();
+          // مسح البيانات فقط إذا كان التوكن منتهي الصلاحية أو غير صالح
+          if (error.message?.includes('401') || error.message?.includes('غير مصرح') || error.message?.includes('Unauthorized')) {
+            clearAuthData();
+          }
         }
       } else {
         clearAuthData();

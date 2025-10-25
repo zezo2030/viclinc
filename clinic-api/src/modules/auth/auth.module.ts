@@ -20,7 +20,7 @@ import { AuthController } from './auth.controller';
       inject: [ConfigService],
       useFactory: (cfg: ConfigService) => ({
         secret: cfg.get<string>('JWT_SECRET') || 'dev_secret',
-        signOptions: { expiresIn: Number(cfg.get('JWT_EXPIRES_SEC') ?? 900) },
+        signOptions: { expiresIn: Number(cfg.get('JWT_EXPIRES_SEC') ?? 7 * 24 * 60 * 60) }, // 7 أيام
       }),
     }),
   ],
