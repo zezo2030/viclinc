@@ -33,28 +33,19 @@ export const SOCIAL_LINKS = {
 
 export const FOOTER_LINKS = {
   services: [
-    { name: 'حجز المواعيد', href: '/services/appointments' },
-    { name: 'استشارات فيديو', href: '/services/video-consultations' },
-    { name: 'دردشة طبية', href: '/services/chat' },
-    { name: 'الملف الطبي', href: '/services/medical-records' },
+    { name: 'حجز المواعيد', href: '/appointments' },
+    { name: 'الاستشارات', href: '/consultations' },
+    { name: 'الخدمات', href: '/services' },
   ],
   company: [
     { name: 'من نحن', href: '/about' },
-    { name: 'فريق العمل', href: '/about/team' },
-    { name: 'الوظائف', href: '/careers' },
     { name: 'الأخبار', href: '/blog' },
   ],
   support: [
-    { name: 'مركز المساعدة', href: '/help' },
     { name: 'تواصل معنا', href: '/contact' },
-    { name: 'الأسئلة الشائعة', href: '/faq' },
-    { name: 'الدعم الفني', href: '/support' },
   ],
   legal: [
-    { name: 'سياسة الخصوصية', href: '/privacy' },
-    { name: 'شروط الاستخدام', href: '/terms' },
-    { name: 'سياسة ملفات تعريف الارتباط', href: '/cookies' },
-    { name: 'إخلاء المسؤولية', href: '/disclaimer' },
+    // سيتم إضافة الروابط القانونية لاحقاً
   ],
 } as const;
 
