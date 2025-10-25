@@ -15,12 +15,12 @@ export class AuthService {
   ) {}
 
   async registerPatient(input: { name: string; email: string; phone: string; password: string }) {
-    const { email, phone, password } = input;
+    const { name, email, phone, password } = input;
     const exists = await this.userModel.findOne({ $or: [{ email }, { phone }] }).lean();
     if (exists) throw new ConflictException('Email or phone already exists');
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await this.userModel.create({ email, phone, passwordHash, role: Role.PATIENT, status: UserStatus.ACTIVE });
-    return { id: String(user._id), email: user.email, role: user.role };
+    const user = await this.userModel.create({ name, email, phone, passwordHash, role: Role.PATIENT, status: UserStatus.ACTIVE });
+    return { id: String(user._id), email: user.email, name: user.name, role: user.role };
   }
 
   async login(input: { email: string; password: string }) {
@@ -38,7 +38,15 @@ export class AuthService {
     }
     
     const accessToken = await this.jwt.signAsync({ sub: String(user._id), role: user.role });
-    return { accessToken };
+    return { 
+      access_token: accessToken,
+      user: {
+        id: String(user._id),
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    };
   }
 }
 

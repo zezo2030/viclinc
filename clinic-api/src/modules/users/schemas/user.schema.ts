@@ -18,6 +18,10 @@ export enum UserStatus {
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
+  @ApiProperty({ description: 'User full name', example: 'Ahmed Mohamed' })
+  @Prop({ required: false, trim: true })
+  name?: string;
+
   @ApiProperty({ description: 'User email address', example: 'user@example.com' })
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
