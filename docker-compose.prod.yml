@@ -39,8 +39,8 @@ services:
       dockerfile: admin-dashboard/Dockerfile
     environment:
       - NODE_ENV=production
-      - VITE_API_URL=http://localhost:3000/v1
-      - VITE_SITE_URL=http://localhost:3002
+      - VITE_API_URL=http://medcodesa.cloud:3000/v1
+      - VITE_SITE_URL=http://medcodesa.cloud/admin
       - VITE_SITE_NAME=Admin Dashboard
     depends_on:
       - api
