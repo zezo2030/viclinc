@@ -1,46 +1,36 @@
-import { AdminLayout } from '@/components/layout/AdminLayout';
-import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
-import { MetricsOverview } from '@/components/metrics/MetricsOverview';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { QuickActions } from '@/components/dashboard/QuickActions';
+import AdminLayout from '@/components/layout/AdminLayout'
+import Breadcrumbs from '@/components/layout/Breadcrumbs'
+import MetricsOverview from '@/components/dashboard/MetricsOverview'
+import AppointmentChart from '@/components/dashboard/AppointmentChart'
+import RevenueChart from '@/components/dashboard/RevenueChart'
+import QuickActions from '@/components/dashboard/QuickActions'
 
-export function Dashboard() {
+export default function Dashboard() {
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">لوحة الإدارة</h1>
-            <p className="text-gray-600">نظرة عامة على أداء النظام</p>
-          </div>
-          <div className="flex items-center space-x-4 space-x-reverse">
-            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-              تصدير التقرير
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-white bg-blue-800 rounded-md hover:bg-blue-700">
-              إضافة جديد
-            </button>
-          </div>
-        </div>
+      <Breadcrumbs />
 
-        {/* Metrics Overview */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
+        <p className="mt-1 text-gray-600">مرحباً بك في لوحة الإدارة</p>
+      </div>
+
+      {/* المؤشرات العامة */}
+      <div className="mb-6">
         <MetricsOverview />
+      </div>
 
-        {/* Dashboard Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Dashboard */}
-          <div className="lg:col-span-2">
-            <DashboardOverview />
-          </div>
+      {/* المخططات */}
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <AppointmentChart />
+        <RevenueChart />
+      </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <QuickActions />
-            <RecentActivity />
-          </div>
-        </div>
+      {/* الإجراءات السريعة */}
+      <div className="mb-6">
+        <QuickActions />
       </div>
     </AdminLayout>
-  );
+  )
 }
+

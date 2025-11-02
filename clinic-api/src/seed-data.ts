@@ -40,8 +40,9 @@ async function seedData() {
     // إنشاء مستخدم إداري
     const adminUser = await userModel.findOne({ email: 'admin@clinic.com' });
     if (!adminUser) {
-      const hashedPassword = await bcrypt.hash('password123', 10);
-      await userModel.create({
+      // استخدام rounds 12 مثل auth.service
+      const hashedPassword = await bcrypt.hash('password123', 12);
+      const createdAdmin = await userModel.create({
         name: 'مدير النظام',
         email: 'admin@clinic.com',
         phone: '+966501234567',
@@ -49,9 +50,25 @@ async function seedData() {
         role: Role.ADMIN,
         status: UserStatus.ACTIVE,
       });
-      console.log('✅ تم إنشاء المستخدم الإداري');
+      console.log('✅ تم إنشاء المستخدم الإداري:', createdAdmin.email);
+      console.log('   Password hash created with 12 rounds');
     } else {
       console.log('ℹ️ المستخدم الإداري موجود');
+      
+      // التحقق من كلمة المرور - إذا لزم الأمر، نحدثها
+      const testPassword = await bcrypt.compare('password123', adminUser.passwordHash);
+      if (!testPassword) {
+        console.log('⚠️ كلمة المرور الحالية لا تطابق password123');
+        console.log('   جاري تحديث كلمة المرور...');
+        const hashedPassword = await bcrypt.hash('password123', 12);
+        await userModel.updateOne(
+          { email: 'admin@clinic.com' },
+          { passwordHash: hashedPassword }
+        );
+        console.log('✅ تم تحديث كلمة المرور');
+      } else {
+        console.log('✅ كلمة المرور صحيحة');
+      }
     }
 
     // إنشاء أطباء
@@ -89,7 +106,7 @@ async function seedData() {
       // إنشاء مستخدم للطبيب
       const existingUser = await userModel.findOne({ email: doctorData.email });
       if (!existingUser) {
-        const hashedPassword = await bcrypt.hash('password123', 10);
+        const hashedPassword = await bcrypt.hash('password123', 12);
         const user = await userModel.create({
           name: doctorData.name,
           email: doctorData.email,
@@ -142,7 +159,7 @@ async function seedData() {
     for (const patientData of patients) {
       const existingUser = await userModel.findOne({ email: patientData.email });
       if (!existingUser) {
-        const hashedPassword = await bcrypt.hash('password123', 10);
+        const hashedPassword = await bcrypt.hash('password123', 12);
         await userModel.create({
           name: patientData.name,
           email: patientData.email,

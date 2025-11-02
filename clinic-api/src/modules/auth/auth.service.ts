@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument, Role, UserStatus } from '../users/schemas/user.schema';
@@ -21,6 +21,23 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await this.userModel.create({ name, email, phone, passwordHash, role: Role.PATIENT, status: UserStatus.ACTIVE });
     return { id: String(user._id), email: user.email, name: user.name, role: user.role };
+  }
+
+  /**
+   * Get user by ID - used for /auth/me endpoint
+   */
+  async getUserById(userId: string) {
+    const user = await this.userModel.findById(userId).select('-passwordHash');
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return {
+      id: String(user._id),
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      role: user.role
+    };
   }
 
   async login(input: { email: string; password: string }) {

@@ -66,6 +66,8 @@ export const PaymentSchema = SchemaFactory.createForClass(Payment);
 // فهارس أساسية
 PaymentSchema.index({ appointmentId: 1 }, { unique: true });
 PaymentSchema.index({ status: 1, createdAt: 1 });
+PaymentSchema.index({ createdAt: -1 });
+PaymentSchema.index({ paymentMethod: 1, createdAt: -1 });
 PaymentSchema.index({ transactionId: 1 }, { sparse: true });
 PaymentSchema.index({ intentId: 1 }, { sparse: true });
 PaymentSchema.index({ paidAt: 1 });

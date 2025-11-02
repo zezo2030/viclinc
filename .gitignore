@@ -111,3 +111,9 @@ coverage/
 # NestJS specific
 dist/
 node_modules/
+
+# Uploaded files (keep .gitkeep files)
+uploads/*
+!uploads/.gitkeep
+!uploads/*/.gitkeep
+!uploads/*/*/.gitkeep

@@ -17,6 +17,8 @@ import { Department, DepartmentSchema } from '../departments/schemas/department.
 import { Service, ServiceSchema } from '../services/schemas/service.schema';
 import { Payment, PaymentSchema } from '../payments/schemas/payment.schema';
 import { RedisModule } from '../shared/redis/redis.module';
+import { AdminPaymentsController } from './controllers/admin-payments.controller';
+import { AdminPaymentsService } from './services/admin-payments.service';
 
 @Module({
   imports: [
@@ -33,7 +35,7 @@ import { RedisModule } from '../shared/redis/redis.module';
     AuthModule,
     RedisModule,
   ],
-  controllers: [AdminController],
+  controllers: [AdminController, AdminPaymentsController],
   providers: [
     AdminService,
     MetricsService,
@@ -41,6 +43,7 @@ import { RedisModule } from '../shared/redis/redis.module';
     ImpersonationService,
     ImportExportService,
     ReportsService,
+    AdminPaymentsService,
   ],
   exports: [
     AdminService,

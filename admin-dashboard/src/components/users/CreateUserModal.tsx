@@ -1,237 +1,216 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminService, CreateUserDto } from '@clinic/shared';
-import { X, User, Mail, Phone, Lock, Shield } from 'lucide-react';
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { X, Eye, EyeOff, UserPlus } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { createUserSchema, type CreateUserFormData } from '../../validations/user.validation'
+import type { CreateUserModalProps } from '../../types/user.types'
+import { UserRole } from '../../types/user.types'
+import { Spinner } from '../common/Spinner'
 
-interface CreateUserModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+const roleLabels = {
+  [UserRole.ADMIN]: 'مدير',
+  [UserRole.DOCTOR]: 'طبيب',
+  [UserRole.PATIENT]: 'مريض',
 }
 
-export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
-  const [formData, setFormData] = useState<CreateUserDto>({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    role: 'PATIENT',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  
-  const queryClient = useQueryClient();
+export default function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUserModalProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<CreateUserFormData>({
+    resolver: zodResolver(createUserSchema),
+  })
 
-  const createUserMutation = useMutation({
-    mutationFn: (userData: CreateUserDto) => adminService.createUser(userData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      onClose();
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        role: 'PATIENT',
-      });
-      setErrors({});
-    },
-    onError: (error: any) => {
-      if (error.response?.data?.message) {
-        setErrors({ general: error.response.data.message });
-      } else {
-        setErrors({ general: 'حدث خطأ أثناء إنشاء المستخدم' });
-      }
-    },
-  });
+  const [showPassword, setShowPassword] = useState(false)
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'الاسم مطلوب';
+  const onFormSubmit = async (data: CreateUserFormData) => {
+    try {
+      await onSubmit(data)
+      reset()
+      setShowPassword(false)
+      onClose()
+      toast.success('تم إضافة المستخدم بنجاح')
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'فشل إضافة المستخدم')
     }
+  }
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'البريد الإلكتروني مطلوب';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'البريد الإلكتروني غير صحيح';
-    }
+  const handleClose = () => {
+    reset()
+    setShowPassword(false)
+    onClose()
+  }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'رقم الهاتف مطلوب';
-    } else if (!/^\+?[0-9]{6,15}$/.test(formData.phone)) {
-      newErrors.phone = 'رقم الهاتف غير صحيح';
-    }
-
-    if (!formData.password.trim()) {
-      newErrors.password = 'كلمة المرور مطلوبة';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      createUserMutation.mutate(formData);
-    }
-  };
-
-  const handleChange = (field: keyof CreateUserDto, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
-        
-        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-semibold text-gray-900">إضافة مستخدم جديد</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-6 h-6" />
-            </button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" dir="rtl">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-primary-50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary-100 rounded-full">
+              <UserPlus className="w-6 h-6 text-primary-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">إضافة مستخدم جديد</h2>
+              <p className="text-sm text-gray-600 mt-1">املأ البيانات أدناه لإضافة مستخدم جديد</p>
+            </div>
+          </div>
+          <button
+            onClick={handleClose}
+            className="p-1 hover:bg-primary-100 rounded-lg transition-colors"
+            type="button"
+            disabled={isSubmitting}
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        {/* Form Content */}
+        <form onSubmit={handleSubmit(onFormSubmit)}>
+          <div className="p-6 space-y-5">
+            {/* Name Field */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                الاسم الكامل <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                {...register('name')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                  errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="أدخل الاسم الكامل"
+              />
+              {errors.name && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                البريد الإلكتروني <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="email"
+                type="email"
+                {...register('email')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                  errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="example@email.com"
+              />
+              {errors.email && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Phone Field */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                رقم الهاتف <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                {...register('phone')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                  errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="05xxxxxxxx"
+              />
+              {errors.phone && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.phone.message}</p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                كلمة المرور <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  {...register('password')}
+                  className={`w-full px-4 py-2.5 pr-10 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                    errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                  }`}
+                  placeholder="أدخل كلمة المرور (8 أحرف على الأقل)"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Role Field */}
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
+                الدور <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="role"
+                {...register('role')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all appearance-none ${
+                  errors.role ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+              >
+                <option value="">اختر الدور</option>
+                <option value={UserRole.ADMIN}>{roleLabels[UserRole.ADMIN]}</option>
+                <option value={UserRole.DOCTOR}>{roleLabels[UserRole.DOCTOR]}</option>
+                <option value={UserRole.PATIENT}>{roleLabels[UserRole.PATIENT]}</option>
+              </select>
+              {errors.role && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.role.message}</p>
+              )}
+            </div>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {errors.general && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-red-600 text-sm">{errors.general}</p>
-              </div>
-            )}
-
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                الاسم الكامل
-              </label>
-              <div className="relative">
-                <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  className={`w-full pr-10 pl-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="أدخل الاسم الكامل"
-                />
-              </div>
-              {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                البريد الإلكتروني
-              </label>
-              <div className="relative">
-                <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  className={`w-full pr-10 pl-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="أدخل البريد الإلكتروني"
-                />
-              </div>
-              {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                رقم الهاتف
-              </label>
-              <div className="relative">
-                <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  className={`w-full pr-10 pl-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="أدخل رقم الهاتف"
-                />
-              </div>
-              {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                كلمة المرور
-              </label>
-              <div className="relative">
-                <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  className={`w-full pr-10 pl-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="أدخل كلمة المرور"
-                />
-              </div>
-              {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password}</p>}
-            </div>
-
-            {/* Role */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                الدور
-              </label>
-              <div className="relative">
-                <Shield className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <select
-                  value={formData.role}
-                  onChange={(e) => handleChange('role', e.target.value as 'ADMIN' | 'DOCTOR' | 'PATIENT')}
-                  className="w-full pr-10 pl-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="PATIENT">مريض</option>
-                  <option value="DOCTOR">طبيب</option>
-                  <option value="ADMIN">إداري</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end space-x-3 space-x-reverse pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                إلغاء
-              </button>
-              <button
-                type="submit"
-                disabled={createUserMutation.isPending}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-800 rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                {createUserMutation.isPending ? 'جاري الإنشاء...' : 'إنشاء المستخدم'}
-              </button>
-            </div>
-          </form>
-        </div>
+          {/* Footer Actions */}
+          <div className="flex gap-3 p-6 bg-gray-50 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors font-medium"
+              disabled={isSubmitting}
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Spinner size="sm" />
+                  <span>جاري الإضافة...</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5" />
+                  <span>إضافة المستخدم</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  );
+  )
 }

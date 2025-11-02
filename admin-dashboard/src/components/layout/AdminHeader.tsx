@@ -1,65 +1,130 @@
-
 import { useState } from 'react';
-import { Menu, Bell, Search, User, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Menu,
+  Search,
+  Bell,
+  User,
+  LogOut,
+  Settings,
+  ChevronDown,
+} from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
+  sidebarOpen: boolean;
 }
 
-export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderProps) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
-        {/* Left side */}
-        <div className="flex items-center space-x-4 space-x-reverse">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="flex items-center justify-between px-6 py-4">
+        {/* Right Side */}
+        <div className="flex items-center gap-4">
+          {/* Menu Button */}
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="w-6 h-6 text-gray-700" />
           </button>
 
           {/* Search */}
-          <div className="relative hidden md:block">
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
-            </div>
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="البحث..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-64 pr-10 pl-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-admin-primary focus:border-admin-primary"
+              placeholder="بحث..."
+              className="w-64 pr-10 pl-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
         </div>
 
-        {/* Right side */}
-        <div className="flex items-center space-x-4 space-x-reverse">
+        {/* Left Side */}
+        <div className="flex items-center gap-4">
           {/* Notifications */}
-          <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-0 right-0 block h-2 w-2 bg-red-400 rounded-full ring-2 ring-white"></span>
-          </button>
-
-          {/* User menu */}
           <div className="relative">
-            <button className="flex items-center space-x-2 space-x-reverse text-sm text-gray-700 hover:text-gray-900">
-              <div className="w-8 h-8 bg-admin-primary rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <span className="hidden md:block">مدير النظام</span>
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Bell className="w-6 h-6 text-gray-700" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
+
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute left-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="p-4 border-b">
+                  <h3 className="font-semibold text-gray-900">الإشعارات</h3>
+                </div>
+                <div className="p-4">
+                  <p className="text-sm text-gray-500 text-center">
+                    لا توجد إشعارات جديدة
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Settings */}
-          <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
-            <Settings className="h-5 w-5" />
-          </button>
+          {/* User Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                <p className="text-xs text-gray-500">{user?.role}</p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            </button>
+
+            {/* User Dropdown */}
+            {showUserMenu && (
+              <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="p-2">
+                  <button
+                    onClick={() => {
+                      navigate('/settings');
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>الإعدادات</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>تسجيل الخروج</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
   );
 }
+
+
+

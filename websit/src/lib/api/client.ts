@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // دالة للحصول على JWT token من localStorage
 const getAuthToken = (): string | null => {
@@ -19,7 +19,14 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    // إضافة /v1 prefix إذا لم يكن موجوداً
+    let normalizedEndpoint = endpoint;
+    if (!normalizedEndpoint.startsWith('/v1/')) {
+      normalizedEndpoint = normalizedEndpoint.startsWith('/') 
+        ? `/v1${normalizedEndpoint}` 
+        : `/v1/${normalizedEndpoint}`;
+    }
+    const url = `${this.baseURL}${normalizedEndpoint}`;
 
     // الحصول على التوكن
     const token = getAuthToken();

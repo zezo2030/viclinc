@@ -1,82 +1,63 @@
+import { useNavigate } from 'react-router-dom'
+import type { QuickActionsProps } from '@/types'
+import { UserPlus, Stethoscope, Building2, FileText } from 'lucide-react'
 
-import { Card, CardHeader, CardContent } from '@clinic/shared';
-import { 
-  UserPlus, 
-  UserCheck, 
-  Calendar, 
-  Download, 
-  Upload, 
-  FileText
-} from 'lucide-react';
+export default function QuickActions({
+  actions: customActions,
+}: Partial<QuickActionsProps>) {
+  const navigate = useNavigate()
 
-const actions = [
-  {
-    title: 'إضافة مستخدم جديد',
-    description: 'إنشاء حساب مستخدم جديد',
-    icon: UserPlus,
-    href: '/admin/users/new',
-    color: 'blue',
-  },
-  {
-    title: 'اعتماد طبيب',
-    description: 'مراجعة واعتماد طبيب جديد',
-    icon: UserCheck,
-    href: '/admin/doctors/pending',
-    color: 'green',
-  },
-  {
-    title: 'جدولة موعد',
-    description: 'إنشاء موعد جديد',
-    icon: Calendar,
-    href: '/admin/appointments/new',
-    color: 'purple',
-  },
-  {
-    title: 'تصدير البيانات',
-    description: 'تصدير البيانات بصيغة CSV',
-    icon: Download,
-    href: '/admin/import-export',
-    color: 'orange',
-  },
-  {
-    title: 'استيراد البيانات',
-    description: 'استيراد البيانات من ملف',
-    icon: Upload,
-    href: '/admin/import-export',
-    color: 'blue',
-  },
-  {
-    title: 'تقرير يومي',
-    description: 'إنشاء تقرير يومي',
-    icon: FileText,
-    href: '/admin/reports/daily',
-    color: 'green',
-  },
-];
+  const defaultActions = [
+    {
+      id: 'create-user',
+      label: 'إضافة مستخدم',
+      icon: <UserPlus className="h-5 w-5" />,
+      onClick: () => navigate('/users?create=1'),
+    },
+    {
+      id: 'create-doctor',
+      label: 'إضافة طبيب',
+      icon: <Stethoscope className="h-5 w-5" />,
+      onClick: () => navigate('/doctors?create=1'),
+    },
+    {
+      id: 'create-dept',
+      label: 'إضافة قسم',
+      icon: <Building2 className="h-5 w-5" />,
+      onClick: () => navigate('/departments?create=1'),
+    },
+    {
+      id: 'view-reports',
+      label: 'عرض التقارير',
+      icon: <FileText className="h-5 w-5" />,
+      onClick: () => navigate('/reports'),
+    },
+  ]
 
-export function QuickActions() {
+  const actions = customActions || defaultActions
+
   return (
-    <Card>
-      <CardHeader title="الإجراءات السريعة" />
-      <CardContent>
-        <div className="grid grid-cols-1 gap-3">
-          {actions.map((action, index) => (
-            <a
-              key={index}
-              href={action.href}
-              className="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              <div className={`p-2 rounded-lg bg-${action.color}-50 text-${action.color}-600`}>
-                <action.icon className="h-4 w-4" />
-              </div>
-              <div className="mr-3">
-                <p className="text-sm font-medium text-gray-900">{action.title}</p>
-                <p className="text-xs text-gray-500">{action.description}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900">إجراءات سريعة</h3>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {actions.map((action) => (
+          <button
+            key={action.id}
+            onClick={action.onClick}
+            className="group flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 text-right transition-all hover:border-primary-300 hover:bg-primary-50 hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-primary-600 transition-colors group-hover:bg-primary-200">
+              {action.icon || <FileText className="h-5 w-5" />}
+            </div>
+            <span className="flex-1 text-sm font-medium text-gray-700 group-hover:text-primary-700">
+              {action.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }
+
+
+

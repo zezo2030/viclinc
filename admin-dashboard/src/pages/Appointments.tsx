@@ -1,32 +1,98 @@
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { useMemo, useState } from 'react'
+import toast from 'react-hot-toast'
+import AdminLayout from '@/components/layout/AdminLayout'
+import Breadcrumbs from '@/components/layout/Breadcrumbs'
+import AppointmentFilters from '@/components/appointments/AppointmentFilters'
+import AppointmentsCalendar from '@/components/appointments/AppointmentsCalendar'
+import AppointmentsTable from '@/components/appointments/AppointmentsTable'
+import AppointmentDetails from '@/components/appointments/AppointmentDetails'
+import { useAppointments, useUpdateAppointmentStatus } from '@/hooks/useAppointments'
+import type { Appointment } from '@/types/appointment.types'
 
-export function Appointments() {
+export default function AppointmentsPage() {
+  const [filters, setFilters] = useState<any>({ status: 'ALL', type: 'ALL' })
+  const [page, setPage] = useState(1)
+  const [view, setView] = useState<'day' | 'week' | 'month'>('week')
+  const [selected, setSelected] = useState<Appointment | null>(null)
+
+  const params = useMemo(() => {
+    const p: any = { page, limit: 10 }
+    if (filters.search) p.search = filters.search
+    if (filters.status && filters.status !== 'ALL') p.status = filters.status
+    if (filters.type && filters.type !== 'ALL') p.type = filters.type
+    if (filters.startDate) p.startDate = filters.startDate
+    if (filters.endDate) p.endDate = filters.endDate
+    if (filters.doctorId) p.doctorId = filters.doctorId
+    if (filters.patientId) p.patientId = filters.patientId
+    return p
+  }, [page, filters])
+
+  const { data, isLoading, error } = useAppointments(params)
+  const updateStatus = useUpdateAppointmentStatus()
+
+  const list = data?.data || []
+  const pagination = data?.meta
+
+  const handleChangeStatus = async (status: string) => {
+    if (!selected) return
+    try {
+      await updateStatus.mutateAsync({ id: selected.id, status })
+      toast.success('تم تحديث حالة الموعد')
+      setSelected(null)
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'فشل تحديث حالة الموعد')
+    }
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <Breadcrumbs />
+        <div className="p-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <p className="text-red-600">حدث خطأ في تحميل المواعيد</p>
+            <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">إعادة المحاولة</button>
+          </div>
+        </div>
+      </AdminLayout>
+    )
+  }
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">إدارة المواعيد</h1>
-            <p className="text-gray-600">عرض وإدارة جميع المواعيد في النظام</p>
-          </div>
-          <button className="px-4 py-2 text-sm font-medium text-white bg-blue-800 rounded-md hover:bg-blue-700">
-            إضافة موعد جديد
-          </button>
+      <Breadcrumbs />
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">إدارة المواعيد</h1>
+          <p className="text-gray-600 mt-1">عرض وإدارة المواعيد والفلاتر والحالات</p>
         </div>
 
-        {/* Appointments Table */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">قائمة المواعيد</h3>
-          </div>
-          <div className="p-6">
-            <div className="text-center py-12">
-              <div className="text-gray-500">جاري تحميل المواعيد...</div>
-            </div>
-          </div>
-        </div>
+        <AppointmentFilters
+          value={filters}
+          onChange={(v) => {
+            setFilters(v)
+            setPage(1)
+          }}
+          onReset={() => {
+            setFilters({ status: 'ALL', type: 'ALL' })
+            setPage(1)
+          }}
+        />
+
+        <AppointmentsCalendar view={view} onViewChange={setView} appointments={list} />
+
+        <AppointmentsTable
+          appointments={list}
+          isLoading={isLoading}
+          pagination={pagination ? { page: pagination.page, totalPages: pagination.totalPages, total: pagination.total } : undefined}
+          onPageChange={setPage}
+          onOpenDetails={setSelected}
+        />
+
+        <AppointmentDetails appointment={selected} onClose={() => setSelected(null)} onChangeStatus={handleChangeStatus} />
       </div>
     </AdminLayout>
-  );
+  )
 }
+
+

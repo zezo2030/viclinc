@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards, Req, Res } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { MetricsService } from './services/metrics.service';
@@ -7,18 +7,20 @@ import { ImpersonationService } from './services/impersonation.service';
 import { ImportExportService } from './services/import-export.service';
 import { ReportsService } from './services/reports.service';
 import { AdminRoleGuard } from '../shared/guards/admin-role.guard';
+import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 import { MetricsQueryDto } from './dto/metrics-query.dto';
 import { LoginAsDto } from './dto/login-as.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { HardDeleteUserDto } from './dto/hard-delete-user.dto';
 import { ImportDataDto } from './dto/import-data.dto';
 import { AdminAppointmentQueryDto } from './dto/admin-appointment-query.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import type { Response } from 'express';
 
 @ApiTags('Admin')
-@ApiBearerAuth()
-@UseGuards(AdminRoleGuard)
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, AdminRoleGuard)
 @Controller('admin')
 export class AdminController {
   constructor(
@@ -93,6 +95,15 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'User status updated successfully' })
   async updateUserStatus(@Param('id') id: string, @Body() updateStatusDto: UpdateUserStatusDto) {
     return this.usersManagementService.updateUserStatus(id, updateStatusDto);
+  }
+
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Permanently delete a user (Hard Delete)' })
+  @ApiResponse({ status: 200, description: 'User permanently deleted successfully' })
+  @ApiResponse({ status: 400, description: 'Cannot delete admin users' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async hardDeleteUser(@Param('id') id: string, @Body() deleteDto: HardDeleteUserDto) {
+    return this.usersManagementService.hardDeleteUser(id, deleteDto);
   }
 
   // Impersonation Endpoints

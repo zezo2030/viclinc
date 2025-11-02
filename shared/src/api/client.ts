@@ -22,6 +22,10 @@ apiClient.interceptors.request.use(
     if (!(config.headers as any)['x-role']) {
       (config.headers as any)['x-role'] = 'ADMIN';
     }
+    // إذا كان FormData، لا نضبط Content-Type (axios يضبطه تلقائياً)
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => {

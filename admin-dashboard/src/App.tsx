@@ -1,90 +1,164 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { Providers } from './providers'
-import { Dashboard } from './pages/Dashboard'
-import { Login } from './pages/Login'
-import { Users } from './pages/Users'
-import { Doctors } from './pages/Doctors'
-import { Appointments } from './pages/Appointments'
-import { Reports } from './pages/Reports'
-import { ImportExport } from './pages/ImportExport'
-import { Audit } from './pages/Audit'
-import { System } from './pages/System'
-import { ProtectedRoute } from './components/ProtectedRoute'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'react-hot-toast'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import Login from '@/pages/Login'
+import Dashboard from '@/pages/Dashboard'
+import Users from '@/pages/Users'
+import Departments from '@/pages/Departments'
+import Doctors from '@/pages/Doctors'
+import PlaceholderPage from '@/pages/PlaceholderPage'
+import Appointments from '@/pages/Appointments'
+import Payments from '@/pages/Payments'
+import MedicalRecords from '@/pages/MedicalRecords'
+import Reports from '@/pages/Reports'
+
+// إعداد React Query Client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 دقائق
+      gcTime: 1000 * 60 * 30, // 30 دقيقة (كان cacheTime سابقاً)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+})
 
 function App() {
   return (
-    <Providers>
-      <Router>
-        <Routes>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
-          <Route 
-            path="/" 
+
+          {/* Protected Routes */}
+          <Route
+            path="/"
             element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/users" 
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Placeholder Routes */}
+          <Route
+            path="/users"
             element={
               <ProtectedRoute>
                 <Users />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/doctors" 
+          <Route
+            path="/doctors"
             element={
               <ProtectedRoute>
                 <Doctors />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/appointments" 
+          <Route
+            path="/departments"
+            element={
+              <ProtectedRoute>
+                <Departments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/appointments"
             element={
               <ProtectedRoute>
                 <Appointments />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/reports" 
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute>
+                <Payments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medical-records"
+            element={
+              <ProtectedRoute>
+                <MedicalRecords />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
             element={
               <ProtectedRoute>
                 <Reports />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/import-export" 
+          <Route
+            path="/audit"
             element={
               <ProtectedRoute>
-                <ImportExport />
+                <PlaceholderPage title="سجل التدقيق" description="سجل العمليات والأنشطة" />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/audit" 
+          <Route
+            path="/settings"
             element={
               <ProtectedRoute>
-                <Audit />
+                <PlaceholderPage title="الإعدادات" description="إعدادات النظام" />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/system" 
-            element={
-              <ProtectedRoute>
-                <System />
-              </ProtectedRoute>
-            } 
-          />
+
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
-    </Providers>
+
+        {/* Toast Notifications */}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }
 

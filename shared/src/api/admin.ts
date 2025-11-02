@@ -27,6 +27,24 @@ export interface CreateUserDto {
   role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
 }
 
+export interface CreateDoctorDto {
+  userId: string;
+  name: string;
+  licenseNumber: string;
+  yearsOfExperience: number;
+  departmentId: string;
+  photos?: string[];
+  bio?: string;
+}
+
+export interface CreateDepartmentDto {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateDepartmentDto extends Partial<CreateDepartmentDto> {}
+
 export interface AppointmentQuery {
   status?: string;
   doctorId?: string;
@@ -75,6 +93,56 @@ export const adminService = {
   logoutAs: () => 
     apiClient.post('/admin/logout-as'),
   
+  // Departments
+  getDepartments: () => 
+    apiClient.get('/admin/departments'),
+  
+  getDepartment: (id: string) => 
+    apiClient.get(`/admin/departments/${id}`),
+  
+  createDepartment: (departmentData: CreateDepartmentDto, logoFile?: File) => {
+    // إذا كان هناك ملف، استخدم FormData
+    if (logoFile) {
+      const formData = new FormData();
+      formData.append('name', departmentData.name);
+      if (departmentData.description) {
+        formData.append('description', departmentData.description);
+      }
+      if (departmentData.isActive !== undefined) {
+        formData.append('isActive', String(departmentData.isActive));
+      }
+      formData.append('logo', logoFile);
+      return apiClient.post('/admin/departments', formData);
+    }
+    
+    // إذا لم يكن هناك ملف، استخدم JSON عادي
+    return apiClient.post('/admin/departments', departmentData);
+  },
+  
+  updateDepartment: (id: string, departmentData: UpdateDepartmentDto, logoFile?: File) => {
+    // إذا كان هناك ملف، استخدم FormData
+    if (logoFile) {
+      const formData = new FormData();
+      if (departmentData.name) {
+        formData.append('name', departmentData.name);
+      }
+      if (departmentData.description !== undefined) {
+        formData.append('description', departmentData.description || '');
+      }
+      if (departmentData.isActive !== undefined) {
+        formData.append('isActive', String(departmentData.isActive));
+      }
+      formData.append('logo', logoFile);
+      return apiClient.patch(`/admin/departments/${id}`, formData);
+    }
+    
+    // إذا لم يكن هناك ملف، استخدم JSON عادي
+    return apiClient.patch(`/admin/departments/${id}`, departmentData);
+  },
+  
+  deleteDepartment: (id: string) => 
+    apiClient.delete(`/admin/departments/${id}`),
+  
   // Import/Export
   exportDepartments: (format: 'json' | 'csv' = 'json') => 
     apiClient.get('/admin/departments/export', { 
@@ -97,6 +165,9 @@ export const adminService = {
   // Doctors Management
   getDoctors: (params?: any) => 
     apiClient.get('/admin/doctors', { params }),
+  
+  createDoctor: (doctorData: CreateDoctorDto) => 
+    apiClient.post('/admin/doctors', doctorData),
   
   updateDoctorStatus: (doctorId: string, status: string) => 
     apiClient.patch(`/admin/doctors/${doctorId}/status`, { status }),

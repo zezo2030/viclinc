@@ -1,151 +1,229 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, Button } from '@clinic/shared';
-import { Shield, Eye, EyeOff } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { Eye, EyeOff, LogIn } from 'lucide-react'
+import toast from 'react-hot-toast'
 
-export function Login() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+export default function Login() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const from = location.state?.from?.pathname || '/'
+
+  // إعادة توجيه المستخدم إذا كان مسجل دخول بالفعل
+  useEffect(() => {
+    console.log('Login - useEffect triggered:', {
+      isAuthenticated,
+      authLoading,
+      from,
+      currentPath: window.location.pathname
+    })
+    
+    if (!authLoading && isAuthenticated) {
+      console.log('Login - User authenticated, redirecting to:', from)
+      
+      // التحقق من localStorage كنسخة احتياطية
+      const token = localStorage.getItem('access_token')
+      const user = localStorage.getItem('user')
+      
+      if (token && user) {
+        // استخدام setTimeout لضمان تحديث React Router
+        const timer = setTimeout(() => {
+          if (window.location.pathname === '/login') {
+            console.log('Login - useEffect: Redirecting via navigate')
+            navigate(from, { replace: true })
+          }
+        }, 100)
+        
+        return () => clearTimeout(timer)
+      } else {
+        console.warn('Login - isAuthenticated is true but no token/user in localStorage')
+      }
+    }
+  }, [isAuthenticated, authLoading, navigate, from])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault()
+    e.stopPropagation() // منع propagation
+
+    if (!email || !password) {
+      toast.error('يرجى إدخال البريد الإلكتروني وكلمة المرور')
+      return
+    }
+
+    setIsLoading(true)
 
     try {
-      // TODO: Implement actual login logic
-      // For now, simulate login
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Login - Calling login function with:', { email, passwordLength: password.length })
+      await login({ email, password })
       
-      // Store token and redirect
-      localStorage.setItem('access_token', 'mock-admin-token');
-      localStorage.setItem('user_role', 'ADMIN');
+      console.log('Login - Login successful, checking localStorage...')
+      const token = localStorage.getItem('access_token')
+      const user = localStorage.getItem('user')
       
-      toast.success('تم تسجيل الدخول بنجاح');
-      navigate('/');
-    } catch (error) {
-      toast.error('خطأ في تسجيل الدخول');
-    } finally {
-      setIsLoading(false);
+      console.log('Login - After login:', {
+        hasToken: !!token,
+        hasUser: !!user,
+        tokenLength: token?.length || 0
+      })
+      
+      if (!token || !user) {
+        throw new Error('فشل حفظ بيانات تسجيل الدخول')
+      }
+      
+      toast.success('تم تسجيل الدخول بنجاح')
+      
+      // تحديث loading state
+      setIsLoading(false)
+      
+      // الانتظار قليلاً ثم إعادة التوجيه مباشرة
+      // نستخدم setTimeout لضمان تحديث state أولاً
+      setTimeout(() => {
+        console.log('Login - Redirecting to:', from)
+        if (window.location.pathname === '/login') {
+          navigate(from, { replace: true })
+        }
+      }, 150)
+      
+    } catch (error: any) {
+      console.error('Login error:', error)
+      console.error('Login error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        code: error.code
+      })
+      
+      let errorMessage = 'فشل تسجيل الدخول'
+      
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        errorMessage = error.userMessage || 'لا يمكن الاتصال بالخادم. تأكد من أن الخادم الخلفي يعمل على المنفذ 3000'
+      } else if (error.response?.status === 401) {
+        errorMessage = error.response?.data?.message || error.message || 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+        
+        // رسالة توضيحية إضافية
+        console.warn('Login failed - 401 Unauthorized. Please check:')
+        console.warn('1. Email is correct: admin@clinic.com')
+        console.warn('2. Password is correct: password123')
+        console.warn('3. Admin user exists in database (run seed script if needed)')
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error(errorMessage)
+      setIsLoading(false)
     }
-  };
+  }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  // عرض loading إذا كان النظام يتحقق من المصادقة
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-blue-800 rounded-full flex items-center justify-center">
-            <Shield className="h-6 w-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        {/* Logo & Title */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 text-white rounded-full mb-4">
+            <LogIn className="w-8 h-8" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            تسجيل دخول الإدارة
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            أدخل بياناتك للوصول إلى لوحة الإدارة
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">لوحة الإدارة</h1>
+          <p className="text-gray-600 mt-2">تسجيل الدخول إلى حسابك</p>
         </div>
 
         {/* Login Form */}
-        <Card>
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  البريد الإلكتروني
-                </label>
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+            {/* Email Input */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                البريد الإلكتروني
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                placeholder="admin@clinic.com"
+                disabled={isLoading}
+                autoComplete="email"
+              />
+            </div>
+
+            {/* Password Input */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                كلمة المرور
+              </label>
+              <div className="relative">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-800 focus:border-blue-800"
-                  placeholder="admin@clinic.com"
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  placeholder="••••••••"
+                  disabled={isLoading}
+                  autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={isLoading}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  كلمة المرور
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-800 focus:border-blue-800"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-              </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  جاري تسجيل الدخول...
+                </span>
+              ) : (
+                'تسجيل الدخول'
+              )}
+            </button>
+          </form>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-800 focus:ring-blue-800 border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="mr-2 block text-sm text-gray-900">
-                    تذكرني
-                  </label>
-                </div>
-
-                <div className="text-sm">
-                  <a href="#" className="font-medium text-blue-800 hover:text-blue-700">
-                    نسيت كلمة المرور؟
-                  </a>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                fullWidth
-                loading={isLoading}
-                className="w-full"
-              >
-                {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+          {/* Demo Credentials */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm font-medium text-gray-700 mb-2">بيانات تجريبية:</p>
+            <div className="text-xs text-gray-600 space-y-1">
+              <p>📧 admin@clinic.com</p>
+              <p>🔒 password123</p>
+            </div>
+          </div>
+        </div>
 
         {/* Footer */}
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            نظام إدارة العيادة © 2024
-          </p>
-        </div>
+        <p className="text-center text-sm text-gray-600 mt-6">
+          © 2024 نظام إدارة العيادات. جميع الحقوق محفوظة.
+        </p>
       </div>
     </div>
-  );
+  )
 }

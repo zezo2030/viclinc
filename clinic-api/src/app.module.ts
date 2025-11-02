@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { I18nModule, AcceptLanguageResolver } from 'nestjs-i18n';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { HealthController } from './health.controller';
 import { UsersModule } from './modules/users/users.module';
@@ -23,6 +24,7 @@ import { Service as Svc, ServiceSchema } from './modules/services/schemas/servic
 import { ServicesService } from './modules/services/services.service';
 import { ServicesController } from './modules/services/services.controller';
 import { RedisModule } from './modules/shared/redis/redis.module';
+import { GuardsModule } from './modules/shared/guards/guards.module';
 
 const isProd = process.env.NODE_ENV === 'production';
 const i18nPath = isProd
@@ -32,6 +34,10 @@ const i18nPath = isProd
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: process.env.STATIC_PREFIX || '/static',
+    }),
     I18nModule.forRoot({
       fallbackLanguage: 'ar',
       loaderOptions: { path: i18nPath, watch: !isProd },
@@ -51,6 +57,7 @@ const i18nPath = isProd
       },
     ]),
     RedisModule,
+    GuardsModule,
     UsersModule,
     AuthModule,
     DoctorsModule,

@@ -1,163 +1,73 @@
-# لوحة الإدارة - نظام إدارة العيادة
+# React + TypeScript + Vite
 
-لوحة إدارة شاملة لنظام إدارة العيادة مبنية بـ React + Vite.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## المميزات
+Currently, two official plugins are available:
 
-- 🚀 **Vite** - أداة بناء سريعة وحديثة
-- ⚛️ **React 18** - مكتبة واجهة المستخدم
-- 🛣️ **React Router v6** - إدارة التوجيه
-- 🎨 **Tailwind CSS** - إطار عمل CSS
-- 📊 **Recharts** - مكتبة الرسوم البيانية
-- 🔄 **React Query** - إدارة البيانات والحالة
-- 🎭 **Framer Motion** - الرسوم المتحركة
-- 🍞 **React Hot Toast** - إشعارات جميلة
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## التطوير
+## React Compiler
 
-### المتطلبات
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-- Node.js 18+
-- npm أو yarn
+## Expanding the ESLint configuration
 
-### التثبيت
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-```bash
-# تثبيت التبعيات
-npm install
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-# تشغيل خادم التطوير
-npm run dev
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-# بناء للإنتاج
-npm run build
-
-# معاينة البناء
-npm run preview
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-### المتغيرات البيئية
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-إنشاء ملف `.env.local`:
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-```env
-VITE_API_URL=http://localhost:3000/v1
-VITE_SITE_URL=http://localhost:3002
-VITE_SITE_NAME=Admin Dashboard
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-## البناء مع Docker
-
-### التطوير
-
-```bash
-docker-compose -f docker-compose.dev.yml up admin-dashboard
-```
-
-### الإنتاج
-
-```bash
-docker-compose up admin-dashboard
-```
-
-## البنية
-
-```
-src/
-├── components/          # المكونات القابلة لإعادة الاستخدام
-│   ├── dashboard/       # مكونات لوحة التحكم
-│   ├── layout/         # مكونات التخطيط
-│   └── metrics/         # مكونات المقاييس
-├── pages/              # صفحات التطبيق
-│   ├── Dashboard.tsx   # الصفحة الرئيسية
-│   └── Login.tsx       # صفحة تسجيل الدخول
-├── App.tsx             # المكون الرئيسي
-├── main.tsx           # نقطة الدخول
-├── providers.tsx       # مقدمي الخدمة
-└── index.css          # الأنماط العامة
-```
-
-## التوجيه
-
-- `/` - لوحة التحكم الرئيسية (محمية)
-- `/login` - صفحة تسجيل الدخول
-
-## API Integration
-
-يستخدم التطبيق nginx كـ reverse proxy للـ API calls:
-
-- `/api/*` → `http://api:3000/v1/*`
-
-## الأمان
-
-- حماية الصفحات بـ `ProtectedRoute`
-- تخزين التوكن في localStorage
-- CORS headers مُعدة في nginx
-
-## التطوير
-
-```bash
-# تشغيل التطوير
-npm run dev
-
-# فحص الأخطاء
-npm run lint
-
-# تشغيل الاختبارات
-npm run test
-```
-
-## الإنتاج
-
-```bash
-# بناء التطبيق
-npm run build
-
-# معاينة البناء
-npm run preview
-```
-
-## كيفية التشغيل:
-
-### للتطوير:
-```bash
-cd admin-dashboard
-npm install
-npm run dev
-```
-
-ثم افتح المتصفح على: `http://localhost:3002`
-
-### مع Docker:
-```bash
-docker-compose -f docker-compose.dev.yml up admin-dashboard
-```
-
-### للإنتاج:
-```bash
-docker-compose up admin-dashboard
-```
-
-## تسجيل الدخول:
-- افتح `http://localhost:3002`
-- أدخل أي بريد إلكتروني وكلمة مرور (مثل: admin@clinic.com / password)
-- سيتم توجيهك إلى لوحة التحكم
-
-## استكشاف الأخطاء:
-
-### إذا ظهرت صفحة بيضاء:
-1. افتح Developer Tools (F12)
-2. تحقق من Console للأخطاء
-3. تأكد من تحميل CSS و JS files في Network tab
-
-### إذا لم يعمل التطبيق:
-```bash
-cd admin-dashboard
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
-```
-
-## الدعم
-
-للمساعدة والدعم، يرجى التواصل مع فريق التطوير.

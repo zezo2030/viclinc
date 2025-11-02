@@ -2,14 +2,18 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Payment, PaymentDocument, PaymentStatus, PaymentMethod } from './schemas/payment.schema';
+import { Appointment, AppointmentDocument } from '../schedule/schemas/appointment.schema';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
 import { PaymentWebhookDto } from './dto/payment-webhook.dto';
 import { PaymentResponseDto, PaymentIntentResponseDto } from './dto/payment-response.dto';
+import { AppointmentService } from '../schedule/services/appointment.service';
 
 @Injectable()
 export class PaymentsService {
   constructor(
     @InjectModel(Payment.name) private paymentModel: Model<PaymentDocument>,
+    @InjectModel(Appointment.name) private appointmentModel: Model<AppointmentDocument>,
+    private readonly appointmentService: AppointmentService,
   ) {}
 
   /**
@@ -18,17 +22,39 @@ export class PaymentsService {
   async createPaymentIntent(createDto: CreatePaymentIntentDto): Promise<PaymentIntentResponseDto> {
     const { appointmentId } = createDto;
 
-    // التحقق من وجود الموعد
-    // TODO: إضافة التحقق من وجود الموعد في AppointmentService
+    // التحقق من وجود الموعد وجلب السعر
+    const appointment = await this.appointmentModel.findById(appointmentId);
+    
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    // التحقق من وجود دفع سابق
+    const existingPayment = await this.paymentModel.findOne({
+      appointmentId: new Types.ObjectId(appointmentId),
+    });
+
+    if (existingPayment && existingPayment.intentId) {
+      return {
+        intentId: existingPayment.intentId,
+        clientSecret: `${existingPayment.intentId}_secret`,
+        amount: existingPayment.amount,
+        currency: existingPayment.currency,
+        status: existingPayment.status,
+      };
+    }
     
     // إنشاء نية دفع وهمية
     const intentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const clientSecret = `${intentId}_secret_${Math.random().toString(36).substr(2, 9)}`;
 
+    // جلب السعر من الموعد
+    const amount = appointment.price || 0;
+
     // إنشاء سجل دفع
     const payment = new this.paymentModel({
       appointmentId: new Types.ObjectId(appointmentId),
-      amount: 150.00, // TODO: جلب السعر من الموعد
+      amount,
       currency: 'SAR',
       status: PaymentStatus.PENDING,
       paymentMethod: PaymentMethod.CREDIT_CARD,
@@ -36,7 +62,9 @@ export class PaymentsService {
       metadata: {
         provider: 'stub',
         version: '1.0',
-        createdBy: 'system'
+        createdBy: 'system',
+        appointmentType: appointment.type,
+        appointmentStatus: appointment.status,
       }
     });
 
@@ -143,6 +171,14 @@ export class PaymentsService {
     }
 
     await payment.save();
+
+    // تحديث حالة الدفع في الموعد
+    try {
+      await this.appointmentService.markAsPaid(appointmentId, (payment._id as Types.ObjectId).toString());
+    } catch (error) {
+      // Log error but don't fail the payment update
+      console.error('Failed to update appointment payment status:', error);
+    }
 
     return this.mapToResponse(payment);
   }

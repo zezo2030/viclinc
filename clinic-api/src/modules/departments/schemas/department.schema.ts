@@ -14,9 +14,9 @@ export class Department {
   @Prop()
   description?: string;
 
-  @ApiProperty({ description: 'Department icon path', example: '/brain_11666594 copy.webp', required: false })
+  @ApiProperty({ description: 'Department logo path (used as icon)', example: 'sections/logos/uuid-filename.png', required: false })
   @Prop()
-  icon?: string;
+  logoPath?: string;
 
   @ApiProperty({ description: 'Whether the department is active', example: true })
   @Prop({ default: true })

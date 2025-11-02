@@ -176,6 +176,7 @@ export class ReportsService {
       },
       {
         $project: {
+          _id: 1,
           name: 1,
           licenseNumber: 1,
           departmentId: 1,
@@ -257,16 +258,58 @@ export class ReportsService {
     // Get department information
     const departmentInfo = await this.getDepartmentInfo();
 
+    // Transform the data to match Frontend expectations
+    const doctors = doctorPerformance.map((doctor: any) => ({
+      doctorId: doctor._id?.toString() || '',
+      doctorName: doctor.name || '',
+      departmentName: '', // Will be populated below
+      email: '', // Not available in current aggregation
+      phone: '', // Not available in current aggregation
+      totalAppointments: doctor.totalAppointments || 0,
+      completedAppointments: doctor.confirmedAppointments || 0, // Using confirmed as completed
+      cancelledAppointments: doctor.cancelledAppointments || 0,
+      noShowAppointments: doctor.noShowAppointments || 0,
+      revenue: doctor.totalRevenue || 0,
+      averageRating: 0, // Not available in current aggregation
+      totalRatings: 0, // Not available in current aggregation
+      patientCount: 0, // Not available in current aggregation
+    }));
+
+    // Get all departments to map names
+    const departmentsMap = new Map();
+    if (departmentInfo.length > 0) {
+      departmentInfo.forEach((dept: any) => {
+        departmentsMap.set(dept._id?.toString(), dept.name);
+      });
+    }
+
+    // Populate department names using doctorPerformance departmentId
+    doctorPerformance.forEach((doctor: any, index: number) => {
+      if (doctors[index] && doctor.departmentId) {
+        const deptName = departmentsMap.get(doctor.departmentId?.toString());
+        if (deptName) {
+          doctors[index].departmentName = deptName;
+        }
+      }
+    });
+
+    // Calculate summary
+    const totalDoctors = doctors.length;
+    const totalAppointments = doctors.reduce((sum: number, d: any) => sum + d.totalAppointments, 0);
+    const totalRevenue = doctors.reduce((sum: number, d: any) => sum + d.revenue, 0);
+    const averageRating = 0; // Not available in current data
+
     return {
-      doctorPerformance,
-      departmentInfo,
+      doctors,
+      summary: {
+        totalDoctors,
+        totalAppointments,
+        totalRevenue,
+        averageRating,
+      },
       period: {
         startDate: dateRange.start,
         endDate: dateRange.end,
-      },
-      filters: {
-        departmentId,
-        limit,
       },
       generatedAt: new Date().toISOString(),
     };

@@ -250,6 +250,43 @@ export class UsersManagementService {
     };
   }
 
+  async hardDeleteUser(
+    userId: string, 
+    options?: { reason?: string; purgeRelated?: boolean; anonymize?: boolean }
+  ) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Prevent deleting admin users
+    if (user.role === Role.ADMIN) {
+      throw new BadRequestException('Cannot permanently delete admin users');
+    }
+
+    // Handle related data
+    if (options?.purgeRelated) {
+      // Delete doctor profile if exists
+      if (user.role === Role.DOCTOR) {
+        await this.doctorProfileModel.deleteOne({ userId });
+      }
+
+      // Note: For medical records, appointments, and sessions,
+      // we should anonymize rather than delete to maintain data integrity
+      // This would require additional logic in respective services
+    }
+
+    // Perform hard delete
+    await this.userModel.findByIdAndDelete(userId);
+
+    return {
+      success: true,
+      message: 'User permanently deleted',
+      userId,
+      reason: options?.reason,
+    };
+  }
+
   async restoreUser(userId: string) {
     const user = await this.userModel.findById(userId);
     if (!user) {

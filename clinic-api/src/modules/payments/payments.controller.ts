@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
@@ -52,7 +52,17 @@ export class PaymentsController {
     status: 404, 
     description: 'الدفع غير موجود' 
   })
-  async handleWebhook(@Body() webhookDto: PaymentWebhookDto): Promise<PaymentResponseDto> {
+  async handleWebhook(
+    @Body() webhookDto: PaymentWebhookDto,
+    @Req() req: any,
+  ): Promise<PaymentResponseDto> {
+    // TODO: إضافة التحقق من توقيع Webhook في الإنتاج
+    // في الإنتاج، يجب التحقق من توقيع Webhook من مزود الدفع
+    // const signature = req.headers['x-webhook-signature'];
+    // if (!this.paymentsService.verifyWebhookSignature(webhookDto, signature)) {
+    //   throw new UnauthorizedException('Invalid webhook signature');
+    // }
+    
     return this.paymentsService.handleWebhook(webhookDto);
   }
 

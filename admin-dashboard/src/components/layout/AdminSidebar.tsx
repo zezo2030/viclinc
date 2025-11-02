@@ -1,111 +1,146 @@
-
-import { Link, useLocation } from 'react-router-dom';
-import { clsx } from 'clsx';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
-  UserCheck,
+  Stethoscope,
+  Building2,
   Calendar,
-  BarChart3,
+  CreditCard,
   FileText,
-  Download,
+  BarChart3,
+  Shield,
   Settings,
-  LogOut,
   X,
 } from 'lucide-react';
+import { cn } from '@/utils/cn';
 
 interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const navigation = [
-  { name: 'لوحة الإدارة', href: '/', icon: LayoutDashboard },
-  { name: 'المستخدمين', href: '/users', icon: Users },
-  { name: 'الأطباء', href: '/doctors', icon: UserCheck },
-  { name: 'المواعيد', href: '/appointments', icon: Calendar },
-  { name: 'التقارير', href: '/reports', icon: BarChart3 },
-  { name: 'الاستيراد/التصدير', href: '/import-export', icon: Download },
-  { name: 'سجل التدقيق', href: '/audit', icon: FileText },
-  { name: 'النظام', href: '/system', icon: Settings },
+const menuItems = [
+  {
+    icon: LayoutDashboard,
+    label: 'لوحة التحكم',
+    path: '/',
+  },
+  {
+    icon: Users,
+    label: 'المستخدمين',
+    path: '/users',
+  },
+  {
+    icon: Stethoscope,
+    label: 'الأطباء',
+    path: '/doctors',
+  },
+  {
+    icon: Building2,
+    label: 'الأقسام',
+    path: '/departments',
+  },
+  {
+    icon: Calendar,
+    label: 'المواعيد',
+    path: '/appointments',
+  },
+  {
+    icon: CreditCard,
+    label: 'المدفوعات',
+    path: '/payments',
+  },
+  {
+    icon: FileText,
+    label: 'السجلات الطبية',
+    path: '/medical-records',
+  },
+  {
+    icon: BarChart3,
+    label: 'التقارير',
+    path: '/reports',
+  },
+  {
+    icon: Shield,
+    label: 'سجل التدقيق',
+    path: '/audit',
+  },
+  {
+    icon: Settings,
+    label: 'الإعدادات',
+    path: '/settings',
+  },
 ];
 
-export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
-  const location = useLocation();
-
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Overlay for mobile */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
-      <div className={clsx(
-        'fixed top-0 right-0 z-50 h-full w-64 bg-gray-900 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0',
-        isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-      )}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-700">
-          <h1 className="text-xl font-bold">لوحة الإدارة</h1>
+      <aside
+        className={cn(
+          'fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-30 transform transition-transform duration-300',
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        )}
+      >
+        {/* Logo & Close Button */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+              <Stethoscope className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">لوحة الإدارة</h1>
+              <p className="text-xs text-gray-500">نظام العيادات</p>
+            </div>
+          </div>
+          
+          {/* Close button for mobile */}
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-700"
+            className="lg:hidden text-gray-500 hover:text-gray-700"
           >
-            <X className="h-5 w-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <nav className="mt-6 px-3">
-          <div className="space-y-1">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={clsx(
-                    'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
-                    isActive
-                      ? 'bg-blue-800 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  )}
-                  onClick={() => {
-                    // Close sidebar on mobile after navigation
-                    if (window.innerWidth < 1024) {
-                      onClose();
-                    }
-                  }}
-                >
-                  <item.icon className="ml-3 h-5 w-5" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </div>
+        {/* Navigation */}
+        <nav className="p-4 space-y-1">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/'}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                  isActive
+                    ? 'bg-primary-50 text-primary-600 font-medium'
+                    : 'text-gray-700 hover:bg-gray-50'
+                )
+              }
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
         </nav>
 
-        {/* User section */}
-        <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-800 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium">أ</span>
-              </div>
-            </div>
-            <div className="mr-3">
-              <p className="text-sm font-medium text-white">مدير النظام</p>
-              <p className="text-xs text-gray-400">admin@clinic.com</p>
-            </div>
+        {/* Footer */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+          <div className="text-xs text-center text-gray-500">
+            <p>الإصدار 1.0.0</p>
+            <p className="mt-1">© 2024 جميع الحقوق محفوظة</p>
           </div>
-          <button className="mt-3 w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md">
-            <LogOut className="ml-3 h-4 w-4" />
-            تسجيل الخروج
-          </button>
         </div>
-      </div>
+      </aside>
     </>
   );
 }

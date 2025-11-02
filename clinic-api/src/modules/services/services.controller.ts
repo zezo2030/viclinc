@@ -4,10 +4,11 @@ import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { AdminRoleGuard } from '../shared/guards/admin-role.guard';
+import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 
 @ApiTags('Admin - Services')
 @ApiBearerAuth()
-@UseGuards(AdminRoleGuard)
+@UseGuards(JwtAuthGuard, AdminRoleGuard)
 @Controller('admin/services')
 export class ServicesController {
   constructor(private readonly service: ServicesService) {}
