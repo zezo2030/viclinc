@@ -64,7 +64,7 @@ export class PatientsController {
   ) {
     return this.appointmentService.createAppointment(
       createAppointmentDto,
-      (user as any)._id.toString(),
+      (user as any).sub || (user as any)._id?.toString(),
       idempotencyKey,
     );
   }
@@ -76,7 +76,8 @@ export class PatientsController {
     @Query() query: AppointmentQueryDto,
     @CurrentUser() user: User,
   ) {
-    return this.appointmentService.getPatientAppointments((user as any)._id.toString(), query);
+    const userId = (user as any).sub || (user as any)._id?.toString();
+    return this.appointmentService.getPatientAppointments(userId, query);
   }
 
   @Post('appointments/:id/cancel')
@@ -88,7 +89,8 @@ export class PatientsController {
     @Body() cancelDto: CancelAppointmentDto,
     @CurrentUser() user: User,
   ) {
-    return this.appointmentService.cancelAppointment(appointmentId, (user as any)._id.toString(), cancelDto);
+    const userId = (user as any).sub || (user as any)._id?.toString();
+    return this.appointmentService.cancelAppointment(appointmentId, userId, cancelDto);
   }
 
   @Post('appointments/:id/reschedule')
@@ -100,6 +102,7 @@ export class PatientsController {
     @Body() rescheduleDto: RescheduleAppointmentDto,
     @CurrentUser() user: User,
   ) {
-    return this.appointmentService.rescheduleAppointment(appointmentId, (user as any)._id.toString(), rescheduleDto);
+    const userId = (user as any).sub || (user as any)._id?.toString();
+    return this.appointmentService.rescheduleAppointment(appointmentId, userId, rescheduleDto);
   }
 }

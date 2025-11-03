@@ -622,12 +622,21 @@ export class AppointmentService {
     return this.mapToResponse(updatedAppointment);
   }
 
-  private mapToResponse(appointment: AppointmentDocument): AppointmentResponse {
+  private mapToResponse(appointment: AppointmentDocument | any): AppointmentResponse {
+    // Handle populated fields - they can be ObjectIds or populated objects
+    const getObjectIdString = (field: any): string => {
+      if (!field) return '';
+      if (typeof field === 'string') return field;
+      if (field._id) return field._id.toString();
+      if (field.toString) return field.toString();
+      return String(field);
+    };
+
     return {
       id: (appointment as any)._id.toString(),
-      doctorId: appointment.doctorId.toString(),
-      patientId: appointment.patientId.toString(),
-      serviceId: appointment.serviceId.toString(),
+      doctorId: getObjectIdString(appointment.doctorId),
+      patientId: getObjectIdString(appointment.patientId),
+      serviceId: getObjectIdString(appointment.serviceId),
       startAt: appointment.startAt.toISOString(),
       endAt: appointment.endAt.toISOString(),
       status: appointment.status,
@@ -639,7 +648,7 @@ export class AppointmentService {
       cancelledAt: appointment.cancelledAt?.toISOString(),
       metadata: appointment.metadata,
       paymentStatus: appointment.paymentStatus,
-      paymentId: appointment.paymentId?.toString(),
+      paymentId: appointment.paymentId ? getObjectIdString(appointment.paymentId) : undefined,
       requiresPayment: appointment.requiresPayment,
       createdAt: (appointment as any).createdAt.toISOString(),
       updatedAt: (appointment as any).updatedAt.toISOString(),

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEnum, IsDateString, IsNumberString } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsDateString, IsInt, Min, Max } from 'class-validator';
 import { AppointmentStatus } from '../schemas/appointment.schema';
-import { Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 
 export class AppointmentQueryDto {
   @ApiProperty({ 
@@ -55,8 +55,9 @@ export class AppointmentQueryDto {
     required: false 
   })
   @IsOptional()
-  @IsNumberString()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   page?: number = 1;
 
   @ApiProperty({ 
@@ -65,8 +66,10 @@ export class AppointmentQueryDto {
     required: false 
   })
   @IsOptional()
-  @IsNumberString()
-  @Transform(({ value }) => Math.min(parseInt(value, 10) || 10, 100))
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
   limit?: number = 10;
 }
 
