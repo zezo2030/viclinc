@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongo:
+    image: mongo:7.0
+    container_name: virclinc-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: clinic
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - clinic-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/clinic --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Clinic API (NestJS)
+  api:
+    build:
+      context: ./clinic-api
+      dockerfile: Dockerfile
+    container_name: virclinc-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_URI: mongodb://mongo:27017/clinic
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      UPLOADS_BASE_PATH: uploads
+      STATIC_PREFIX: /static
+      MAX_LOGO_SIZE_MB: ${MAX_LOGO_SIZE_MB:-5}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-this-in-production}
+      AGORA_APP_ID: ${AGORA_APP_ID:-}
+      AGORA_APP_CERTIFICATE: ${AGORA_APP_CERTIFICATE:-}
+      AGORA_TOKEN_EXPIRATION_TIME: ${AGORA_TOKEN_EXPIRATION_TIME:-3600}
+      AGORA_ENABLED: ${AGORA_ENABLED:-true}
+    volumes:
+      - api_uploads:/app/uploads
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - clinic-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Website (Next.js)
+  website:
+    build:
+      context: ./websit
+      dockerfile: Dockerfile
+    container_name: virclinc-website
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
+      NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Smart Clinic}
+    depends_on:
+      - api
+    networks:
+      - clinic-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Admin Dashboard (React + Vite)
+  admin:
+    build:
+      context: ./admin-dashboard
+      dockerfile: Dockerfile
+    container_name: virclinc-admin
+    restart: unless-stopped
+    environment:
+      VITE_SITE_URL: ${VITE_SITE_URL:-http://localhost/admin}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost/api}
+      VITE_SITE_NAME: ${VITE_SITE_NAME:-Admin Dashboard}
+    depends_on:
+      - api
+    networks:
+      - clinic-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: virclinc-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      - api_uploads:/var/www/virclinc/uploads:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - api
+      - website
+      - admin
+    networks:
+      - clinic-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongo_data:
+    driver: local
+  api_uploads:
+    driver: local
+
+networks:
+  clinic-network:
+    driver: bridge
+
