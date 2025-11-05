@@ -116,12 +116,6 @@ AppointmentSchema.index({ doctorId: 1, startAt: 1 }, {
   } 
 });
 
-// TTL index على holdExpiresAt
-AppointmentSchema.index({ holdExpiresAt: 1 }, { 
-  expireAfterSeconds: 0,
-  partialFilterExpression: { holdExpiresAt: { $exists: true } }
-});
-
 // فهرس فريد جزئي على idempotencyKey
 AppointmentSchema.index({ idempotencyKey: 1 }, { 
   unique: true, 

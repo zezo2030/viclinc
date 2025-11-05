@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { ArrowLeft, Calendar, Clock, User, MapPin } from 'lucide-react';
 import { appointmentsService } from '@/lib/api/appointments';
 import { doctorsService } from '@/lib/api/doctors';
+import { servicesApi, ServiceApi } from '@/lib/api/services';
 import { useAuth } from '@/lib/contexts/auth-context';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
@@ -18,53 +19,121 @@ function NewAppointmentContent() {
   const { user } = useAuth();
   
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
-  const [appointmentDate, setAppointmentDate] = useState('');
-  const [appointmentTime, setAppointmentTime] = useState('');
+  const [selectedService, setSelectedService] = useState<ServiceApi | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedSlot, setSelectedSlot] = useState<{ startTime: string; endTime: string } | null>(null);
   const [reason, setReason] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [weekStart, setWeekStart] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
 
   // Get URL parameters
   const doctorId = searchParams.get('doctorId');
   const specialtyId = searchParams.get('specialtyId');
 
-  // جلب الأطباء
+  // جلب بيانات الطبيب المحدد مباشرة إذا كان doctorId موجود
+  const { data: doctorData, isLoading: doctorLoading } = useQuery({
+    queryKey: ['doctor', doctorId],
+    queryFn: () => {
+      if (doctorId) {
+        return doctorsService.getDoctor(doctorId);
+      }
+      return null;
+    },
+    enabled: !!doctorId, // فقط إذا كان doctorId موجود
+  });
+
+  // جلب الأطباء فقط إذا لم يكن doctorId موجود (للاختيار الحر)
   const { data: doctors, isLoading: doctorsLoading } = useQuery({
     queryKey: ['doctors', specialtyId],
     queryFn: () => doctorsService.getDoctors(),
+    enabled: !doctorId, // فقط إذا لم يكن doctorId موجود
   });
 
-  // جلب بيانات الطبيب المحدد
+  // تعيين الطبيب المحدد عند جلب بياناته
   useEffect(() => {
-    if (doctorId && doctors) {
-      const doctor = doctors.find(d => d.id === parseInt(doctorId));
-      if (doctor) {
-        setSelectedDoctor(doctor);
-      }
+    if (doctorData) {
+      setSelectedDoctor(doctorData);
+      // إعادة تعيين الخدمة والتاريخ عند تغيير الطبيب
+      setSelectedService(null);
+      setSelectedDate('');
+      setSelectedSlot(null);
     }
-  }, [doctorId, doctors]);
+  }, [doctorData]);
+
+  // جلب الخدمات المتاحة
+  const { data: services, isLoading: servicesLoading } = useQuery({
+    queryKey: ['services', selectedDoctor?.departmentId || selectedDoctor?.department?.id],
+    queryFn: () => servicesApi.getAll(selectedDoctor?.departmentId || selectedDoctor?.department?.id),
+    enabled: !!selectedDoctor,
+  });
+
+  // جلب التوفر عند اختيار الطبيب والخدمة
+  const { data: availability, isLoading: availabilityLoading } = useQuery({
+    queryKey: ['availability', selectedDoctor?._id || selectedDoctor?.id, selectedService?._id || selectedService?.id, weekStart],
+    queryFn: () => {
+      if (!selectedDoctor || !selectedService) return null;
+      const doctorIdValue = selectedDoctor._id || selectedDoctor.id;
+      const serviceIdValue = selectedService._id || selectedService.id;
+      if (!doctorIdValue || !serviceIdValue) return null;
+      return doctorsService.getDoctorAvailability(doctorIdValue, serviceIdValue, weekStart);
+    },
+    enabled: !!selectedDoctor && !!selectedService && !!(selectedDoctor._id || selectedDoctor.id) && !!(selectedService._id || selectedService.id),
+  });
+
+  // استخراج التواريخ المتاحة من الفتحات
+  const availableDates = React.useMemo(() => {
+    if (!availability?.availableSlots) return [];
+    const datesSet = new Set<string>();
+    availability.availableSlots.forEach((slot) => {
+      const date = new Date(slot.startTime).toISOString().split('T')[0];
+      datesSet.add(date);
+    });
+    return Array.from(datesSet).sort();
+  }, [availability]);
+
+  // الحصول على الفتحات المتاحة لتاريخ محدد
+  const getSlotsForDate = (date: string) => {
+    if (!availability?.availableSlots) return [];
+    return availability.availableSlots
+      .filter((slot) => {
+        const slotDate = new Date(slot.startTime).toISOString().split('T')[0];
+        return slotDate === date;
+      })
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  };
 
   const handleCreateAppointment = async () => {
     if (!selectedDoctor) {
       alert('يرجى اختيار طبيب');
       return;
     }
-    if (!appointmentDate || !appointmentTime) {
-      alert('يرجى اختيار التاريخ والوقت');
+    if (!selectedService) {
+      alert('يرجى اختيار الخدمة');
+      return;
+    }
+    if (!selectedDate || !selectedSlot) {
+      alert('يرجى اختيار التاريخ والوقت المتاح');
       return;
     }
 
     try {
       setIsCreating(true);
       
+      // استخدام _id إذا كان موجود (MongoDB) أو id (number)
+      const doctorIdValue = selectedDoctor._id || selectedDoctor.id;
+      const serviceIdValue = selectedService._id || selectedService.id;
+      
+      // استخدام startAt (ISO string) مباشرة من selectedSlot
+      const startAt = selectedSlot.startTime; // ISO string
+      
       await appointmentsService.createAppointment({
-        patientId: parseInt(user?.id || '0'),
-        doctorId: selectedDoctor.id,
-        clinicId: selectedDoctor.clinic?.id || 1,
-        specialtyId: selectedDoctor.specialty?.id || 1,
-        departmentId: selectedDoctor.department?.id || 1,
-        appointmentDate: appointmentDate,
-        appointmentTime: appointmentTime,
-        reason: reason.trim() || undefined,
+        doctorId: typeof doctorIdValue === 'string' ? doctorIdValue : String(doctorIdValue),
+        serviceId: typeof serviceIdValue === 'string' ? serviceIdValue : String(serviceIdValue),
+        startAt: startAt,
+        type: 'IN_PERSON', // يمكن تغييره لاحقاً حسب نوع الخدمة
+        metadata: reason.trim() ? { reason: reason.trim() } : undefined,
       });
 
       router.push('/dashboard');
@@ -76,13 +145,13 @@ function NewAppointmentContent() {
     }
   };
 
-  if (doctorsLoading) {
+  if (doctorLoading || (doctorsLoading && !doctorId)) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p>جاري تحميل الأطباء...</p>
+            <p>{doctorId ? 'جاري تحميل بيانات الطبيب...' : 'جاري تحميل الأطباء...'}</p>
           </div>
         </div>
       </div>
@@ -109,15 +178,18 @@ function NewAppointmentContent() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* اختيار الطبيب */}
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">اختيار الطبيب</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              {doctorId ? 'الطبيب المحدد' : 'اختيار الطبيب'}
+            </h2>
             
+            {/* عرض قائمة الأطباء فقط إذا لم يكن doctorId محدد */}
             {!doctorId && (
               <div className="space-y-3 mb-4">
-                {doctors?.map((doctor) => (
+                {doctors?.map((doctor: any) => (
                   <Card
-                    key={doctor.id}
+                    key={doctor.id || doctor._id}
                     className={`p-4 cursor-pointer transition-colors ${
-                      selectedDoctor?.id === doctor.id
+                      selectedDoctor?.id === doctor.id || selectedDoctor?._id === doctor._id
                         ? 'border-primary-500 bg-primary-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
@@ -129,10 +201,10 @@ function NewAppointmentContent() {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold">
-                          {doctor.user?.profile?.firstName} {doctor.user?.profile?.lastName}
+                          {doctor.name || `${doctor.user?.profile?.firstName || ''} ${doctor.user?.profile?.lastName || ''}`.trim() || 'طبيب'}
                         </h3>
-                        <p className="text-sm text-gray-600">{doctor.specialty?.name}</p>
-                        <p className="text-xs text-gray-500">{doctor.clinic?.name}</p>
+                        <p className="text-sm text-gray-600">{doctor.bio || doctor.specialization || doctor.specialty?.name || 'تخصص غير محدد'}</p>
+                        <p className="text-xs text-gray-500">{doctor.departmentName || doctor.department?.name || doctor.clinic?.name || ''}</p>
                       </div>
                     </div>
                   </Card>
@@ -140,21 +212,38 @@ function NewAppointmentContent() {
               </div>
             )}
 
+            {/* عرض معلومات الطبيب المحدد */}
             {selectedDoctor && (
               <Card className="p-4 border-primary-500 bg-primary-50">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-primary-600" />
-                  </div>
+                  {selectedDoctor.photos && selectedDoctor.photos.length > 0 ? (
+                    <img 
+                      src={selectedDoctor.photos[0]} 
+                      alt={selectedDoctor.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-primary-600" />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <h3 className="font-semibold">
-                      {selectedDoctor.user?.profile?.firstName} {selectedDoctor.user?.profile?.lastName}
+                      {selectedDoctor.name || `${selectedDoctor.user?.profile?.firstName || ''} ${selectedDoctor.user?.profile?.lastName || ''}`.trim() || 'طبيب'}
                     </h3>
-                    <p className="text-sm text-gray-600">{selectedDoctor.specialty?.name}</p>
-                    <p className="text-xs text-gray-500">{selectedDoctor.clinic?.name}</p>
+                    <p className="text-sm text-gray-600">{selectedDoctor.bio || selectedDoctor.specialization || selectedDoctor.specialty?.name || 'تخصص غير محدد'}</p>
+                    <p className="text-xs text-gray-500">
+                      {selectedDoctor.departmentName || selectedDoctor.department?.name || ''}
+                      {selectedDoctor.yearsOfExperience && ` • ${selectedDoctor.yearsOfExperience} سنوات خبرة`}
+                    </p>
                   </div>
                 </div>
               </Card>
+            )}
+
+            {/* رسالة إذا لم يكن هناك أطباء ولا طبيب محدد */}
+            {!doctorId && !doctorsLoading && (!doctors || doctors.length === 0) && (
+              <p className="text-gray-500 text-center py-4">لا توجد أطباء متاحين</p>
             )}
           </Card>
 
@@ -163,29 +252,175 @@ function NewAppointmentContent() {
             <h2 className="text-xl font-semibold mb-4">تفاصيل الموعد</h2>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  التاريخ
-                </label>
-                <Input
-                  type="date"
-                  value={appointmentDate}
-                  onChange={(e) => setAppointmentDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                />
-              </div>
+              {/* اختيار الخدمة */}
+              {selectedDoctor && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    الخدمة <span className="text-red-500">*</span>
+                  </label>
+                  {servicesLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
+                      <p className="text-sm text-gray-500 mt-2">جاري تحميل الخدمات...</p>
+                    </div>
+                  ) : services && services.length > 0 ? (
+                    <select
+                      className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      value={selectedService?._id || selectedService?.id || ''}
+                      onChange={(e) => {
+                        const service = services.find(s => (s._id || s.id) === e.target.value);
+                        setSelectedService(service || null);
+                        setSelectedDate('');
+                        setSelectedSlot(null);
+                      }}
+                    >
+                      <option value="">اختر الخدمة</option>
+                      {services.map((service) => (
+                        <option key={service._id || service.id} value={service._id || service.id}>
+                          {service.name} {service.defaultDurationMin ? `(${service.defaultDurationMin} دقيقة)` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-gray-500 text-sm">لا توجد خدمات متاحة</p>
+                  )}
+                </div>
+              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الوقت
-                </label>
-                <Input
-                  type="time"
-                  value={appointmentTime}
-                  onChange={(e) => setAppointmentTime(e.target.value)}
-                />
-              </div>
+              {/* اختيار التاريخ - حسب التواريخ المتاحة */}
+              {selectedDoctor && selectedService && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    التاريخ <span className="text-red-500">*</span>
+                  </label>
+                  {availabilityLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
+                      <p className="text-sm text-gray-500 mt-2">جاري تحميل التواريخ المتاحة...</p>
+                    </div>
+                  ) : availableDates.length > 0 ? (
+                    <div className="space-y-2">
+                      <select
+                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        value={selectedDate}
+                        onChange={(e) => {
+                          setSelectedDate(e.target.value);
+                          setSelectedSlot(null);
+                        }}
+                      >
+                        <option value="">اختر التاريخ</option>
+                        {availableDates.map((date) => {
+                          const dateObj = new Date(date);
+                          const dayName = dateObj.toLocaleDateString('ar-SA', { weekday: 'long' });
+                          const formattedDate = dateObj.toLocaleDateString('ar-SA');
+                          return (
+                            <option key={date} value={date}>
+                              {dayName} - {formattedDate}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      {availableDates.length === 0 && (
+                        <p className="text-sm text-gray-500">لا توجد تواريخ متاحة في هذا الأسبوع</p>
+                      )}
+                      {/* أزرار التنقل بين الأسابيع */}
+                      <div className="flex gap-2 justify-between mt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const currentWeek = new Date(weekStart);
+                            currentWeek.setDate(currentWeek.getDate() - 7);
+                            setWeekStart(currentWeek.toISOString().split('T')[0]);
+                            setSelectedDate('');
+                            setSelectedSlot(null);
+                          }}
+                        >
+                          الأسبوع السابق
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const currentWeek = new Date(weekStart);
+                            currentWeek.setDate(currentWeek.getDate() + 7);
+                            setWeekStart(currentWeek.toISOString().split('T')[0]);
+                            setSelectedDate('');
+                            setSelectedSlot(null);
+                          }}
+                        >
+                          الأسبوع التالي
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-gray-500 text-sm mb-2">لا توجد تواريخ متاحة</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const currentWeek = new Date(weekStart);
+                          currentWeek.setDate(currentWeek.getDate() + 7);
+                          setWeekStart(currentWeek.toISOString().split('T')[0]);
+                        }}
+                      >
+                        عرض الأسبوع التالي
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
 
+              {/* عرض الفتحات المتاحة */}
+              {selectedDate && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    الفتحات المتاحة <span className="text-red-500">*</span>
+                  </label>
+                  {(() => {
+                    const slots = getSlotsForDate(selectedDate);
+                    if (slots.length === 0) {
+                      return (
+                        <p className="text-gray-500 text-sm text-center py-4">
+                          لا توجد فتحات متاحة في هذا التاريخ
+                        </p>
+                      );
+                    }
+                    return (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {slots.map((slot, index) => {
+                          const startTime = new Date(slot.startTime);
+                          const endTime = new Date(slot.endTime);
+                          const timeStr = `${startTime.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}`;
+                          const isSelected = selectedSlot?.startTime === slot.startTime;
+                          
+                          return (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => setSelectedSlot({ startTime: slot.startTime, endTime: slot.endTime })}
+                              className={`p-3 border-2 rounded-md text-sm font-medium transition-colors ${
+                                isSelected
+                                  ? 'border-primary-500 bg-primary-50 text-primary-700'
+                                  : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              <Clock className="w-4 h-4 inline-block mr-1" />
+                              {timeStr}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* سبب الزيارة */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   سبب الزيارة (اختياري)
@@ -212,7 +447,7 @@ function NewAppointmentContent() {
           </Button>
           <Button
             onClick={handleCreateAppointment}
-            disabled={!selectedDoctor || !appointmentDate || !appointmentTime || isCreating}
+            disabled={!selectedDoctor || !selectedService || !selectedDate || !selectedSlot || isCreating}
             className="bg-primary-600 hover:bg-primary-700"
           >
             {isCreating ? 'جاري الحجز...' : 'تأكيد الحجز'}

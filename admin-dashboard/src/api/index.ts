@@ -6,11 +6,13 @@ export * from './auth'
 export * from './users'
 export * from './doctors'
 export * from './departments'
+export * from './services'
 export * from './appointments'
 export * from './payments'
 export * from './metrics'
 export * from './reports'
 export * from './medical-records'
+export * from './settings'
 
 
 

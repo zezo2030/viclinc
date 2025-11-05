@@ -49,12 +49,15 @@ export const authApi = {
 
   // التحقق من صحة التوكن
   verifyToken: async (): Promise<User> => {
-    return apiClient.get<User>('/auth/profile');
+    return apiClient.get<User>('/auth/me');
   },
 
   // تحديث بيانات المستخدم
+  // Note: This endpoint may not be available in the backend yet
   updateProfile: async (userData: Partial<User>): Promise<User> => {
-    return apiClient.put<User>('/auth/profile', userData);
+    // TODO: Implement PATCH /auth/me in backend
+    // For now, this will return an error if the endpoint doesn't exist
+    return apiClient.patch<User>('/auth/me', userData);
   },
 
   // تغيير كلمة المرور

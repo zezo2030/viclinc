@@ -157,11 +157,17 @@ export default function UsersPage() {
       <AdminLayout>
         <Breadcrumbs />
         <div className="p-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <p className="text-red-600">حدث خطأ في تحميل المستخدمين</p>
+          <div className="rounded-2xl bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200 p-8 text-center shadow-lg">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-200 mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="text-xl font-bold text-red-800 mb-2">حدث خطأ في تحميل المستخدمين</p>
+            <p className="text-sm text-red-600 mb-4">حدث خطأ أثناء تحميل البيانات</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg shadow-red-500/30"
             >
               إعادة المحاولة
             </button>
@@ -175,27 +181,41 @@ export default function UsersPage() {
     <AdminLayout>
       <Breadcrumbs />
 
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      {/* Page Header with Gradient */}
+      <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-500 p-8 shadow-2xl">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">إدارة المستخدمين</h1>
-            <p className="text-gray-600 mt-1">عرض وإدارة جميع المستخدمين في النظام</p>
+            <h1 className="text-4xl font-black text-white drop-shadow-lg">
+              إدارة المستخدمين
+            </h1>
+            <p className="mt-2 text-lg font-medium text-blue-100">
+              عرض وإدارة جميع المستخدمين في النظام
+            </p>
+            <div className="mt-4 flex items-center gap-4 text-white/90">
+              <span className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+                <span className="text-2xl font-bold">{data?.pagination?.total || 0}</span>
+                <span className="text-sm">مستخدم</span>
+              </span>
+            </div>
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className="group px-6 py-3 bg-white text-blue-600 rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl flex items-center gap-2"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             <span>إضافة مستخدم</span>
           </button>
         </div>
+        {/* Decorative Elements */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-32 -translate-y-32 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full translate-x-32 translate-y-32 blur-3xl"></div>
+      </div>
 
-        {/* Filters */}
-        <UserFilters filters={filters} onFiltersChange={setFilters} onReset={handleFiltersReset} />
+      {/* Filters */}
+      <UserFilters filters={filters} onFiltersChange={setFilters} onReset={handleFiltersReset} />
 
-        {/* Table */}
-        <UsersTable
+      {/* Table */}
+      <UsersTable
           users={data?.data || []}
           isLoading={isLoading}
           onEdit={setEditingUser}
@@ -242,7 +262,6 @@ export default function UsersPage() {
             onConfirm={handleHardDelete}
           />
         )}
-      </div>
     </AdminLayout>
   )
 }

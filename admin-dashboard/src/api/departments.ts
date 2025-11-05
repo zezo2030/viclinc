@@ -89,5 +89,11 @@ export const departmentsApi = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/admin/departments/${id}`)
   },
+
+  // الحصول على تفاصيل القسم مع الخدمات والأطباء
+  getDetails: async (id: string): Promise<any> => {
+    const response = await apiClient.get(`/admin/departments/${id}/details`)
+    return response.data
+  },
 }
 

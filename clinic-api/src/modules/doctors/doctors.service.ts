@@ -210,4 +210,105 @@ export class DoctorsService {
     const doctor = await this.doctorProfileModel.findOne({ userId: new Types.ObjectId(userId) });
     return doctor?.status === DoctorStatus.APPROVED;
   }
+
+  // الحصول على الأطباء المعتمدين فقط (للعامة)
+  async findApprovedDoctors(filters: { departmentId?: string; serviceId?: string } = {}) {
+    const query: any = {
+      status: DoctorStatus.APPROVED,
+    };
+
+    if (filters.departmentId) {
+      query.departmentId = new Types.ObjectId(filters.departmentId);
+    }
+
+    const doctors = await this.doctorProfileModel
+      .find(query)
+      .populate('departmentId', 'name')
+      .lean()
+      .sort({ name: 1 });
+
+    // فلترة حسب الخدمة إذا تم تحديدها
+    let filteredDoctors = doctors;
+    if (filters.serviceId) {
+      const doctorIds = await this.doctorServiceModel
+        .find({ 
+          serviceId: new Types.ObjectId(filters.serviceId),
+          isActive: true 
+        })
+        .distinct('doctorId');
+      
+      filteredDoctors = doctors.filter((doctor: any) => 
+        doctorIds.some(id => id.toString() === doctor._id.toString())
+      );
+    }
+
+    // جلب خدمات كل طبيب
+    const doctorsWithServices = await Promise.all(
+      filteredDoctors.map(async (doctor: any) => {
+        const doctorServices = await this.doctorServiceModel
+          .find({ doctorId: doctor._id, isActive: true })
+          .populate('serviceId', 'name')
+          .lean();
+
+        const services = doctorServices.map((ds: any) => ({
+          serviceId: ds.serviceId?._id?.toString() || ds.serviceId?.toString(),
+          serviceName: ds.serviceId?.name || '',
+          customPrice: ds.customPrice,
+          customDuration: ds.customDuration,
+        }));
+
+        return {
+          _id: doctor._id.toString(),
+          name: doctor.name,
+          licenseNumber: doctor.licenseNumber,
+          yearsOfExperience: doctor.yearsOfExperience,
+          departmentId: doctor.departmentId?._id?.toString() || doctor.departmentId?.toString(),
+          departmentName: doctor.departmentId?.name || '',
+          status: doctor.status,
+          bio: doctor.bio,
+          photos: doctor.photos || [],
+          services,
+        };
+      })
+    );
+
+    return doctorsWithServices;
+  }
+
+  // الحصول على طبيب معتمد بالمعرف (للعامة)
+  async findApprovedDoctorById(id: string) {
+    const doctor: any = await this.doctorProfileModel
+      .findOne({ _id: id, status: DoctorStatus.APPROVED })
+      .populate('departmentId', 'name')
+      .lean();
+
+    if (!doctor) {
+      throw new NotFoundException('Approved doctor not found');
+    }
+
+    const doctorServices = await this.doctorServiceModel
+      .find({ doctorId: doctor._id, isActive: true })
+      .populate('serviceId', 'name')
+      .lean();
+
+    const services = doctorServices.map((ds: any) => ({
+      serviceId: ds.serviceId?._id?.toString() || ds.serviceId?.toString(),
+      serviceName: ds.serviceId?.name || '',
+      customPrice: ds.customPrice,
+      customDuration: ds.customDuration,
+    }));
+
+    return {
+      _id: doctor._id.toString(),
+      name: doctor.name,
+      licenseNumber: doctor.licenseNumber,
+      yearsOfExperience: doctor.yearsOfExperience,
+      departmentId: doctor.departmentId?._id?.toString() || doctor.departmentId?.toString(),
+      departmentName: doctor.departmentId?.name || '',
+      status: doctor.status,
+      bio: doctor.bio,
+      photos: doctor.photos || [],
+      services,
+    };
+  }
 }

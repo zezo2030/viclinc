@@ -5,6 +5,7 @@ import { VideoSession, VideoSessionSchema } from './schemas/video-session.schema
 import { ChatSession, ChatSessionSchema } from './schemas/chat-session.schema';
 import { ChatMessage, ChatMessageSchema } from './schemas/chat-message.schema';
 import { Appointment, AppointmentSchema } from '../schedule/schemas/appointment.schema';
+import { DoctorProfile, DoctorProfileSchema } from '../doctors/schemas/doctor-profile.schema';
 import { AgoraService } from './services/agora.service';
 import { VideoSessionService } from './services/video-session.service';
 import { ChatService } from './services/chat.service';
@@ -20,6 +21,7 @@ import { SettingsModule } from '../settings/settings.module';
       { name: ChatSession.name, schema: ChatSessionSchema },
       { name: ChatMessage.name, schema: ChatMessageSchema },
       { name: Appointment.name, schema: AppointmentSchema },
+      { name: DoctorProfile.name, schema: DoctorProfileSchema },
     ]),
     ThrottlerModule.forRoot([
       {

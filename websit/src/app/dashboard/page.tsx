@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const { user, logout } = useAuth();
 
   // الحصول على الاستشارات
-  const { data: consultations } = useQuery({
+  const { data: consultationsData } = useQuery({
     queryKey: ['consultations', user?.id, user?.role],
     queryFn: () => {
       if (user?.role === 'PATIENT') {
@@ -30,8 +30,13 @@ export default function DashboardPage() {
     },
   });
 
+  // Handle both array and paginated/object response
+  const consultations = Array.isArray(consultationsData) 
+    ? consultationsData 
+    : (consultationsData as any)?.consultations || (consultationsData as any)?.data || [];
+
   // الحصول على المواعيد
-  const { data: appointments } = useQuery({
+  const { data: appointmentsData } = useQuery({
     queryKey: ['appointments', user?.id, user?.role],
     queryFn: () => {
       if (user?.role === 'PATIENT') {
@@ -43,17 +48,46 @@ export default function DashboardPage() {
     },
   });
 
+  // Handle both array and paginated response
+  const appointments = Array.isArray(appointmentsData) 
+    ? appointmentsData 
+    : (appointmentsData as any)?.appointments || [];
+
   // تحويل المواعيد إلى التنسيق المطلوب
-  const formattedAppointments = appointments?.map(appointment => ({
-    id: appointment.id.toString(),
-    doctor: `د. ${appointment.doctor?.user?.profile?.firstName || ''} ${appointment.doctor?.user?.profile?.lastName || ''}`,
-    specialty: appointment.doctor?.specialization || '',
-    date: new Date(appointment.appointmentDate).toLocaleDateString('ar-SA'),
-    time: appointment.appointmentTime,
-    location: 'مستشفى الرياض التخصصي', // TODO: إضافة clinic data
-    phone: '', // TODO: إضافة phone data
-    status: appointment.status.toLowerCase() as 'confirmed' | 'pending' | 'cancelled',
-  })) || [];
+  const formattedAppointments = appointments?.map((appointment: any) => {
+    // Safe access to doctor profile data
+    const doctorProfile = appointment.doctor?.user?.profile;
+    const firstName = doctorProfile?.firstName || '';
+    const lastName = doctorProfile?.lastName || '';
+    const doctorName = firstName || lastName 
+      ? `د. ${firstName} ${lastName}`.trim()
+      : 'غير محدد';
+    
+    // Safe extraction of specialty name - handle both string and object cases
+    let specialtyName = 'غير محدد';
+    if (appointment.doctor?.specialization) {
+      // If specialization is a string, use it directly
+      specialtyName = typeof appointment.doctor.specialization === 'string' 
+        ? appointment.doctor.specialization 
+        : (appointment.doctor.specialization as any)?.name || 'غير محدد';
+    } else if (appointment.specialty) {
+      // If specialty exists, extract name property
+      specialtyName = typeof appointment.specialty === 'string'
+        ? appointment.specialty
+        : (appointment.specialty as any)?.name || 'غير محدد';
+    }
+    
+    return {
+      id: appointment.id.toString(),
+      doctor: doctorName,
+      specialty: specialtyName,
+      date: new Date(appointment.appointmentDate).toLocaleDateString('ar-SA'),
+      time: appointment.appointmentTime,
+      location: appointment.clinic?.name || appointment.clinic?.address || 'مستشفى الرياض التخصصي',
+      phone: (appointment.clinic as any)?.phone || '',
+      status: appointment.status.toLowerCase() as 'confirmed' | 'pending' | 'cancelled',
+    };
+  }) || [];
 
   // النشاط الأخير (يمكن تحسينه لاحقاً)
   const recentActivities = [
@@ -93,7 +127,7 @@ export default function DashboardPage() {
             />
             <StatsCard
               title="الاستشارات النشطة"
-              value={consultations?.filter(c => c.status === 'IN_PROGRESS').length || 0}
+              value={consultations?.filter((c: any) => c.status === 'IN_PROGRESS').length || 0}
               icon={Video}
               color="green"
               trend="جارية الآن"
@@ -107,7 +141,7 @@ export default function DashboardPage() {
             />
             <StatsCard
               title="الاستشارات المكتملة"
-              value={consultations?.filter(c => c.status === 'COMPLETED').length || 0}
+              value={consultations?.filter((c: any) => c.status === 'COMPLETED').length || 0}
               icon={Users}
               color="purple"
               trend="هذا الشهر"

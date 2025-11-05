@@ -23,9 +23,10 @@ import {
 } from 'lucide-react';
 import { RatingSummary } from './RatingSummary';
 import { RatingsList } from './RatingsList';
+import { getDepartmentImageUrl } from '@/lib/utils/image';
 
 interface DoctorProfileProps {
-  doctorId: number;
+  doctorId: number | string;
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
@@ -114,54 +115,67 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Doctor Image */}
           <div className="flex-shrink-0">
-            {doctor.user.profile.avatar ? (
+            {doctor.photos && doctor.photos.length > 0 ? (
               <img 
-                src={doctor.user.profile.avatar} 
-                alt={`د. ${doctor.user.profile.firstName} ${doctor.user.profile.lastName}`}
+                src={doctor.photos[0]} 
+                alt={doctor.name || 'طبيب'}
                 className="w-32 h-32 rounded-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                }}
               />
-            ) : (
-              <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center">
-                <Briefcase className="w-16 h-16 text-gray-400" />
-              </div>
-            )}
+            ) : null}
+            <div className={`w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center ${doctor.photos && doctor.photos.length > 0 ? 'hidden' : ''}`}>
+              <Briefcase className="w-16 h-16 text-gray-400" />
+            </div>
           </div>
 
           {/* Doctor Info */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              د. {doctor.user.profile.firstName} {doctor.user.profile.lastName}
+              {doctor.name || 'طبيب'}
             </h1>
-            <p className="text-xl text-gray-600 mb-4">{doctor.specialization}</p>
+            {doctor.bio && (
+              <p className="text-xl text-gray-600 mb-4">{doctor.bio}</p>
+            )}
             
             {/* Rating */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                <span className="text-lg font-semibold">{doctor.averageRating || 0}</span>
+            {(doctor.averageRating || doctor.totalRatings) && (
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-1">
+                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                  <span className="text-lg font-semibold">{doctor.averageRating || 0}</span>
+                </div>
+                <span className="text-gray-500">({doctor.totalRatings || 0} تقييم)</span>
               </div>
-              <span className="text-gray-500">({doctor.totalRatings || 0} تقييم)</span>
-            </div>
+            )}
 
             {/* Quick Info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-gray-400" />
-                <span>{doctor.experience} سنوات خبرة</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-gray-400" />
-                <span>{doctor.consultationFee} ريال</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-gray-400" />
-                <span>{doctor.clinic.name}</span>
-              </div>
+              {doctor.yearsOfExperience && (
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-gray-400" />
+                  <span>{doctor.yearsOfExperience} سنوات خبرة</span>
+                </div>
+              )}
+              {doctor.consultationFee && (
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-gray-400" />
+                  <span>{doctor.consultationFee} ريال</span>
+                </div>
+              )}
+              {doctor.departmentName && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-gray-400" />
+                  <span>{doctor.departmentName}</span>
+                </div>
+              )}
             </div>
 
             {/* Availability */}
             <div className="flex items-center gap-2">
-              {doctor.isAvailable ? (
+              {doctor.status === 'APPROVED' ? (
                 <span className="text-green-600 flex items-center gap-1">
                   <CheckCircle className="w-5 h-5" />
                   متاح للاستشارات
@@ -184,7 +198,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
             <p className="text-sm text-gray-600 mb-4">احجز موعداً شخصياً في العيادة</p>
             <Button 
               className="w-full"
-              onClick={() => router.push(`/appointments/new?doctorId=${doctor.id}`)}
+              onClick={() => router.push(`/appointments/new?doctorId=${doctor._id || doctor.id}`)}
             >
               احجز الآن
             </Button>
@@ -196,7 +210,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
             <p className="text-sm text-gray-600 mb-4">استشارة مباشرة عبر الفيديو</p>
             <Button 
               className="w-full"
-              onClick={() => router.push(`/consultations/new?doctorId=${doctor.id}&type=video`)}
+              onClick={() => router.push(`/consultations/new?doctorId=${doctor._id || doctor.id}&type=video`)}
             >
               ابدأ استشارة
             </Button>
@@ -208,7 +222,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
             <p className="text-sm text-gray-600 mb-4">محادثة نصية مع الطبيب</p>
             <Button 
               className="w-full"
-              onClick={() => router.push(`/consultations/new?doctorId=${doctor.id}&type=chat`)}
+              onClick={() => router.push(`/consultations/new?doctorId=${doctor._id || doctor.id}&type=chat`)}
             >
               ابدأ محادثة
             </Button>
@@ -222,66 +236,63 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
         <Card className="p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">المعلومات المهنية</h2>
           <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">رقم الترخيص:</span>
-              <span className="font-medium">{doctor.licenseNumber}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">التخصص:</span>
-              <span className="font-medium">{doctor.specialty.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">القسم:</span>
-              <span className="font-medium">{doctor.department.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">العيادة:</span>
-              <span className="font-medium">{doctor.clinic.name}</span>
-            </div>
-            {doctor.clinic.address && (
+            {doctor.licenseNumber && (
               <div className="flex justify-between">
-                <span className="text-gray-600">العنوان:</span>
-                <span className="font-medium">{doctor.clinic.address}</span>
+                <span className="text-gray-600">رقم الترخيص:</span>
+                <span className="font-medium">{doctor.licenseNumber}</span>
+              </div>
+            )}
+            {doctor.departmentName && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">القسم:</span>
+                <span className="font-medium">{doctor.departmentName}</span>
+              </div>
+            )}
+            {doctor.bio && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">السيرة الذاتية:</span>
+                <span className="font-medium">{doctor.bio}</span>
               </div>
             )}
           </div>
         </Card>
 
-        {/* Schedule */}
+        {/* Services */}
         <Card className="p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">أوقات العمل</h2>
-          {doctor.schedules.length > 0 ? (
+          <h2 className="text-xl font-bold text-gray-900 mb-4">الخدمات المتاحة</h2>
+          {doctor.services && doctor.services.length > 0 ? (
             <div className="space-y-3">
-              {doctor.schedules.map((schedule) => (
-                <div key={schedule.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium">{getDayName(schedule.dayOfWeek)}</span>
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    {formatScheduleTime(schedule.startTime)} - {formatScheduleTime(schedule.endTime)}
-                  </span>
+              {doctor.services.map((service: any, index: number) => (
+                <div key={service.serviceId || index} className="flex items-center justify-between border-b pb-2">
+                  <span className="font-medium">{service.serviceName || 'خدمة'}</span>
+                  {service.customPrice && (
+                    <span className="text-sm text-primary-600 font-semibold">
+                      {service.customPrice} ريال
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500">لا توجد جداول عمل متاحة</p>
+            <p className="text-gray-500">لا توجد خدمات متاحة</p>
           )}
         </Card>
       </div>
 
-      {/* Ratings Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Rating Summary */}
-        <div className="lg:col-span-1">
-          <RatingSummary ratings={doctor.ratings} />
-        </div>
+      {/* Ratings Section - Only show if ratings exist */}
+      {(doctor.ratings && doctor.ratings.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Rating Summary */}
+          <div className="lg:col-span-1">
+            <RatingSummary ratings={doctor.ratings} />
+          </div>
 
-        {/* Ratings List */}
-        <div className="lg:col-span-2">
-          <RatingsList ratings={doctor.ratings} />
+          {/* Ratings List */}
+          <div className="lg:col-span-2">
+            <RatingsList ratings={doctor.ratings} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

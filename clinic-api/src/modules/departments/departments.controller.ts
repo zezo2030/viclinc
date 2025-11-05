@@ -77,6 +77,52 @@ export class DepartmentsController {
   @ApiResponse({ status: 403, description: 'Forbidden - admin access required' })
   findAll() { return this.service.findAll(); }
 
+  @Get(':id/details')
+  @ApiOperation({ 
+    summary: 'Get department details with doctors and services',
+    description: 'Retrieve a specific department by its ID with all related doctors and services. This endpoint returns comprehensive department information including associated doctors and services.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Department details retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        _id: { type: 'string' },
+        name: { type: 'string' },
+        description: { type: 'string' },
+        isActive: { type: 'boolean' },
+        logoPath: { type: 'string' },
+        logoUrl: { type: 'string' },
+        icon: { type: 'string' },
+        doctors: {
+          type: 'array',
+          items: { type: 'object' }
+        },
+        services: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string' },
+              basePrice: { type: 'number' },
+              baseDuration: { type: 'number' },
+              isActive: { type: 'boolean' }
+            }
+          }
+        },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' }
+      }
+    }
+  })
+  @ApiResponse({ status: 404, description: 'Department not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - token missing or invalid' })
+  @ApiResponse({ status: 403, description: 'Forbidden - admin access required' })
+  getDetails(@Param('id') id: string) { return this.service.findWithDetails(id); }
+
   @Get(':id')
   @ApiOperation({ 
     summary: 'Get department by ID',

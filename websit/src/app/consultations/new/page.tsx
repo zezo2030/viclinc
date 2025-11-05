@@ -34,7 +34,7 @@ function NewConsultationContent() {
   }, [type]);
 
   // الحصول على المواعيد المتاحة
-  const { data: appointments, isLoading } = useQuery({
+  const { data: appointmentsData, isLoading } = useQuery({
     queryKey: ['appointments', user?.id, user?.role, doctorId],
     queryFn: () => {
       if (user?.role === 'PATIENT') {
@@ -46,9 +46,14 @@ function NewConsultationContent() {
     },
   });
 
+  // Handle both array and paginated response
+  const appointments = Array.isArray(appointmentsData) 
+    ? appointmentsData 
+    : (appointmentsData as any)?.appointments || [];
+
   // فلترة المواعيد المؤكدة فقط
   let availableAppointments = appointments?.filter(
-    appointment => appointment.status === 'CONFIRMED'
+    (appointment: any) => appointment.status === 'CONFIRMED'
   ) || [];
 
   // Filter by doctorId if provided

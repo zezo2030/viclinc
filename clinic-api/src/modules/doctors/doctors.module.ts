@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DoctorsService } from './doctors.service';
 import { DoctorsAdminController } from './doctors-admin.controller';
 import { DoctorsController } from './doctors.controller';
+import { PublicDoctorsController } from './public-doctors.controller';
 import { DoctorProfile, DoctorProfileSchema } from './schemas/doctor-profile.schema';
 import { DoctorService, DoctorServiceSchema } from './schemas/doctor-service.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
@@ -19,6 +20,9 @@ import { SharedSchemasModule } from '../shared/schemas/schemas.module';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Department.name, schema: DepartmentSchema },
+      { name: DoctorProfile.name, schema: DoctorProfileSchema },
+      { name: DoctorService.name, schema: DoctorServiceSchema },
+      { name: Service.name, schema: ServiceSchema },
     ]),
     ConfigModule,
     JwtModule.registerAsync({
@@ -32,7 +36,7 @@ import { SharedSchemasModule } from '../shared/schemas/schemas.module';
     GuardsModule,
     ScheduleModule,
   ],
-  controllers: [DoctorsAdminController, DoctorsController],
+  controllers: [DoctorsAdminController, DoctorsController, PublicDoctorsController],
   providers: [DoctorsService],
   exports: [DoctorsService],
 })

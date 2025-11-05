@@ -183,3 +183,8 @@ Browser → admin-dashboard:3002 → nginx → proxy → api:3000
 
 
 
+
+
+
+
+

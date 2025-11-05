@@ -40,7 +40,12 @@ export class SettingsController {
     @Body() updateDto: UpdateAgoraSettingsDto,
     @CurrentUser() user: User,
   ): Promise<AgoraSettingsResponseDto> {
-    return this.settingsService.updateAgoraSettings(updateDto, (user as any)._id.toString());
+    // JWT Guard يضع payload في request.user، لذا sub موجود في user object
+    const userId = (user as any)?.sub || (user as any)?._id?.toString() || (user as any)?.id?.toString();
+    if (!userId) {
+      throw new Error('User ID not found. User object: ' + JSON.stringify(user));
+    }
+    return this.settingsService.updateAgoraSettings(updateDto, userId);
   }
 
   @Post('agora/test')

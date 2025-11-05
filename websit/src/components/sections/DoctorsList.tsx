@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { AnimatedCard } from '@/components/animations/AnimatedCard';
@@ -9,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { doctorsService } from '@/lib/api/doctors';
 
 export const DoctorsList: React.FC = () => {
+  const router = useRouter();
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -104,7 +106,8 @@ export const DoctorsList: React.FC = () => {
             <AnimatedCard 
               key={doctor.id} 
               delay={index * 0.1}
-              className="p-6 hover:shadow-lg transition-all duration-300"
+              className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => router.push(`/doctors/${doctor.id}`)}
             >
               <div className="text-center">
                 <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -152,16 +155,25 @@ export const DoctorsList: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="flex-1"
                     disabled={!doctor.isAvailable}
+                    onClick={() => {
+                      if (doctor.isAvailable) {
+                        router.push(`/appointments/new?doctorId=${doctor.id}`);
+                      }
+                    }}
                   >
                     {doctor.isAvailable ? 'احجز موعد' : 'غير متاح'}
                   </Button>
-                  <Button size="sm" className="flex-1">
+                  <Button 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => router.push(`/doctors/${doctor.id}`)}
+                  >
                     الملف الشخصي
                   </Button>
                 </div>

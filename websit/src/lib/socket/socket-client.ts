@@ -1,6 +1,13 @@
 import { io, Socket } from 'socket.io-client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// تنظيف API_BASE_URL من /v1 في النهاية إذا كان موجوداً (Socket.IO لا يحتاج /v1)
+const getBaseURL = (): string => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  // إزالة /v1 من النهاية إذا كان موجوداً
+  return url.replace(/\/v1\/?$/, '');
+};
+
+const API_BASE_URL = getBaseURL();
 
 class SocketClient {
   private consultationSocket: Socket | null = null;

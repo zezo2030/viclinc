@@ -1,4 +1,11 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// تنظيف API_BASE_URL من /v1 في النهاية إذا كان موجوداً
+const getBaseURL = (): string => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  // إزالة /v1 من النهاية إذا كان موجوداً
+  return url.replace(/\/v1\/?$/, '');
+};
+
+const API_BASE_URL = getBaseURL();
 
 // دالة للحصول على JWT token من localStorage
 const getAuthToken = (): string | null => {

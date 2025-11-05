@@ -7,4 +7,6 @@ export * from './appointment.types'
 export * from './dashboard.types'
 export * from './medical-record.types'
 export * from './report.types'
+export * from './settings.types'
+export * from './service.types'
 

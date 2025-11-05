@@ -213,6 +213,8 @@ export interface DoctorProfile {
   department: { 
     id: number; 
     name: string;
+    logoUrl?: string;
+    icon?: string;
   };
   schedules: Schedule[];
   ratings: Rating[];

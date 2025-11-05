@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Users, Stethoscope, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getDepartmentImageUrl } from '@/lib/utils/image';
 
 interface SpecialtyDetailsProps {
   specialtyId: string;
@@ -74,12 +75,16 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
         </Button>
         
         <div className="flex items-center space-x-4 space-x-reverse">
-          {specialty.icon && (
+          {(specialty.logoUrl || specialty.icon) && (
             <div className="w-20 h-20">
               <img 
-                src={specialty.icon.startsWith('/') ? specialty.icon : `/${specialty.icon}`}
+                src={getDepartmentImageUrl(specialty.logoUrl, specialty.icon)}
                 alt={specialty.name}
                 className="w-full h-full object-cover rounded-lg"
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  (e.target as HTMLImageElement).src = '/service.jpg';
+                }}
               />
             </div>
           )}
@@ -131,14 +136,56 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
             </div>
             {(specialty as any).doctors && (specialty as any).doctors.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(specialty as any).doctors.map((doctor: any) => (
-                  <div key={doctor.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <h3 className="font-medium text-gray-900">
-                      {doctor.user.profile.firstName} {doctor.user.profile.lastName}
-                    </h3>
-                    <p className="text-sm text-gray-600">{doctor.specialization}</p>
-                  </div>
-                ))}
+                {(specialty as any).doctors.map((doctor: any) => {
+                  // Handle different data structures from backend
+                  // Backend returns: doctor.name (from DoctorProfile) or doctor.userId.name (from User)
+                  // Also check for doctor.user?.profile?.firstName/lastName (for compatibility)
+                  let doctorName = 'غير محدد';
+                  
+                  if (doctor.name) {
+                    // From DoctorProfile.name
+                    doctorName = doctor.name;
+                  } else if (doctor.userId?.name) {
+                    // From populated User.name
+                    doctorName = doctor.userId.name;
+                  } else if (doctor.user?.profile) {
+                    // From user.profile structure (if exists)
+                    const firstName = doctor.user.profile.firstName || '';
+                    const lastName = doctor.user.profile.lastName || '';
+                    if (firstName || lastName) {
+                      doctorName = `${firstName} ${lastName}`.trim();
+                    }
+                  } else if (doctor.user?.name) {
+                    // From user.name (direct)
+                    doctorName = doctor.user.name;
+                  }
+                  
+                  // Get specialization/bio information
+                  const specialization = doctor.bio || doctor.specialization || 'غير محدد';
+                  const yearsOfExperience = doctor.yearsOfExperience ? `${doctor.yearsOfExperience} سنوات خبرة` : null;
+                  
+                  return (
+                    <div 
+                      key={doctor._id || doctor.id} 
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => {
+                        if (doctor._id || doctor.id) {
+                          router.push(`/doctors/${doctor._id || doctor.id}`);
+                        }
+                      }}
+                    >
+                      <h3 className="font-medium text-gray-900 mb-1">
+                        {doctorName}
+                      </h3>
+                      {specialization && specialization !== 'غير محدد' && (
+                        <p className="text-sm text-gray-600 mb-1">{specialization}</p>
+                      )}
+                      {yearsOfExperience && (
+                        <p className="text-xs text-gray-500">{yearsOfExperience}</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-500 text-center py-8">لا يوجد أطباء متاحين حالياً</p>
@@ -153,11 +200,26 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
             </div>
             {(specialty as any).services && (specialty as any).services.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(specialty as any).services.map((service: any, index: number) => (
-                  <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <h3 className="font-medium text-gray-900">{service}</h3>
-                  </div>
-                ))}
+                {(specialty as any).services.map((service: any, index: number) => {
+                  // Handle both string and object formats
+                  const serviceName = typeof service === 'string' ? service : service?.name || 'خدمة غير معروفة';
+                  const serviceDescription = typeof service === 'object' ? service?.description : null;
+                  const servicePrice = typeof service === 'object' ? service?.defaultPrice : null;
+                  
+                  return (
+                    <div key={service?._id || service?.id || index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <h3 className="font-medium text-gray-900 mb-1">{serviceName}</h3>
+                      {serviceDescription && (
+                        <p className="text-sm text-gray-600 mb-2">{serviceDescription}</p>
+                      )}
+                      {servicePrice !== null && servicePrice !== undefined && (
+                        <p className="text-sm font-semibold text-primary-600">
+                          {servicePrice === 0 ? 'مجاني' : `${servicePrice} ريال`}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-500 text-center py-8">لا توجد خدمات متاحة حالياً</p>

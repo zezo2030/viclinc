@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { DoctorSchedule, DoctorScheduleDocument } from '../schemas/doctor-schedule.schema';
+import { DoctorProfile, DoctorProfileDocument } from '../../doctors/schemas/doctor-profile.schema';
 import { CreateScheduleDto } from '../dto/create-schedule.dto';
 import { UpdateScheduleDto } from '../dto/update-schedule.dto';
 import { AddExceptionDto } from '../dto/add-exception.dto';
@@ -12,16 +13,29 @@ export class DoctorScheduleService {
   constructor(
     @InjectModel(DoctorSchedule.name) 
     private readonly doctorScheduleModel: Model<DoctorScheduleDocument>,
+    @InjectModel(DoctorProfile.name)
+    private readonly doctorProfileModel: Model<DoctorProfileDocument>,
   ) {}
 
-  async createOrUpdateSchedule(doctorId: string, createScheduleDto: CreateScheduleDto) {
+  async createOrUpdateSchedule(userId: string, createScheduleDto: CreateScheduleDto) {
     const { weeklyTemplate, defaultBufferBefore = 0, defaultBufferAfter = 0, serviceBuffers = [] } = createScheduleDto;
 
     // التحقق من صحة الأوقات
     this.validateTimeSlots(weeklyTemplate);
 
+    // تحويل userId إلى doctorId (DoctorProfile._id)
+    const doctorProfile = await this.doctorProfileModel.findOne({ 
+      userId: new Types.ObjectId(userId) 
+    });
+    
+    if (!doctorProfile) {
+      throw new NotFoundException('Doctor profile not found');
+    }
+
+    const doctorId = doctorProfile._id;
+
     const scheduleData = {
-      doctorId: new Types.ObjectId(doctorId),
+      doctorId: doctorId,
       weeklyTemplate,
       defaultBufferBefore,
       defaultBufferAfter,
@@ -32,7 +46,7 @@ export class DoctorScheduleService {
       })),
     };
 
-    const existingSchedule = await this.doctorScheduleModel.findOne({ doctorId: new Types.ObjectId(doctorId) });
+    const existingSchedule = await this.doctorScheduleModel.findOne({ doctorId: doctorId });
     
     if (existingSchedule) {
       Object.assign(existingSchedule, scheduleData);
@@ -42,8 +56,18 @@ export class DoctorScheduleService {
     }
   }
 
-  async getSchedule(doctorId: string) {
-    const schedule = await this.doctorScheduleModel.findOne({ doctorId: new Types.ObjectId(doctorId) });
+  async getSchedule(userId: string) {
+    // تحويل userId إلى doctorId (DoctorProfile._id)
+    const doctorProfile = await this.doctorProfileModel.findOne({ 
+      userId: new Types.ObjectId(userId) 
+    });
+    
+    if (!doctorProfile) {
+      throw new NotFoundException('Doctor profile not found');
+    }
+
+    const doctorId = doctorProfile._id;
+    const schedule = await this.doctorScheduleModel.findOne({ doctorId: doctorId });
     
     if (!schedule) {
       throw new NotFoundException('Schedule not found');
@@ -52,8 +76,8 @@ export class DoctorScheduleService {
     return schedule;
   }
 
-  async updateSchedule(doctorId: string, updateScheduleDto: UpdateScheduleDto) {
-    const schedule = await this.getSchedule(doctorId);
+  async updateSchedule(userId: string, updateScheduleDto: UpdateScheduleDto) {
+    const schedule = await this.getSchedule(userId);
     
     if (updateScheduleDto.weeklyTemplate) {
       this.validateTimeSlots(updateScheduleDto.weeklyTemplate);
@@ -63,8 +87,8 @@ export class DoctorScheduleService {
     return schedule.save();
   }
 
-  async addException(doctorId: string, addExceptionDto: AddExceptionDto) {
-    const schedule = await this.getSchedule(doctorId);
+  async addException(userId: string, addExceptionDto: AddExceptionDto) {
+    const schedule = await this.getSchedule(userId);
     
     const exceptionDate = new Date(addExceptionDto.date);
     
@@ -88,8 +112,8 @@ export class DoctorScheduleService {
     return schedule.save();
   }
 
-  async removeException(doctorId: string, date: string) {
-    const schedule = await this.getSchedule(doctorId);
+  async removeException(userId: string, date: string) {
+    const schedule = await this.getSchedule(userId);
     const exceptionDate = new Date(date);
     
     const exceptionIndex = schedule.exceptions.findIndex(
@@ -104,8 +128,8 @@ export class DoctorScheduleService {
     return schedule.save();
   }
 
-  async addHoliday(doctorId: string, addHolidayDto: AddHolidayDto) {
-    const schedule = await this.getSchedule(doctorId);
+  async addHoliday(userId: string, addHolidayDto: AddHolidayDto) {
+    const schedule = await this.getSchedule(userId);
     
     const startDate = new Date(addHolidayDto.startDate);
     const endDate = new Date(addHolidayDto.endDate);
@@ -124,8 +148,8 @@ export class DoctorScheduleService {
     return schedule.save();
   }
 
-  async removeHoliday(doctorId: string, holidayId: string) {
-    const schedule = await this.getSchedule(doctorId);
+  async removeHoliday(userId: string, holidayId: string) {
+    const schedule = await this.getSchedule(userId);
     
     const holidayIndex = schedule.holidays.findIndex(
       (h, index) => index.toString() === holidayId

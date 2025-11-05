@@ -1,5 +1,4 @@
 import { apiClient } from './client';
-import { mockDoctors } from '../mock-data/doctors';
 
 export interface Doctor {
   id: number;
@@ -52,20 +51,126 @@ export interface CreateDoctorDto {
 
 export const doctorsService = {
   // الحصول على جميع الأطباء
-  // TODO: هذا حل مؤقت - سيتم استبداله بـ API endpoint حقيقي
   async getDoctors(): Promise<Doctor[]> {
-    // استخدام البيانات الوهمية مؤقتاً
-    return mockDoctors as unknown as Doctor[];
-    
-    // الكود الأصلي (معلق للرجوع إليه لاحقاً):
-    // const response = await apiClient.get('/doctors');
-    // return response as Doctor[];
+    try {
+      // استخدام endpoint العام للأطباء المعتمدين
+      const response = await apiClient.get('/doctors/public');
+      
+      // البيانات القادمة من الباك إند تكون على شكل DoctorListItem
+      const doctors = Array.isArray(response) ? response : (response?.data || []);
+      
+      // تحويل البيانات من شكل الباك إند إلى شكل الواجهة
+      return doctors.map((doctor: any) => {
+        // تقسيم الاسم إلى firstName و lastName
+        const nameParts = (doctor.name || '').trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        // الحصول على أول خدمة للطبيب (إذا كانت متوفرة) للحصول على السعر
+        const firstService = doctor.services?.[0];
+        const consultationFee = firstService?.customPrice || 0;
+        
+        return {
+          id: doctor._id || doctor.id,
+          userId: doctor.userId || doctor._id || '',
+          clinicId: doctor.clinicId || '',
+          departmentId: doctor.departmentId || '',
+          specialtyId: doctor.specialtyId || doctor.departmentId || '',
+          specialization: doctor.departmentName || doctor.specialization || '',
+          licenseNumber: doctor.licenseNumber || '',
+          experience: doctor.yearsOfExperience || 0,
+          consultationFee: consultationFee,
+          isAvailable: doctor.status === 'APPROVED',
+          avatar: doctor.photos?.[0] || '',
+          user: {
+            id: doctor.userId || doctor._id || '',
+            email: doctor.email || '',
+            profile: {
+              firstName: firstName,
+              lastName: lastName,
+              phone: doctor.phone || '',
+            },
+          },
+          clinic: {
+            id: doctor.clinicId || '',
+            name: doctor.clinicName || 'العيادة',
+            address: doctor.clinicAddress || '',
+          },
+          department: {
+            id: doctor.departmentId || '',
+            name: doctor.departmentName || '',
+          },
+          specialty: {
+            id: doctor.specialtyId || doctor.departmentId || '',
+            name: doctor.departmentName || doctor.specialization || '',
+          },
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching doctors from API:', error);
+      // في حالة الخطأ، إرجاع مصفوفة فارغة بدلاً من البيانات الوهمية
+      // لتجنب عرض أطباء غير موجودين في قاعدة البيانات
+      return [];
+    }
   },
 
   // الحصول على طبيب محدد
-  async getDoctor(id: number): Promise<Doctor> {
-    const response = await apiClient.get(`/doctors/${id}`);
-    return response as Doctor;
+  async getDoctor(id: number | string): Promise<Doctor> {
+    try {
+      // استخدام endpoint العام للأطباء المعتمدين
+      const response = await apiClient.get(`/doctors/public/${id}`);
+      
+      // تحويل البيانات من شكل الباك إند إلى شكل الواجهة
+      const doctor = response as any;
+      
+      // تقسيم الاسم إلى firstName و lastName
+      const nameParts = (doctor.name || '').trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      // الحصول على أول خدمة للطبيب (إذا كانت متوفرة) للحصول على السعر
+      const firstService = doctor.services?.[0];
+      const consultationFee = firstService?.customPrice || 0;
+      
+      return {
+        id: doctor._id || doctor.id,
+        userId: doctor.userId || doctor._id || '',
+        clinicId: doctor.clinicId || '',
+        departmentId: doctor.departmentId || '',
+        specialtyId: doctor.specialtyId || doctor.departmentId || '',
+        specialization: doctor.departmentName || doctor.specialization || '',
+        licenseNumber: doctor.licenseNumber || '',
+        experience: doctor.yearsOfExperience || 0,
+        consultationFee: consultationFee,
+        isAvailable: doctor.status === 'APPROVED',
+        avatar: doctor.photos?.[0] || '',
+        user: {
+          id: doctor.userId || doctor._id || '',
+          email: doctor.email || '',
+          profile: {
+            firstName: firstName,
+            lastName: lastName,
+            phone: doctor.phone || '',
+          },
+        },
+        clinic: {
+          id: doctor.clinicId || '',
+          name: doctor.clinicName || 'العيادة',
+          address: doctor.clinicAddress || '',
+        },
+        department: {
+          id: doctor.departmentId || '',
+          name: doctor.departmentName || '',
+        },
+        specialty: {
+          id: doctor.specialtyId || doctor.departmentId || '',
+          name: doctor.departmentName || doctor.specialization || '',
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching doctor from API:', error);
+      throw error;
+    }
   },
 
   // إنشاء طبيب جديد
@@ -98,5 +203,28 @@ export const doctorsService = {
     
     const response = await apiClient.get(`/doctors/search?${params.toString()}`);
     return (response as any).data;
+  },
+
+  // الحصول على توفر الطبيب
+  async getDoctorAvailability(
+    doctorId: string | number,
+    serviceId: string | number,
+    weekStart?: string
+  ): Promise<{
+    doctorId: string;
+    serviceId: string;
+    weekStart: string;
+    availableSlots: Array<{
+      startTime: string;
+      endTime: string;
+      duration: number;
+    }>;
+  }> {
+    const params = new URLSearchParams();
+    params.append('serviceId', serviceId.toString());
+    if (weekStart) params.append('weekStart', weekStart);
+    
+    const response = await apiClient.get(`/patient/doctors/${doctorId}/availability?${params.toString()}`);
+    return response as any;
   },
 };

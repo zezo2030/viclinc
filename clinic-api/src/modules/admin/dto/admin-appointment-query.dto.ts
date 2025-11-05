@@ -1,13 +1,18 @@
 import { IsOptional, IsDateString, IsEnum, IsString, IsNumber, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { AppointmentStatus } from '../../schedule/schemas/appointment.schema';
+import { AppointmentStatus, AppointmentType } from '../../schedule/schemas/appointment.schema';
 
 export class AdminAppointmentQueryDto {
   @ApiProperty({ description: 'Appointment status filter', enum: AppointmentStatus, required: false })
   @IsOptional()
   @IsEnum(AppointmentStatus)
   status?: AppointmentStatus;
+
+  @ApiProperty({ description: 'Appointment type filter', enum: AppointmentType, required: false })
+  @IsOptional()
+  @IsEnum(AppointmentType)
+  type?: AppointmentType;
 
   @ApiProperty({ description: 'Doctor ID filter', example: '64f1a2b3c4d5e6f7g8h9i0j1', required: false })
   @IsOptional()

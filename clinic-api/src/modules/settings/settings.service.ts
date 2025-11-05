@@ -15,24 +15,81 @@ export class SettingsService {
     private settingsModel: Model<SystemSettingsDocument>,
   ) {
     // في الإنتاج، يجب أن يكون هذا من متغير البيئة
-    this.encryptionKey = process.env.ENCRYPTION_KEY || 'default-encryption-key-change-in-production';
+    const envKey = process.env.ENCRYPTION_KEY || 'default-encryption-key-change-in-production';
+    // التأكد من أن المفتاح 32 حرف على الأقل (aes-256-gcm يتطلب 32 byte)
+    if (envKey.length < 32) {
+      console.warn('ENCRYPTION_KEY is shorter than 32 characters, padding with zeros');
+      this.encryptionKey = envKey.padEnd(32, '0');
+    } else {
+      this.encryptionKey = envKey;
+    }
   }
 
   private encrypt(text: string): string {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv(this.algorithm, Buffer.from(this.encryptionKey.slice(0, 32)), iv);
-    let encrypted = cipher.update(text, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return iv.toString('hex') + ':' + encrypted;
+    try {
+      if (!text) {
+        return '';
+      }
+      
+      const iv = crypto.randomBytes(16);
+      // استخدام أول 32 حرف فقط (aes-256-gcm يتطلب 32 byte بالضبط)
+      const key = Buffer.from(this.encryptionKey.slice(0, 32), 'utf8');
+      const cipher = crypto.createCipheriv(this.algorithm, key, iv);
+      let encrypted = cipher.update(text, 'utf8', 'hex');
+      encrypted += cipher.final('hex');
+      // للحصول على authTag في GCM mode (يجب بعد final())
+      const authTag = (cipher as any).getAuthTag().toString('hex');
+      return iv.toString('hex') + ':' + encrypted + ':' + authTag;
+    } catch (error) {
+      console.error('Failed to encrypt:', error.message);
+      throw new Error(`Encryption failed: ${error.message}`);
+    }
   }
 
   private decrypt(encryptedText: string): string {
-    const [ivHex, encrypted] = encryptedText.split(':');
-    const iv = Buffer.from(ivHex, 'hex');
-    const decipher = crypto.createDecipheriv(this.algorithm, Buffer.from(this.encryptionKey.slice(0, 32)), iv);
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+    try {
+      // التحقق من أن النص مشفر (يحتوي على :)
+      if (!encryptedText || !encryptedText.includes(':')) {
+        // إذا لم يكن مشفر، نعيده كما هو (للتوافق مع البيانات القديمة)
+        return encryptedText;
+      }
+      
+      const parts = encryptedText.split(':');
+      let ivHex: string, encrypted: string;
+      let authTagHex: string | null = null;
+      
+      if (parts.length === 2) {
+        // التنسيق القديم (بدون authTag) - للتوافق مع البيانات القديمة
+        [ivHex, encrypted] = parts;
+      } else if (parts.length === 3) {
+        // التنسيق الجديد (مع authTag)
+        [ivHex, encrypted, authTagHex] = parts;
+      } else {
+        return encryptedText;
+      }
+      
+      if (!ivHex || !encrypted) {
+        return encryptedText;
+      }
+      
+      const iv = Buffer.from(ivHex, 'hex');
+      // استخدام أول 32 حرف فقط (aes-256-gcm يتطلب 32 byte بالضبط)
+      const key = Buffer.from(this.encryptionKey.slice(0, 32), 'utf8');
+      const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
+      
+      // إذا كان هناك authTag، نضيفه
+      if (authTagHex) {
+        decipher.setAuthTag(Buffer.from(authTagHex, 'hex'));
+      }
+      
+      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      return decrypted;
+    } catch (error) {
+      // في حالة فشل فك التشفير، نعيد النص الأصلي
+      console.error('Failed to decrypt:', error.message);
+      return encryptedText;
+    }
   }
 
   private maskSensitiveData(value: any): any {
@@ -80,63 +137,102 @@ export class SettingsService {
     updateDto: UpdateAgoraSettingsDto, 
     updatedBy: string
   ): Promise<AgoraSettingsResponseDto> {
-    const existingSettings = await this.settingsModel.findOne({ key: SettingKey.AGORA_CONFIG });
-    
-    let value: any = {};
-    
-    if (existingSettings) {
-      // فك تشفير القيم الموجودة
-      const decryptedValue = { ...existingSettings.value };
-      if (decryptedValue.appCertificate) {
-        decryptedValue.appCertificate = this.decrypt(decryptedValue.appCertificate);
+    try {
+      const existingSettings = await this.settingsModel.findOne({ key: SettingKey.AGORA_CONFIG });
+      
+      let value: any = {};
+      
+      if (existingSettings && existingSettings.value) {
+        // فك تشفير القيم الموجودة
+        const decryptedValue = { ...existingSettings.value };
+        if (decryptedValue.appCertificate && typeof decryptedValue.appCertificate === 'string') {
+          try {
+            decryptedValue.appCertificate = this.decrypt(decryptedValue.appCertificate);
+          } catch (error) {
+            // إذا فشل فك التشفير، نتركه فارغاً
+            console.warn('Failed to decrypt existing certificate, will be replaced:', error.message);
+            decryptedValue.appCertificate = '';
+          }
+        }
+        value = { ...decryptedValue };
       }
-      value = { ...decryptedValue };
-    }
 
-    // تحديث القيم الجديدة
-    if (updateDto.appId !== undefined) {
-      value.appId = updateDto.appId;
-    }
+      // تحديث القيم الجديدة
+      if (updateDto.appId !== undefined && updateDto.appId !== null) {
+        value.appId = updateDto.appId.trim();
+      }
+      
+      if (updateDto.appCertificate !== undefined && updateDto.appCertificate !== null) {
+        // إذا كان App Certificate فارغ، نتركه كما هو أو نحذفه
+        if (updateDto.appCertificate.trim() === '') {
+          // إذا كان فارغاً، نحتفظ بالقيمة القديمة إذا كانت موجودة
+          if (!value.appCertificate) {
+            value.appCertificate = '';
+          }
+        } else {
+          // تشفير الشهادة قبل الحفظ
+          value.appCertificate = this.encrypt(updateDto.appCertificate.trim());
+        }
+      }
+      
+      if (updateDto.tokenExpirationTime !== undefined && updateDto.tokenExpirationTime !== null) {
+        value.tokenExpirationTime = updateDto.tokenExpirationTime;
+      }
     
-    if (updateDto.appCertificate !== undefined) {
-      // تشفير الشهادة قبل الحفظ
-      value.appCertificate = this.encrypt(updateDto.appCertificate);
-    }
-    
-    if (updateDto.tokenExpirationTime !== undefined) {
-      value.tokenExpirationTime = updateDto.tokenExpirationTime;
-    }
-    
-    if (updateDto.isEnabled !== undefined) {
-      value.isEnabled = updateDto.isEnabled;
-    }
+      if (updateDto.isEnabled !== undefined && updateDto.isEnabled !== null) {
+        value.isEnabled = updateDto.isEnabled;
+      }
 
-    // التحقق من صحة البيانات المطلوبة
-    if (value.isEnabled && (!value.appId || !value.appCertificate)) {
-      throw new BadRequestException('App ID and App Certificate are required when Agora is enabled');
+      // التحقق من صحة البيانات المطلوبة
+      if (value.isEnabled && (!value.appId || !value.appCertificate)) {
+        throw new BadRequestException('App ID and App Certificate are required when Agora is enabled');
+      }
+
+      // التحقق من ENCRYPTION_KEY
+      if (this.encryptionKey.length < 32) {
+        console.warn('ENCRYPTION_KEY is shorter than 32 characters, using default padding');
+      }
+
+      const settings = await this.settingsModel.findOneAndUpdate(
+        { key: SettingKey.AGORA_CONFIG },
+        { 
+          value, 
+          updatedBy: new Types.ObjectId(updatedBy),
+          updatedAt: new Date()
+        },
+        { upsert: true, new: true }
+      );
+
+      if (!settings) {
+        throw new Error('Failed to save settings');
+      }
+
+      // فك تشفير للاستجابة (للتحقق فقط)
+      const responseValue = { ...value };
+      if (responseValue.appCertificate && typeof responseValue.appCertificate === 'string') {
+        try {
+          const decrypted = this.decrypt(responseValue.appCertificate);
+          responseValue.appCertificate = this.maskSensitiveData({ appCertificate: decrypted }).appCertificate;
+        } catch (error) {
+          responseValue.appCertificate = '***';
+        }
+      }
+      
+      return {
+        appId: responseValue.appId || '',
+        appCertificate: responseValue.appCertificate || '',
+        tokenExpirationTime: responseValue.tokenExpirationTime || 3600,
+        isEnabled: responseValue.isEnabled || false,
+        updatedBy: settings.updatedBy ? settings.updatedBy.toString() : updatedBy,
+        updatedAt: settings.updatedAt || new Date(),
+      };
+    } catch (error) {
+      console.error('Error updating Agora settings:', error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to update Agora settings: ${error.message}`);
     }
-
-    const settings = await this.settingsModel.findOneAndUpdate(
-      { key: SettingKey.AGORA_CONFIG },
-      { 
-        value, 
-        updatedBy: new Types.ObjectId(updatedBy),
-        updatedAt: new Date()
-      },
-      { upsert: true, new: true }
-    );
-
-    // إرجاع البيانات مع إخفاء الشهادة
-    const responseValue = this.maskSensitiveData(value);
-    
-    return {
-      appId: responseValue.appId || '',
-      appCertificate: responseValue.appCertificate || '',
-      tokenExpirationTime: responseValue.tokenExpirationTime || 3600,
-      isEnabled: responseValue.isEnabled || false,
-      updatedBy: settings.updatedBy.toString(),
-      updatedAt: settings.updatedAt,
-    };
   }
 
   async testAgoraConnection(): Promise<TestAgoraConnectionDto> {
@@ -183,17 +279,33 @@ export class SettingsService {
   }
 
   async getRawAgoraSettings(): Promise<any> {
+    // أولاً: محاولة الحصول من قاعدة البيانات
     const settings = await this.settingsModel.findOne({ key: SettingKey.AGORA_CONFIG });
     
-    if (!settings) {
-      return null;
+    if (settings) {
+      const decryptedValue = { ...settings.value };
+      if (decryptedValue.appCertificate) {
+        decryptedValue.appCertificate = this.decrypt(decryptedValue.appCertificate);
+      }
+      return decryptedValue;
     }
 
-    const decryptedValue = { ...settings.value };
-    if (decryptedValue.appCertificate) {
-      decryptedValue.appCertificate = this.decrypt(decryptedValue.appCertificate);
+    // ثانياً: إذا لم توجد في قاعدة البيانات، استخدام Environment Variables
+    const envAppId = process.env.AGORA_APP_ID;
+    const envAppCertificate = process.env.AGORA_APP_CERTIFICATE;
+    const envTokenExpiration = process.env.AGORA_TOKEN_EXPIRATION_TIME;
+    const envEnabled = process.env.AGORA_ENABLED;
+
+    if (envAppId && envAppCertificate) {
+      return {
+        appId: envAppId,
+        appCertificate: envAppCertificate,
+        tokenExpirationTime: envTokenExpiration ? parseInt(envTokenExpiration, 10) : 3600,
+        isEnabled: envEnabled === 'true' || envEnabled === '1',
+      };
     }
 
-    return decryptedValue;
+    // إذا لم توجد في أي مكان
+    return null;
   }
 }

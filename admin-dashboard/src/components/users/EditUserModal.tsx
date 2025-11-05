@@ -21,6 +21,8 @@ const statusLabels = {
 }
 
 export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditUserModalProps) {
+  console.log('EditUserModal render:', { isOpen, user: user?.name })
+
   const {
     register,
     handleSubmit,
@@ -29,22 +31,23 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
   } = useForm<UpdateUserFormData>({
     resolver: zodResolver(updateUserSchema),
     defaultValues: {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      status: user.status,
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      role: user?.role || UserRole.PATIENT,
+      status: user?.status || UserStatus.ACTIVE,
     },
   })
 
   useEffect(() => {
     if (isOpen && user) {
+      console.log('Resetting form with user data:', user)
       reset({
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        status: user.status,
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        role: user.role || UserRole.PATIENT,
+        status: user.status || UserStatus.ACTIVE,
       })
     }
   }, [isOpen, user, reset])
@@ -64,154 +67,191 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
     onClose()
   }
 
-  if (!isOpen) return null
+  if (!isOpen || !user) {
+    console.log('EditUserModal: not rendering because isOpen:', isOpen, 'user:', !!user)
+    return null
+  }
+
+  console.log('EditUserModal: rendering modal')
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay */}
-        <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-          onClick={handleClose}
-        />
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" 
+      dir="rtl"
+      onClick={handleClose}
+      style={{ 
+        position: 'fixed', 
+        zIndex: 9999, 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem'
+      }}
+    >
+      <div 
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+        style={{ 
+          backgroundColor: 'white',
+          borderRadius: '0.5rem',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          maxWidth: '42rem',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto'
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-primary-50">
+          <h3 className="text-xl font-bold text-gray-900">تعديل المستخدم</h3>
+          <button
+            onClick={handleClose}
+            className="p-1 hover:bg-primary-100 rounded-lg transition-colors"
+            type="button"
+            disabled={isSubmitting}
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
 
-        {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">تعديل المستخدم</h3>
-            <button
-              onClick={handleClose}
-              className="text-gray-400 hover:text-gray-500 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+        {/* Form Content */}
+        <form onSubmit={handleSubmit(onFormSubmit)}>
+          <div className="p-6 space-y-5">
+            {/* Name Field */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                الاسم الكامل <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                {...register('name')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                  errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="أدخل الاسم الكامل"
+              />
+              {errors.name && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                البريد الإلكتروني <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="email"
+                type="email"
+                {...register('email')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                  errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="example@email.com"
+              />
+              {errors.email && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Phone Field */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                رقم الهاتف <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                {...register('phone')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
+                  errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="05xxxxxxxx"
+              />
+              {errors.phone && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.phone.message}</p>
+              )}
+            </div>
+
+            {/* Role Field */}
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
+                الدور <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="role"
+                {...register('role')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all appearance-none ${
+                  errors.role ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+              >
+                <option value="">اختر الدور</option>
+                <option value={UserRole.ADMIN}>{roleLabels[UserRole.ADMIN]}</option>
+                <option value={UserRole.DOCTOR}>{roleLabels[UserRole.DOCTOR]}</option>
+                <option value={UserRole.PATIENT}>{roleLabels[UserRole.PATIENT]}</option>
+              </select>
+              {errors.role && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.role.message}</p>
+              )}
+            </div>
+
+            {/* Status Field */}
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+                الحالة <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="status"
+                {...register('status')}
+                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all appearance-none ${
+                  errors.status ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+              >
+                <option value="">اختر الحالة</option>
+                <option value={UserStatus.ACTIVE}>{statusLabels[UserStatus.ACTIVE]}</option>
+                <option value={UserStatus.DISABLED}>{statusLabels[UserStatus.DISABLED]}</option>
+                <option value={UserStatus.PENDING_DELETE}>
+                  {statusLabels[UserStatus.PENDING_DELETE]}
+                </option>
+              </select>
+              {errors.status && (
+                <p className="mt-1.5 text-sm text-red-600">{errors.status.message}</p>
+              )}
+            </div>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onFormSubmit)} className="px-6 py-4">
-            <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  الاسم
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  {...register('name')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="اسم المستخدم"
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-                )}
-              </div>
-
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  البريد الإلكتروني
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  {...register('email')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="example@email.com"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-                )}
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                  رقم الهاتف
-                </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  {...register('phone')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="05xxxxxxxx"
-                />
-                {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-                )}
-              </div>
-
-              {/* Role */}
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  الدور
-                </label>
-                <select
-                  id="role"
-                  {...register('role')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                >
-                  <option value="">اختر الدور</option>
-                  <option value={UserRole.ADMIN}>{roleLabels[UserRole.ADMIN]}</option>
-                  <option value={UserRole.DOCTOR}>{roleLabels[UserRole.DOCTOR]}</option>
-                  <option value={UserRole.PATIENT}>{roleLabels[UserRole.PATIENT]}</option>
-                </select>
-                {errors.role && (
-                  <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
-                )}
-              </div>
-
-              {/* Status */}
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-                  الحالة
-                </label>
-                <select
-                  id="status"
-                  {...register('status')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                >
-                  <option value="">اختر الحالة</option>
-                  <option value={UserStatus.ACTIVE}>{statusLabels[UserStatus.ACTIVE]}</option>
-                  <option value={UserStatus.DISABLED}>{statusLabels[UserStatus.DISABLED]}</option>
-                  <option value={UserStatus.PENDING_DELETE}>
-                    {statusLabels[UserStatus.PENDING_DELETE]}
-                  </option>
-                </select>
-                {errors.status && (
-                  <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3 mt-6">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                disabled={isSubmitting}
-              >
-                إلغاء
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Spinner size="sm" />
-                    <span>جاري التحديث...</span>
-                  </>
-                ) : (
-                  'تحديث'
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+          {/* Footer Actions */}
+          <div className="flex gap-3 p-6 bg-gray-50 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors font-medium"
+              disabled={isSubmitting}
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Spinner size="sm" />
+                  <span>جاري التحديث...</span>
+                </>
+              ) : (
+                'تحديث'
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )

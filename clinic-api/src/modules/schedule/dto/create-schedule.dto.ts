@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, Min, ValidateNested, ArrayMinSize, ArrayMaxSize } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, Min, Max, ValidateNested, ArrayMinSize, ArrayMaxSize } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class TimeSlotDto {
@@ -12,7 +12,7 @@ export class TimeSlotDto {
 export class WeeklyTemplateDto {
   @IsNumber()
   @Min(0)
-  @ArrayMaxSize(6)
+  @Max(6)
   dayOfWeek: number; // 0-6
 
   @IsArray()

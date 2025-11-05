@@ -6,6 +6,7 @@ import { AgoraService, AgoraTokenRequest } from './agora.service';
 import { RequestVideoTokenDto, VideoTokenResponseDto } from '../dto/request-video-token.dto';
 import { InjectModel as InjectAppointmentModel } from '@nestjs/mongoose';
 import { Appointment, AppointmentStatus } from '../../schedule/schemas/appointment.schema';
+import { DoctorProfile, DoctorProfileDocument } from '../../doctors/schemas/doctor-profile.schema';
 import dayjs from 'dayjs';
 
 @Injectable()
@@ -15,6 +16,8 @@ export class VideoSessionService {
     private videoSessionModel: Model<VideoSessionDocument>,
     @InjectAppointmentModel(Appointment.name) 
     private appointmentModel: Model<any>,
+    @InjectModel(DoctorProfile.name)
+    private doctorProfileModel: Model<DoctorProfileDocument>,
     private readonly agoraService: AgoraService,
   ) {}
 
@@ -39,8 +42,17 @@ export class VideoSessionService {
     }
 
     // التحقق من صلاحيات المستخدم
-    const isDoctor = appointment.doctorId.toString() === userId;
+    // patientId يشير مباشرة إلى User._id
     const isPatient = appointment.patientId.toString() === userId;
+    
+    // doctorId يشير إلى DoctorProfile._id، لذا نحتاج للتحقق من DoctorProfile.userId
+    let isDoctor = false;
+    if (!isPatient) {
+      const doctorProfile = await this.doctorProfileModel.findById(appointment.doctorId);
+      if (doctorProfile && doctorProfile.userId.toString() === userId) {
+        isDoctor = true;
+      }
+    }
     
     if (!isDoctor && !isPatient) {
       throw new ForbiddenException('You are not authorized to access this appointment');
@@ -53,14 +65,21 @@ export class VideoSessionService {
     }
 
     // فحص غرفة الانتظار (T-10m)
+    // يمكن تعطيل هذا التحقق في وضع الاختبار/التطوير
     const appointmentStart = dayjs(appointment.startAt);
     const now = dayjs();
-    const timeUntilStart = appointmentStart.diff(now, 'minute');
+    const disableTimeCheck = process.env.DISABLE_VIDEO_TIME_CHECK === 'true' || 
+                             process.env.NODE_ENV === 'development' ||
+                             process.env.NODE_ENV === 'test';
     
-    if (timeUntilStart > 10) {
-      throw new BadRequestException(
-        `Video session is not available yet. Please wait ${timeUntilStart - 10} more minutes.`
-      );
+    if (!disableTimeCheck) {
+      const timeUntilStart = appointmentStart.diff(now, 'minute');
+      
+      if (timeUntilStart > 10) {
+        throw new BadRequestException(
+          `Video session is not available yet. Please wait ${timeUntilStart - 10} more minutes.`
+        );
+      }
     }
 
     // التحقق من انتهاء الموعد
@@ -124,6 +143,7 @@ export class VideoSessionService {
       channelName: tokenData.channelName,
       uid: tokenData.uid,
       expirationTime: tokenData.expirationTime,
+      appId: tokenData.appId, // إضافة AppId من AgoraService
       sessionStatus: session.status,
       canJoin: true,
     };
@@ -142,8 +162,19 @@ export class VideoSessionService {
       throw new NotFoundException('Appointment not found');
     }
 
-    const isAuthorized = appointment.doctorId.toString() === userId || 
-                        appointment.patientId.toString() === userId;
+    // patientId يشير مباشرة إلى User._id
+    const isPatient = appointment.patientId.toString() === userId;
+    
+    // doctorId يشير إلى DoctorProfile._id، لذا نحتاج للتحقق من DoctorProfile.userId
+    let isDoctor = false;
+    if (!isPatient) {
+      const doctorProfile = await this.doctorProfileModel.findById(appointment.doctorId);
+      if (doctorProfile && doctorProfile.userId.toString() === userId) {
+        isDoctor = true;
+      }
+    }
+    
+    const isAuthorized = isDoctor || isPatient;
     
     if (!isAuthorized) {
       throw new ForbiddenException('You are not authorized to access this session');
@@ -170,7 +201,13 @@ export class VideoSessionService {
 
     // التحقق من صلاحيات إنهاء الجلسة (الطبيب فقط)
     const appointment = await this.appointmentModel.findById(appointmentId);
-    if (appointment.doctorId.toString() !== userId) {
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+    
+    // التحقق من أن المستخدم هو الطبيب
+    const doctorProfile = await this.doctorProfileModel.findById(appointment.doctorId);
+    if (!doctorProfile || doctorProfile.userId.toString() !== userId) {
       throw new ForbiddenException('Only the doctor can end the session');
     }
 

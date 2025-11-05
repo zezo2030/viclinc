@@ -21,9 +21,10 @@ export class PatientMedicalRecordsController {
     @Query() query: MedicalRecordQueryDto,
     @CurrentUser() user: User,
   ) {
+    const userId = (user as any).sub || (user as any)._id?.toString();
     return this.medicalRecordsService.getPatientRecords(
-      (user as any)._id.toString(),
-      (user as any)._id.toString(),
+      userId,
+      userId,
       UserRole.PATIENT,
       query
     );
@@ -39,9 +40,10 @@ export class PatientMedicalRecordsController {
     @Param('id') recordId: string,
     @CurrentUser() user: User,
   ) {
+    const userId = (user as any).sub || (user as any)._id?.toString();
     return this.medicalRecordsService.getRecordById(
       recordId,
-      (user as any)._id.toString(),
+      userId,
       UserRole.PATIENT
     );
   }

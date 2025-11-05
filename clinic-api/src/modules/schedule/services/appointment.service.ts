@@ -40,6 +40,16 @@ export interface AppointmentResponse {
   requiresPayment?: boolean;
   createdAt: string;
   updatedAt: string;
+  // Populated fields (optional)
+  doctor?: {
+    id: string;
+    name: string;
+    licenseNumber?: string;
+  };
+  service?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface PaginatedAppointments {
@@ -101,7 +111,8 @@ export class AppointmentService {
     const { duration, price } = await this.calculateDurationAndPrice(doctorId, serviceId);
 
     const endAt = dayjs(startAt).add(duration, 'minute').toDate();
-    const holdExpiresAt = dayjs().add(this.HOLD_TTL_MINUTES, 'minute').toDate();
+    // إزالة holdExpiresAt لمنع الحذف التلقائي من MongoDB TTL index
+    // const holdExpiresAt = dayjs().add(this.HOLD_TTL_MINUTES, 'minute').toDate();
 
     // قفل Redis لمنع التداخل
     const lockKey = `appointment:lock:${doctorId}:${startAt.getTime()}`;
@@ -127,7 +138,7 @@ export class AppointmentService {
         endAt,
         status: AppointmentStatus.PENDING_CONFIRM,
         type: createDto.type,
-        holdExpiresAt,
+        // holdExpiresAt: undefined, // تم إزالة holdExpiresAt لمنع الحذف التلقائي
         idempotencyKey,
         price,
         duration,
@@ -257,7 +268,8 @@ export class AppointmentService {
       // تحديث الحجز
       appointment.startAt = newStartAt;
       appointment.endAt = newEndAt;
-      appointment.holdExpiresAt = dayjs().add(this.HOLD_TTL_MINUTES, 'minute').toDate();
+      // إزالة holdExpiresAt لمنع الحذف التلقائي من MongoDB TTL index
+      appointment.holdExpiresAt = undefined;
       appointment.status = AppointmentStatus.PENDING_CONFIRM;
 
       if (rescheduleDto.metadata) {
@@ -278,45 +290,50 @@ export class AppointmentService {
     patientId: string,
     query: AppointmentQueryDto,
   ): Promise<PaginatedAppointments> {
-    const filter: any = { patientId: new Types.ObjectId(patientId) };
+    try {
+      const filter: any = { patientId: new Types.ObjectId(patientId) };
 
-    if (query.status) {
-      filter.status = query.status;
-    }
-
-    if (query.startDate || query.endDate) {
-      filter.startAt = {};
-      if (query.startDate) {
-        filter.startAt.$gte = new Date(query.startDate);
+      if (query.status) {
+        filter.status = query.status;
       }
-      if (query.endDate) {
-        filter.startAt.$lte = new Date(query.endDate);
+
+      if (query.startDate || query.endDate) {
+        filter.startAt = {};
+        if (query.startDate) {
+          filter.startAt.$gte = new Date(query.startDate);
+        }
+        if (query.endDate) {
+          filter.startAt.$lte = new Date(query.endDate);
+        }
       }
+
+      const page = query.page || 1;
+      const limit = query.limit || 10;
+      const skip = (page - 1) * limit;
+
+      const [appointments, total] = await Promise.all([
+        this.appointmentModel
+          .find(filter)
+          .populate('doctorId', 'name licenseNumber')
+          .populate('serviceId', 'name')
+          .sort({ startAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .exec(),
+        this.appointmentModel.countDocuments(filter),
+      ]);
+
+      return {
+        appointments: appointments.map(appointment => this.mapToResponse(appointment)),
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      console.error('Error in getPatientAppointments:', error);
+      throw error;
     }
-
-    const page = query.page || 1;
-    const limit = query.limit || 10;
-    const skip = (page - 1) * limit;
-
-    const [appointments, total] = await Promise.all([
-      this.appointmentModel
-        .find(filter)
-        .populate('doctorId', 'name licenseNumber')
-        .populate('serviceId', 'name')
-        .sort({ startAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-      this.appointmentModel.countDocuments(filter),
-    ]);
-
-    return {
-      appointments: appointments.map(appointment => this.mapToResponse(appointment)),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
   }
 
   /**
@@ -408,20 +425,35 @@ export class AppointmentService {
     serviceId: Types.ObjectId,
     startAt: Date,
   ): Promise<void> {
-    const weekStart = dayjs(startAt).startOf('week');
+    // استخدام UTC لضمان التطابق
+    const startAtUtc = dayjs(startAt).utc();
+    const weekStart = startAtUtc.startOf('week');
+    
     const availability = await this.availabilityService.getDoctorAvailability(
       doctorId.toString(),
       serviceId.toString(),
       weekStart.toISOString(),
     );
 
-    const requestedTime = dayjs(startAt).format('HH:mm');
-    const isAvailable = availability.availableSlots.some(slot => 
-      slot.startTime === requestedTime
-    );
+    // استخدام UTC للمقارنة
+    const requestedStartTime = startAtUtc;
+    const isAvailable = availability.availableSlots.some(slot => {
+      // مقارنة التاريخ والوقت معاً (مع التسامح في الدقائق)
+      const slotTime = dayjs(slot.startTime).utc();
+      
+      // المقارنة بدقة الدقيقة (التجاهل للثواني والمللي ثانية)
+      return slotTime.isSame(requestedStartTime, 'minute');
+    });
 
     if (!isAvailable) {
-      throw new BadRequestException('The requested time slot is not available');
+      // إضافة معلومات إضافية للخطأ لمساعدة في التصحيح
+      const availableTimes = availability.availableSlots
+        .map(slot => dayjs(slot.startTime).utc().format('YYYY-MM-DD HH:mm'))
+        .slice(0, 10); // أول 10 فتحات فقط
+      
+      throw new BadRequestException(
+        `The requested time slot is not available. Requested: ${requestedStartTime.format('YYYY-MM-DD HH:mm')} UTC. Available slots: ${availableTimes.join(', ')}`
+      );
     }
   }
 
@@ -500,6 +532,10 @@ export class AppointmentService {
 
     appointment.paymentStatus = PaymentStatus.COMPLETED;
     appointment.paymentId = new Types.ObjectId(paymentId);
+    
+    // حذف holdExpiresAt لمنع الحذف التلقائي من MongoDB TTL index
+    appointment.holdExpiresAt = undefined;
+    
     await appointment.save();
 
     return this.mapToResponse(appointment);
@@ -550,7 +586,15 @@ export class AppointmentService {
 
     // التحقق من الدفع إذا كان مطلوباً
     if (appointment.requiresPayment && appointment.paymentStatus !== PaymentStatus.COMPLETED) {
-      throw new BadRequestException('يجب إكمال الدفع قبل تأكيد الموعد');
+      // السماح بتأكيد المواعيد الحضورية حتى لو كان الدفع قيد الانتظار (يُحصّل لاحقاً في العيادة)
+      if (appointment.type === AppointmentType.IN_PERSON) {
+        appointment.metadata = {
+          ...appointment.metadata,
+          confirmedWithPendingPayment: true,
+        };
+      } else {
+        throw new BadRequestException('يجب إكمال الدفع قبل تأكيد الموعد');
+      }
     }
 
     // التحقق من توفر الفتحة الزمنية
@@ -561,6 +605,9 @@ export class AppointmentService {
 
     // تحديث الحالة
     appointment.status = AppointmentStatus.CONFIRMED;
+    
+    // حذف holdExpiresAt لمنع الحذف التلقائي من MongoDB TTL index
+    appointment.holdExpiresAt = undefined;
     
     // إضافة الملاحظات إذا تم توفيرها
     if (confirmDto.notes) {
@@ -632,6 +679,25 @@ export class AppointmentService {
       return String(field);
     };
 
+    // Check if doctorId is populated (has name property)
+    const doctorId = appointment.doctorId;
+    const doctor = doctorId && typeof doctorId === 'object' && doctorId.name
+      ? {
+          id: getObjectIdString(doctorId),
+          name: doctorId.name || '',
+          licenseNumber: doctorId.licenseNumber,
+        }
+      : undefined;
+
+    // Check if serviceId is populated (has name property)
+    const serviceId = appointment.serviceId;
+    const service = serviceId && typeof serviceId === 'object' && serviceId.name
+      ? {
+          id: getObjectIdString(serviceId),
+          name: serviceId.name || '',
+        }
+      : undefined;
+
     return {
       id: (appointment as any)._id.toString(),
       doctorId: getObjectIdString(appointment.doctorId),
@@ -652,6 +718,8 @@ export class AppointmentService {
       requiresPayment: appointment.requiresPayment,
       createdAt: (appointment as any).createdAt.toISOString(),
       updatedAt: (appointment as any).updatedAt.toISOString(),
+      doctor,
+      service,
     };
   }
 }

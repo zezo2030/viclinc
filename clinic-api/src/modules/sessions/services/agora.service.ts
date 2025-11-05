@@ -13,6 +13,7 @@ export interface AgoraTokenResponse {
   channelName: string;
   uid: number;
   expirationTime: number;
+  appId: string; // إضافة AppId للاستخدام في التطبيق
 }
 
 @Injectable()
@@ -53,6 +54,7 @@ export class AgoraService {
         channelName,
         uid,
         expirationTime,
+        appId: settings.appId, // إضافة AppId في الاستجابة
       };
     } catch (error) {
       throw new BadRequestException(`Failed to generate Agora token: ${error.message}`);
@@ -63,6 +65,26 @@ export class AgoraService {
     // التحقق من أن المستخدم مخول للوصول لهذه القناة
     // يمكن إضافة منطق إضافي هنا للتحقق من الصلاحيات
     return channelName.startsWith('appointment-') && !!userId;
+  }
+
+  /**
+   * الحصول على Agora AppId فقط (للاستخدام العام في التطبيق)
+   */
+  async getAppId(): Promise<{ appId: string; isEnabled: boolean }> {
+    const settings = await this.settingsService.getRawAgoraSettings();
+    
+    if (!settings || !settings.isEnabled) {
+      throw new ServiceUnavailableException('Agora service is not configured or disabled');
+    }
+
+    if (!settings.appId) {
+      throw new ServiceUnavailableException('Agora App ID is not configured');
+    }
+
+    return {
+      appId: settings.appId,
+      isEnabled: settings.isEnabled,
+    };
   }
 
   private generateUid(userId: string): number {

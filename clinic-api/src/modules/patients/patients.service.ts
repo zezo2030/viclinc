@@ -62,6 +62,7 @@ export class PatientsService {
     const doctors = await this.doctorProfileModel
       .find(query)
       .populate('departmentId', 'name')
+      .lean()
       .sort({ name: 1 });
 
     // فلترة حسب الخدمة إذا تم تحديدها
@@ -75,32 +76,32 @@ export class PatientsService {
         .distinct('doctorId');
       
       filteredDoctors = doctors.filter(doctor => 
-        doctorIds.some(id => id.equals(doctor._id as Types.ObjectId))
+        doctorIds.some(id => id.toString() === doctor._id.toString())
       );
     }
 
     // جلب خدمات كل طبيب
     const doctorsWithServices = await Promise.all(
-      filteredDoctors.map(async (doctor) => {
+      filteredDoctors.map(async (doctor: any) => {
         const doctorServices = await this.doctorServiceModel
           .find({ doctorId: doctor._id, isActive: true })
           .populate('serviceId', 'name')
           .lean();
 
-        const services = doctorServices.map(ds => ({
-          serviceId: (ds.serviceId as any)._id.toString(),
-          serviceName: (ds.serviceId as any).name,
+        const services = doctorServices.map((ds: any) => ({
+          serviceId: ds.serviceId?._id?.toString() || ds.serviceId?.toString(),
+          serviceName: ds.serviceId?.name || '',
           customPrice: ds.customPrice,
           customDuration: ds.customDuration,
         }));
 
         return {
-          _id: (doctor._id as Types.ObjectId).toString(),
+          _id: doctor._id.toString(),
           name: doctor.name,
           licenseNumber: doctor.licenseNumber,
           yearsOfExperience: doctor.yearsOfExperience,
-          departmentId: (doctor.departmentId as Types.ObjectId).toString(),
-          departmentName: (doctor.departmentId as any).name,
+          departmentId: doctor.departmentId?._id?.toString() || doctor.departmentId?.toString(),
+          departmentName: doctor.departmentId?.name || '',
           status: doctor.status,
           bio: doctor.bio,
           photos: doctor.photos,
@@ -113,9 +114,10 @@ export class PatientsService {
   }
 
   async getDoctorById(doctorId: string): Promise<DoctorListItem> {
-    const doctor = await this.doctorProfileModel
+    const doctor: any = await this.doctorProfileModel
       .findById(doctorId)
-      .populate('departmentId', 'name');
+      .populate('departmentId', 'name')
+      .lean();
 
     if (!doctor) {
       throw new NotFoundException('Doctor not found');
@@ -126,20 +128,20 @@ export class PatientsService {
       .populate('serviceId', 'name')
       .lean();
 
-    const services = doctorServices.map(ds => ({
-      serviceId: (ds.serviceId as any)._id.toString(),
-      serviceName: (ds.serviceId as any).name,
+    const services = doctorServices.map((ds: any) => ({
+      serviceId: ds.serviceId?._id?.toString() || ds.serviceId?.toString(),
+      serviceName: ds.serviceId?.name || '',
       customPrice: ds.customPrice,
       customDuration: ds.customDuration,
     }));
 
     return {
-      _id: (doctor._id as Types.ObjectId).toString(),
+      _id: doctor._id.toString(),
       name: doctor.name,
       licenseNumber: doctor.licenseNumber,
       yearsOfExperience: doctor.yearsOfExperience,
-      departmentId: (doctor.departmentId as Types.ObjectId).toString(),
-      departmentName: (doctor.departmentId as any).name,
+      departmentId: doctor.departmentId?._id?.toString() || doctor.departmentId?.toString(),
+      departmentName: doctor.departmentId?.name || '',
       status: doctor.status,
       bio: doctor.bio,
       photos: doctor.photos,

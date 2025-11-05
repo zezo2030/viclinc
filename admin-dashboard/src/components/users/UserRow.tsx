@@ -28,20 +28,20 @@ export default function UserRow({
   }
 
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+    <tr className="border-b border-gray-200 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-cyan-50/50 transition-all duration-300 group">
       {/* Name */}
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="font-medium text-gray-900">{user.name}</div>
+        <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{user.name}</div>
       </td>
 
       {/* Email */}
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-600">{user.email}</div>
+        <div className="text-sm font-medium text-gray-600">{user.email}</div>
       </td>
 
       {/* Phone */}
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-600">{user.phone}</div>
+        <div className="text-sm font-medium text-gray-600">{user.phone || 'غير متوفر'}</div>
       </td>
 
       {/* Role */}
@@ -49,7 +49,7 @@ export default function UserRow({
         <select
           value={user.role}
           onChange={(e) => onRoleChange?.(user, e.target.value as UserRole)}
-          className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+          className="px-3 py-1.5 text-sm font-semibold border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white hover:border-blue-300 transition-all duration-300"
         >
           <option value={UserRole.ADMIN}>{roleLabels[UserRole.ADMIN]}</option>
           <option value={UserRole.DOCTOR}>{roleLabels[UserRole.DOCTOR]}</option>
@@ -62,7 +62,7 @@ export default function UserRow({
         <select
           value={user.status}
           onChange={(e) => onStatusChange?.(user, e.target.value as UserStatus)}
-          className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+          className="px-3 py-1.5 text-sm font-semibold border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white hover:border-blue-300 transition-all duration-300"
         >
           <option value={UserStatus.ACTIVE}>نشط</option>
           <option value={UserStatus.DISABLED}>معطل</option>
@@ -72,7 +72,7 @@ export default function UserRow({
 
       {/* Created At */}
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-600">{formatDate(user.createdAt)}</div>
+        <div className="text-sm font-medium text-gray-600">{formatDate(user.createdAt)}</div>
       </td>
 
       {/* Actions */}
@@ -80,14 +80,14 @@ export default function UserRow({
         <div className="flex items-center gap-2 justify-end">
           <button
             onClick={() => onEdit?.(user)}
-            className="text-primary-600 hover:text-primary-900 p-2 rounded-lg hover:bg-primary-50 transition-colors"
+            className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:scale-110 transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-xl"
             title="تعديل"
           >
             <Edit className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete?.(user)}
-            className="text-orange-600 hover:text-orange-900 p-2 rounded-lg hover:bg-orange-50 transition-colors"
+            className="p-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:scale-110 transition-all duration-300 shadow-lg shadow-orange-500/30 hover:shadow-xl"
             title="وضع علامة للحذف"
           >
             <Trash2 className="w-4 h-4" />
@@ -95,7 +95,7 @@ export default function UserRow({
           {user.status === UserStatus.PENDING_DELETE && onHardDelete && (
             <button
               onClick={() => onHardDelete(user)}
-              className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+              className="p-2 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white hover:scale-110 transition-all duration-300 shadow-lg shadow-red-500/30 hover:shadow-xl"
               title="حذف نهائي"
             >
               <Trash className="w-4 h-4" />

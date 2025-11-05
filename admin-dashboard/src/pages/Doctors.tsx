@@ -113,11 +113,17 @@ export default function DoctorsPage() {
       <AdminLayout>
         <Breadcrumbs />
         <div className="p-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <p className="text-red-600">حدث خطأ في تحميل الأطباء</p>
+          <div className="rounded-2xl bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200 p-8 text-center shadow-lg">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-200 mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="text-xl font-bold text-red-800 mb-2">حدث خطأ في تحميل الأطباء</p>
+            <p className="text-sm text-red-600 mb-4">حدث خطأ أثناء تحميل البيانات</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg shadow-red-500/30"
             >
               إعادة المحاولة
             </button>
@@ -131,64 +137,100 @@ export default function DoctorsPage() {
     <AdminLayout>
       <Breadcrumbs />
 
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      {/* Page Header with Gradient */}
+      <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-500 p-8 shadow-2xl">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">إدارة الأطباء</h1>
-            <p className="text-gray-600 mt-1">عرض وإدارة الأطباء في النظام</p>
+            <h1 className="text-4xl font-black text-white drop-shadow-lg">
+              إدارة الأطباء
+            </h1>
+            <p className="mt-2 text-lg font-medium text-teal-100">
+              عرض وإدارة الأطباء في النظام
+            </p>
+            <div className="mt-4 flex items-center gap-4 text-white/90">
+              <span className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+                <span className="text-2xl font-bold">{data?.meta?.total || 0}</span>
+                <span className="text-sm">طبيب</span>
+              </span>
+            </div>
           </div>
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className="group px-6 py-3 bg-white text-teal-600 rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl flex items-center gap-2"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             <span>إضافة طبيب</span>
           </button>
         </div>
+        {/* Decorative Elements */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-32 -translate-y-32 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full translate-x-32 translate-y-32 blur-3xl"></div>
+      </div>
 
-        {/* Filters */}
-        <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <input
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setPage(1)
-            }}
-            placeholder="بحث بالاسم أو البريد"
-            className="w-full border rounded-lg px-3 py-2"
-          />
+      {/* Filters */}
+      <div className="mb-6 rounded-xl bg-gradient-to-br from-white to-gray-50 p-6 shadow-lg border border-gray-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-1 w-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600"></div>
+          <h3 className="text-lg font-bold text-gray-900">البحث والتصفية</h3>
+          <div className="h-0.5 flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 opacity-20"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="relative">
+            <input
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
+              placeholder="بحث بالاسم أو البريد..."
+              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300"
+            />
+            <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          
           <select
             value={status}
             onChange={(e) => {
               setStatus(e.target.value as any)
               setPage(1)
             }}
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
           >
-            <option value="ALL">كل الحالات</option>
-            <option value="PENDING">قيد المراجعة</option>
-            <option value="APPROVED">مقبول</option>
-            <option value="SUSPENDED">موقوف</option>
+            <option value="ALL">🔵 كل الحالات</option>
+            <option value="PENDING">⏳ قيد المراجعة</option>
+            <option value="APPROVED">✅ مقبول</option>
+            <option value="SUSPENDED">⛔ موقوف</option>
           </select>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleSort('name')}
-              className={`flex-1 px-3 py-2 border rounded-lg ${sortBy === 'name' ? 'bg-gray-100' : ''}`}
-            >
-              ترتيب بالاسم ({sortOrder === 'asc' ? 'تصاعدي' : 'تنازلي'})
-            </button>
-            <button
-              onClick={() => handleSort('yearsOfExperience')}
-              className={`flex-1 px-3 py-2 border rounded-lg ${sortBy === 'yearsOfExperience' ? 'bg-gray-100' : ''}`}
-            >
-              ترتيب بالخبرة ({sortOrder === 'asc' ? 'تصاعدي' : 'تنازلي'})
-            </button>
-          </div>
-        </div>
 
-        {/* Table */}
-        <DoctorsTable
+          <button
+            onClick={() => handleSort('name')}
+            className={`px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
+              sortBy === 'name'
+                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 scale-105'
+                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-teal-300 hover:scale-105'
+            }`}
+          >
+            📝 ترتيب بالاسم ({sortOrder === 'asc' ? '↑' : '↓'})
+          </button>
+
+          <button
+            onClick={() => handleSort('yearsOfExperience')}
+            className={`px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
+              sortBy === 'yearsOfExperience'
+                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 scale-105'
+                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-teal-300 hover:scale-105'
+            }`}
+          >
+            ⭐ ترتيب بالخبرة ({sortOrder === 'asc' ? '↑' : '↓'})
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <DoctorsTable
           doctors={data?.data || []}
           isLoading={isLoading}
           pagination={
@@ -204,26 +246,25 @@ export default function DoctorsPage() {
           onSort={handleSort}
         />
 
-        {/* Side Panels (Schedule & Performance) */}
-        {selectedDoctorForPanels && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <DoctorSchedule doctorId={selectedDoctorForPanels.id} />
-            <DoctorPerformance doctorId={selectedDoctorForPanels.id} />
-          </div>
-        )}
+      {/* Side Panels (Schedule & Performance) */}
+      {selectedDoctorForPanels && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <DoctorSchedule doctorId={selectedDoctorForPanels.id} />
+          <DoctorPerformance doctorId={selectedDoctorForPanels.id} />
+        </div>
+      )}
 
-        {/* Modals */}
-        <CreateDoctorModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSubmit={handleCreate} />
+      {/* Modals */}
+      <CreateDoctorModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSubmit={handleCreate} />
 
-        {editingDoctor && (
-          <EditDoctorModal
-            isOpen={!!editingDoctor}
-            onClose={() => setEditingDoctor(null)}
-            doctor={editingDoctor}
-            onSubmit={handleUpdate}
-          />
-        )}
-      </div>
+      {editingDoctor && (
+        <EditDoctorModal
+          isOpen={!!editingDoctor}
+          onClose={() => setEditingDoctor(null)}
+          doctor={editingDoctor}
+          onSubmit={handleUpdate}
+        />
+      )}
     </AdminLayout>
   )
 }

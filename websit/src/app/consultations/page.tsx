@@ -18,7 +18,7 @@ export default function ConsultationsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
-  const { data: consultations, isLoading, error } = useQuery({
+  const { data: consultationsData, isLoading, error } = useQuery({
     queryKey: ['consultations', user?.id, user?.role],
     queryFn: () => {
       if (user?.role === 'PATIENT') {
@@ -30,7 +30,12 @@ export default function ConsultationsPage() {
     },
   });
 
-  const filteredConsultations = consultations?.filter(consultation => {
+  // Handle both array and paginated/object response
+  const consultations = Array.isArray(consultationsData) 
+    ? consultationsData 
+    : (consultationsData as any)?.consultations || (consultationsData as any)?.data || [];
+
+  const filteredConsultations = consultations?.filter((consultation: any) => {
     const matchesSearch = 
       consultation.appointment.patient.profile.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       consultation.appointment.doctor.profile.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||

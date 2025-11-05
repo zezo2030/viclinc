@@ -6,7 +6,8 @@ import { DoctorProfile } from '@/components/doctors/DoctorProfile';
 
 export default function DoctorProfilePage() {
   const params = useParams();
-  const doctorId = parseInt(params.id as string);
+  // Accept both string (MongoDB ObjectId) and number IDs
+  const doctorId = params.id as string;
 
   return (
     <div className="min-h-screen bg-gray-50">

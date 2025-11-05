@@ -23,6 +23,7 @@ import { MongooseModule as Feature } from '@nestjs/mongoose';
 import { Service as Svc, ServiceSchema } from './modules/services/schemas/service.schema';
 import { ServicesService } from './modules/services/services.service';
 import { ServicesController } from './modules/services/services.controller';
+import { PublicServicesController } from './modules/services/public-services.controller';
 import { RedisModule } from './modules/shared/redis/redis.module';
 import { GuardsModule } from './modules/shared/guards/guards.module';
 
@@ -73,7 +74,7 @@ const i18nPath = isProd
       { name: Svc.name, schema: ServiceSchema },
     ]),
   ],
-  controllers: [AppController, HealthController, ServicesController],
+  controllers: [AppController, HealthController, ServicesController, PublicServicesController],
   providers: [AppService, ServicesService],
 })
 export class AppModule {}

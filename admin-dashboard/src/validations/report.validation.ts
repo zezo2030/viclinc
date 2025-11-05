@@ -65,3 +65,8 @@ export type MonthlyReportInput = z.infer<typeof monthlyReportSchema>
 export type DoctorsPerformanceParamsInput = z.infer<typeof doctorsPerformanceParamsSchema>
 export type CustomReportParamsInput = z.infer<typeof customReportParamsSchema>
 
+
+
+
+
+

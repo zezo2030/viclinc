@@ -37,6 +37,9 @@ export class VideoTokenResponseDto {
   @ApiProperty({ description: 'Token expiration time in seconds' })
   expirationTime: number;
 
+  @ApiProperty({ description: 'Agora App ID for client initialization' })
+  appId: string;
+
   @ApiProperty({ description: 'Session status' })
   sessionStatus: string;
 

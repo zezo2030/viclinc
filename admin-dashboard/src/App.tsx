@@ -13,6 +13,7 @@ import Appointments from '@/pages/Appointments'
 import Payments from '@/pages/Payments'
 import MedicalRecords from '@/pages/MedicalRecords'
 import Reports from '@/pages/Reports'
+import Settings from '@/pages/Settings'
 
 // إعداد React Query Client
 const queryClient = new QueryClient({
@@ -122,7 +123,7 @@ function App() {
             path="/settings"
             element={
               <ProtectedRoute>
-                <PlaceholderPage title="الإعدادات" description="إعدادات النظام" />
+                <Settings />
               </ProtectedRoute>
             }
           />

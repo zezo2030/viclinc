@@ -5,9 +5,12 @@ export interface Specialty {
   name: string;
   description?: string;
   icon?: string;
+  logoUrl?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  doctors?: any[];
+  services?: any[];
 }
 
 export interface CreateSpecialtyDto {

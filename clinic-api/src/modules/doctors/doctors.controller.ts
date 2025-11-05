@@ -147,9 +147,11 @@ export class DoctorsController {
   @ApiResponse({ status: 200, description: 'Doctor appointments retrieved successfully' })
   async getMyAppointments(
     @Query() query: AppointmentQueryDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: any,
   ) {
-    return this.appointmentService.getDoctorAppointments((user as any)._id.toString(), query);
+    // user.sub هو معرف المستخدم، بينما doctorId في المواعيد يشير إلى DoctorProfile._id
+    const profile = await this.doctorsService.getCurrentDoctorProfile((user as any).sub);
+    return this.appointmentService.getDoctorAppointments((profile as any)._id.toString(), query);
   }
 
   @Post('appointments/:id/confirm')
@@ -161,11 +163,12 @@ export class DoctorsController {
   async confirmAppointment(
     @Param('id') appointmentId: string,
     @Body() confirmDto: ConfirmAppointmentDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: any,
   ) {
+    const profile = await this.doctorsService.getCurrentDoctorProfile((user as any).sub);
     return this.appointmentService.confirmAppointment(
       appointmentId,
-      (user as any)._id.toString(),
+      (profile as any)._id.toString(),
       confirmDto,
     );
   }
@@ -179,11 +182,12 @@ export class DoctorsController {
   async rejectAppointment(
     @Param('id') appointmentId: string,
     @Body() rejectDto: RejectAppointmentDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: any,
   ) {
+    const profile = await this.doctorsService.getCurrentDoctorProfile((user as any).sub);
     return this.appointmentService.rejectAppointment(
       appointmentId,
-      (user as any)._id.toString(),
+      (profile as any)._id.toString(),
       rejectDto,
     );
   }

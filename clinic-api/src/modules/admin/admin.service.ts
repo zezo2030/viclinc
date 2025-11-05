@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Types } from 'mongoose';
 import { DoctorProfile, DoctorProfileDocument } from '../doctors/schemas/doctor-profile.schema';
 import { Appointment, AppointmentDocument } from '../schedule/schemas/appointment.schema';
 import { AdminAudit, AdminAuditDocument } from './schemas/admin-audit.schema';
@@ -72,7 +73,7 @@ export class AdminService {
 
   async getDoctorAppointments(doctorId: string, query: any) {
     const { status, startDate, endDate, page = 1, limit = 10 } = query;
-    const filter: any = { doctorId };
+    const filter: any = { doctorId: new Types.ObjectId(doctorId) };
     
     if (status) filter.status = status;
     if (startDate || endDate) {
@@ -105,23 +106,104 @@ export class AdminService {
   }
 
   async getAppointments(query: any) {
-    const { status, doctorId, patientId, startDate, endDate, page = 1, limit = 10 } = query;
-    const filter: any = {};
+    const { status, type, doctorId, patientId, startDate, endDate, page = 1, limit = 10, search } = query;
     
-    if (status) filter.status = status;
-    if (doctorId) filter.doctorId = doctorId;
-    if (patientId) filter.patientId = patientId;
+    // Build base match filter
+    const match: any = {};
+    if (status) match.status = status;
+    if (type) match.type = type;
+    if (doctorId) match.doctorId = new Types.ObjectId(doctorId);
+    if (patientId) match.patientId = new Types.ObjectId(patientId);
     if (startDate || endDate) {
-      filter.startAt = {};
-      if (startDate) filter.startAt.$gte = new Date(startDate);
-      if (endDate) filter.startAt.$lte = new Date(endDate);
+      match.startAt = {};
+      if (startDate) match.startAt.$gte = new Date(startDate);
+      if (endDate) match.startAt.$lte = new Date(endDate);
     }
 
+    // Use aggregation pipeline if search is needed, otherwise use simple find
+    if (search) {
+      const pipeline: any[] = [
+        { $match: match },
+        {
+          $lookup: {
+            from: 'doctorProfiles',
+            localField: 'doctorId',
+            foreignField: '_id',
+            as: 'doctor',
+          },
+        },
+        { $unwind: { path: '$doctor', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'patientId',
+            foreignField: '_id',
+            as: 'patient',
+          },
+        },
+        { $unwind: { path: '$patient', preserveNullAndEmptyArrays: true } },
+        {
+          $addFields: {
+            doctorName: { $ifNull: ['$doctor.name', ''] },
+            patientName: { $ifNull: ['$patient.name', ''] },
+            patientEmail: { $ifNull: ['$patient.email', ''] },
+          },
+        },
+        {
+          $match: {
+            $or: [
+              { doctorName: { $regex: search, $options: 'i' } },
+              { patientName: { $regex: search, $options: 'i' } },
+              { patientEmail: { $regex: search, $options: 'i' } },
+            ],
+          },
+        },
+        {
+          $lookup: {
+            from: 'services',
+            localField: 'serviceId',
+            foreignField: '_id',
+            as: 'service',
+          },
+        },
+        { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
+        { $sort: { startAt: -1 } },
+      ];
+
+      const countPipeline = [...pipeline, { $count: 'total' }];
+      const [{ total } = { total: 0 }] = await this.appointmentModel.aggregate(countPipeline).exec();
+
+      const skip = (page - 1) * limit;
+      pipeline.push({ $skip: skip }, { $limit: limit });
+
+      const appointments = await this.appointmentModel.aggregate(pipeline).exec();
+
+      // Transform aggregation result to match expected format
+      const transformedAppointments = appointments.map((apt: any) => ({
+        ...apt,
+        doctorId: apt.doctorId,
+        patientId: apt.patientId,
+        serviceId: apt.serviceId,
+        doctor: apt.doctor ? { name: apt.doctor.name, licenseNumber: apt.doctor.licenseNumber } : null,
+        patient: apt.patient ? { name: apt.patient.name, email: apt.patient.email, phone: apt.patient.phone } : null,
+        service: apt.service ? { name: apt.service.name } : null,
+      }));
+
+      return {
+        appointments: transformedAppointments,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    }
+
+    // Simple find for non-search queries
     const skip = (page - 1) * limit;
     
     const [appointments, total] = await Promise.all([
       this.appointmentModel
-        .find(filter)
+        .find(match)
         .populate('doctorId', 'name licenseNumber')
         .populate('patientId', 'email phone name')
         .populate('serviceId', 'name')
@@ -129,7 +211,7 @@ export class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      this.appointmentModel.countDocuments(filter),
+      this.appointmentModel.countDocuments(match),
     ]);
 
     return {

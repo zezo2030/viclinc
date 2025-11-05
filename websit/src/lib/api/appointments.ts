@@ -49,13 +49,20 @@ export interface Appointment {
 }
 
 export interface CreateAppointmentDto {
-  patientId: number;
-  doctorId: number;
-  clinicId: number;
-  specialtyId: number;
-  departmentId: number;
-  appointmentDate: string;
-  appointmentTime: string;
+  // API الجديد
+  doctorId: string;
+  serviceId: string;
+  startAt: string; // ISO string
+  type: 'IN_PERSON' | 'VIDEO' | 'CHAT';
+  metadata?: Record<string, any>;
+  
+  // API القديم (للتوافق)
+  patientId?: number;
+  clinicId?: number;
+  specialtyId?: number;
+  departmentId?: number;
+  appointmentDate?: string;
+  appointmentTime?: string;
   reason?: string;
   notes?: string;
   isEmergency?: boolean;
@@ -82,6 +89,14 @@ export interface AppointmentsQuery {
   endDate?: string;
 }
 
+export interface PaginatedAppointments {
+  appointments: Appointment[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const appointmentsService = {
   // جلب جميع المواعيد
   getAppointments: (query: AppointmentsQuery = {}): Promise<Appointment[]> => {
@@ -100,13 +115,33 @@ export const appointmentsService = {
   },
 
   // جلب مواعيد المريض
-  getPatientAppointments: (patientId: number): Promise<Appointment[]> => {
-    return apiClient.get(`/appointments?patientId=${patientId}`);
+  // الباك إند يستخدم /patient/appointments ويحصل على patientId من JWT token
+  // يمكن إضافة query parameters للفلترة
+  getPatientAppointments: (patientId?: number, query?: { status?: string; page?: number; limit?: number; startDate?: string; endDate?: string }): Promise<PaginatedAppointments | Appointment[]> => {
+    const params = new URLSearchParams();
+    if (query?.status) params.append('status', query.status);
+    if (query?.page) params.append('page', query.page.toString());
+    if (query?.limit) params.append('limit', query.limit.toString());
+    if (query?.startDate) params.append('startDate', query.startDate);
+    if (query?.endDate) params.append('endDate', query.endDate);
+    
+    const queryString = params.toString();
+    return apiClient.get(`/patient/appointments${queryString ? `?${queryString}` : ''}`);
   },
 
   // جلب مواعيد الطبيب
-  getDoctorAppointments: (doctorId: number): Promise<Appointment[]> => {
-    return apiClient.get(`/appointments?doctorId=${doctorId}`);
+  // الباك إند يستخدم /doctor/appointments ويحصل على doctorId من JWT token
+  // يمكن إضافة query parameters للفلترة
+  getDoctorAppointments: (doctorId?: number, query?: { status?: string; page?: number; limit?: number; startDate?: string; endDate?: string }): Promise<PaginatedAppointments | Appointment[]> => {
+    const params = new URLSearchParams();
+    if (query?.status) params.append('status', query.status);
+    if (query?.page) params.append('page', query.page.toString());
+    if (query?.limit) params.append('limit', query.limit.toString());
+    if (query?.startDate) params.append('startDate', query.startDate);
+    if (query?.endDate) params.append('endDate', query.endDate);
+    
+    const queryString = params.toString();
+    return apiClient.get(`/doctor/appointments${queryString ? `?${queryString}` : ''}`);
   },
 
   // جلب موعد واحد
@@ -116,6 +151,17 @@ export const appointmentsService = {
 
   // إنشاء موعد جديد
   createAppointment: (appointmentData: CreateAppointmentDto): Promise<Appointment> => {
+    // استخدام endpoint الجديد /patient/appointments إذا كان يحتوي على التنسيق الجديد
+    if (appointmentData.doctorId && appointmentData.serviceId && appointmentData.startAt && appointmentData.type) {
+      return apiClient.post('/patient/appointments', {
+        doctorId: appointmentData.doctorId,
+        serviceId: appointmentData.serviceId,
+        startAt: appointmentData.startAt,
+        type: appointmentData.type,
+        metadata: appointmentData.metadata || (appointmentData.reason ? { reason: appointmentData.reason } : undefined),
+      });
+    }
+    // استخدام API القديم للتوافق
     return apiClient.post('/appointments', appointmentData);
   },
 

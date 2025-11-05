@@ -14,7 +14,7 @@ function AppointmentsContent() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const { data: appointments, isLoading } = useQuery({
+  const { data: appointmentsData, isLoading } = useQuery({
     queryKey: ['appointments', user?.id, user?.role],
     queryFn: () => {
       if (user?.role === 'PATIENT') {
@@ -25,6 +25,11 @@ function AppointmentsContent() {
       return appointmentsService.getAppointments();
     },
   });
+
+  // Handle both array and paginated response
+  const appointments = Array.isArray(appointmentsData) 
+    ? appointmentsData 
+    : (appointmentsData as any)?.appointments || [];
 
   if (isLoading) {
     return (

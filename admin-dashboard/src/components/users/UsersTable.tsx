@@ -46,10 +46,18 @@ export default function UsersTable({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-12">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <Spinner size="lg" />
-          <p className="text-gray-600">جاري التحميل...</p>
+      <div className="rounded-2xl bg-gradient-to-br from-white to-gray-50 border border-gray-100 p-12 shadow-lg">
+        <div className="flex flex-col items-center justify-center gap-6">
+          <div className="relative">
+            <Spinner size="lg" />
+            <div className="absolute inset-0 animate-ping opacity-20">
+              <Spinner size="lg" />
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-bold text-gray-900">جاري التحميل...</p>
+            <p className="text-sm text-gray-500 mt-1">يرجى الانتظار</p>
+          </div>
         </div>
       </div>
     )
@@ -57,59 +65,66 @@ export default function UsersTable({
 
   if (!users || users.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-12">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <p className="text-gray-600 text-lg">لا يوجد مستخدمين</p>
-          <p className="text-gray-500 text-sm">ابدأ بإضافة مستخدم جديد</p>
+      <div className="rounded-2xl bg-gradient-to-br from-white to-blue-50/30 border border-blue-100 p-12 shadow-lg">
+        <div className="flex flex-col items-center justify-center gap-6">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-100 to-cyan-100">
+            <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-gray-900 mb-2">لا يوجد مستخدمين</p>
+            <p className="text-gray-600">ابدأ بإضافة أول مستخدم لنظامك</p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="rounded-2xl bg-gradient-to-br from-white to-gray-50 border border-gray-100 overflow-hidden shadow-lg">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gradient-to-r from-blue-50 to-cyan-50">
             <tr>
               <th
                 onClick={() => handleSort('name')}
-                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-blue-100/50 transition-all duration-300"
               >
                 <div className="flex items-center gap-2 justify-end">
-                  <span>الاسم</span>
+                  <span>👤 الاسم</span>
                   {getSortIcon('name')}
                 </div>
               </th>
               <th
                 onClick={() => handleSort('email')}
-                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-blue-100/50 transition-all duration-300"
               >
                 <div className="flex items-center gap-2 justify-end">
-                  <span>البريد الإلكتروني</span>
+                  <span>📧 البريد الإلكتروني</span>
                   {getSortIcon('email')}
                 </div>
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                رقم الهاتف
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                📱 رقم الهاتف
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الدور
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                🎭 الدور
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الحالة
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                ✅ الحالة
               </th>
               <th
                 onClick={() => handleSort('createdAt')}
-                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-blue-100/50 transition-all duration-300"
               >
                 <div className="flex items-center gap-2 justify-end">
-                  <span>تاريخ الإنشاء</span>
+                  <span>📅 تاريخ الإنشاء</span>
                   {getSortIcon('createdAt')}
                 </div>
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الإجراءات
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                ⚙️ الإجراءات
               </th>
             </tr>
           </thead>
@@ -131,20 +146,20 @@ export default function UsersTable({
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm font-medium text-gray-700">
               عرض{' '}
-              <span className="font-medium">
+              <span className="font-bold text-blue-600">
                 {(pagination.page - 1) * 10 + 1} - {Math.min(pagination.page * 10, pagination.total)}
               </span>{' '}
-              من <span className="font-medium">{pagination.total}</span> مستخدم
+              من <span className="font-bold text-blue-600">{pagination.total}</span> مستخدم
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onPageChange?.(pagination.page - 1)}
                 disabled={pagination.page === 1}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-sm"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -153,10 +168,10 @@ export default function UsersTable({
                   <button
                     key={page}
                     onClick={() => onPageChange?.(page)}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                       page === pagination.page
-                        ? 'bg-primary-600 text-white'
-                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30 scale-105'
+                        : 'text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-blue-300 hover:scale-105 shadow-sm'
                     }`}
                   >
                     {page}
@@ -166,7 +181,7 @@ export default function UsersTable({
               <button
                 onClick={() => onPageChange?.(pagination.page + 1)}
                 disabled={pagination.page === pagination.totalPages}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>

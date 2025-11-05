@@ -46,6 +46,7 @@ export const SpecialtiesList: React.FC = () => {
           id={specialty._id}
           name={specialty.name}
           icon={specialty.icon}
+          logoUrl={specialty.logoUrl}
         />
       ))}
     </div>
