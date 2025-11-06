@@ -9,6 +9,16 @@ export interface AgoraToken {
   expirationTime: number;
 }
 
+export interface VideoTokenResponse {
+  token: string;
+  channelName: string;
+  uid: number;
+  expirationTime: number;
+  appId: string;
+  sessionStatus: string;
+  canJoin: boolean;
+}
+
 export interface AgoraChannel {
   channelName: string;
 }
@@ -28,14 +38,17 @@ export interface AgoraRecording {
 }
 
 export const agoraService = {
-  // الحصول على Agora token
-  async getToken(channelName: string, uid: number, role: string = 'publisher'): Promise<AgoraToken> {
-    const response = await apiClient.post('/agora/token', {
-      channelName,
-      uid,
+  // الحصول على Agora App ID (public)
+  async getAppId(): Promise<{ appId: string }> {
+    return apiClient.get('/sessions/video/app-id');
+  },
+
+  // الحصول على Agora token للجلسة
+  async getToken(appointmentId: string, role: 'doctor' | 'patient'): Promise<VideoTokenResponse> {
+    return apiClient.post('/sessions/video/token', {
+      appointmentId,
       role,
     });
-    return (response as any).data;
   },
 
   // إنشاء قناة جديدة

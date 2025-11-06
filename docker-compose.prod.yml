@@ -70,6 +70,10 @@ services:
     build:
       context: ./websit
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Smart Clinic}
     container_name: virclinc-website
     restart: unless-stopped
     environment:
@@ -100,12 +104,18 @@ services:
     build:
       context: ./admin-dashboard
       dockerfile: Dockerfile
+      args:
+        VITE_BASE: ${VITE_BASE:-/admin/}
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_SITE_URL: ${VITE_SITE_URL}
+        VITE_SITE_NAME: ${VITE_SITE_NAME:-Admin Dashboard}
     container_name: virclinc-admin
     restart: unless-stopped
     environment:
       VITE_SITE_URL: ${VITE_SITE_URL}
       VITE_API_URL: ${VITE_API_URL}
       VITE_SITE_NAME: ${VITE_SITE_NAME:-Admin Dashboard}
+      VITE_BASE: ${VITE_BASE:-/admin/}
     depends_on:
       - api
     networks:
@@ -127,9 +137,11 @@ services:
       - "443:443"
     volumes:
       - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./deploy/nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      # SSL config is optional - uncomment when SSL certificates are available
+      # - ./deploy/nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
       - api_uploads:/var/www/virclinc/uploads:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Uncomment when SSL certificates are available
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - api
       - website

@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { ArrowLeft, Video, MessageSquare, Calendar, Clock, User } from 'lucide-react';
 import { consultationService } from '@/lib/api/consultations';
-import { appointmentsService } from '@/lib/api/appointments';
+import { appointmentsService, type Appointment } from '@/lib/api/appointments';
 import { useAuth } from '@/lib/contexts/auth-context';
 
 function NewConsultationContent() {
@@ -52,14 +52,14 @@ function NewConsultationContent() {
     : (appointmentsData as any)?.appointments || [];
 
   // فلترة المواعيد المؤكدة فقط
-  let availableAppointments = appointments?.filter(
-    (appointment: any) => appointment.status === 'CONFIRMED'
+  let availableAppointments: Appointment[] = appointments?.filter(
+    (appointment: Appointment) => appointment.status === 'CONFIRMED'
   ) || [];
 
   // Filter by doctorId if provided
   if (doctorId) {
     availableAppointments = availableAppointments.filter(
-      appointment => appointment.doctor?.id === parseInt(doctorId)
+      (appointment: Appointment) => appointment.doctor?.id === parseInt(doctorId)
     );
   }
 
@@ -146,7 +146,7 @@ function NewConsultationContent() {
               </div>
             ) : (
               <div className="space-y-3">
-                {availableAppointments.map((appointment) => (
+                {availableAppointments.map((appointment: Appointment) => (
                   <div
                     key={appointment.id}
                     className={`p-4 border rounded-lg cursor-pointer transition-colors ${

@@ -32,11 +32,11 @@ interface QuickActionsProps {
 }
 
 const colorVariants = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-  blue: 'bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-200',
-  green: 'bg-green-100 hover:bg-green-200 text-green-700 border-green-200',
-  purple: 'bg-purple-100 hover:bg-purple-200 text-purple-700 border-purple-200',
-  orange: 'bg-orange-100 hover:bg-orange-200 text-orange-700 border-orange-200',
+  primary: 'gradient-medical hover:opacity-90 text-white shadow-md',
+  blue: 'bg-secondary-100 hover:bg-secondary-200 text-secondary-700 border-2 border-secondary-200',
+  green: 'bg-primary-100 hover:bg-primary-200 text-primary-700 border-2 border-primary-200',
+  purple: 'bg-purple-100 hover:bg-purple-200 text-purple-700 border-2 border-purple-200',
+  orange: 'bg-warning-100 hover:bg-warning-200 text-warning-700 border-2 border-warning-200',
 };
 
 export const QuickActions: React.FC<QuickActionsProps> = ({ className }) => {
@@ -76,7 +76,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className }) => {
       label: 'الملف الشخصي',
       icon: User,
       color: 'green',
-      onClick: () => console.log('الملف الشخصي'),
+      onClick: () => router.push('/profile'),
     },
     {
       id: 'messages',
@@ -104,7 +104,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className }) => {
       label: 'الإعدادات',
       icon: Settings,
       color: 'purple',
-      onClick: () => console.log('الإعدادات'),
+      onClick: () => router.push('/profile'),
     },
   ];
 

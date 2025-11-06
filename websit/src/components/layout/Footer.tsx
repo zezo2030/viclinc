@@ -23,7 +23,7 @@ export const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* معلومات الشركة */}
@@ -38,20 +38,20 @@ export const Footer: React.FC = () => {
                 />
               </div>
             </div>
-            <p className="text-gray-300 mb-6 max-w-md">
+            <p className="text-gray-300 mb-6 max-w-md leading-relaxed">
               نقدم حلول طبية متطورة لتحسين جودة الرعاية الصحية 
-              وتبسيط إدارة العيادات والمستشفيات.
+              وتبسيط إدارة العيادات والمستشفيات. نسعى لتوفير أفضل تجربة للمرضى والأطباء.
             </p>
             
             {/* معلومات التواصل */}
             <div className="space-y-3">
-              <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="flex items-center space-x-3 space-x-reverse hover:text-primary-400 transition-colors cursor-pointer">
                 <Phone className="w-5 h-5 text-primary-400" />
-                <span className="text-gray-300">{CONTACT_INFO.phone}</span>
+                <a href={`tel:${CONTACT_INFO.phone}`} className="text-gray-300 hover:text-primary-400">{CONTACT_INFO.phone}</a>
               </div>
-              <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="flex items-center space-x-3 space-x-reverse hover:text-primary-400 transition-colors cursor-pointer">
                 <Mail className="w-5 h-5 text-primary-400" />
-                <span className="text-gray-300">{CONTACT_INFO.email}</span>
+                <a href={`mailto:${CONTACT_INFO.email}`} className="text-gray-300 hover:text-primary-400">{CONTACT_INFO.email}</a>
               </div>
               <div className="flex items-center space-x-3 space-x-reverse">
                 <MapPin className="w-5 h-5 text-primary-400" />

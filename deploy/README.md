@@ -78,3 +78,5 @@ docker compose -f docker-compose.prod.yml logs nginx
 - تأكد من أن volume `api_uploads` متصل بشكل صحيح
 - في الإنتاج، حدّث CORS origins بدلاً من `*`
 
+
+

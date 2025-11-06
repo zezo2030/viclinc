@@ -190,6 +190,15 @@ export interface DoctorProfile {
   experience: number;
   consultationFee: string;
   isAvailable: boolean;
+  // Optional fields used by DoctorProfile component (mapped from public API)
+  photos?: string[];
+  name?: string;
+  bio?: string;
+  yearsOfExperience?: number;
+  departmentName?: string;
+  status?: string;
+  services?: any[];
+  _id?: string | number;
   user: {
     id: number;
     email: string;

@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorStatusDto } from './dto/update-doctor-status.dto';
+import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto';
 import { AdminRoleGuard } from '../shared/guards/admin-role.guard';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 import { DoctorStatus } from './schemas/doctor-profile.schema';
@@ -48,5 +49,15 @@ export class DoctorsAdminController {
     @Body() updateStatusDto: UpdateDoctorStatusDto,
   ) {
     return this.doctorsService.updateDoctorStatus(id, updateStatusDto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update doctor profile' })
+  @ApiResponse({ status: 200, description: 'Doctor profile updated successfully' })
+  updateDoctor(
+    @Param('id') id: string,
+    @Body() updateProfileDto: UpdateDoctorProfileDto,
+  ) {
+    return this.doctorsService.updateDoctorProfileById(id, updateProfileDto);
   }
 }

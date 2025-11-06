@@ -69,16 +69,16 @@ export const VideoCall: React.FC<VideoCallProps> = ({
       // تحميل Agora RTC SDK
       const AgoraRTC = (await import('agora-rtc-sdk-ng')).default;
 
-      // الحصول على token
-      const channelName = `consultation_${consultationId}`;
-      const tokenData = await agoraService.getToken(channelName, userId);
+      // الحصول على token من API
+      // Note: consultationId هنا هو appointmentId
+      const tokenData = await agoraService.getToken(consultationId.toString(), 'patient');
       
       // الانضمام للقناة
       await clientRef.current.join(
         tokenData.appId,
-        channelName,
+        tokenData.channelName,
         tokenData.token,
-        userId
+        tokenData.uid
       );
 
       // إنشاء وإرسال المسارات المحلية

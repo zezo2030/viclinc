@@ -1,5 +1,6 @@
 export const APP_NAME = import.meta.env.VITE_APP_NAME || 'Admin Dashboard'
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1'
+// API URL: use nginx proxy (without /v1 prefix, nginx will rewrite /api/* to /v1/*)
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/api'
 export const SITE_URL = import.meta.env.VITE_SITE_URL || 'http://localhost:3002'
 
 export const ROLES = {

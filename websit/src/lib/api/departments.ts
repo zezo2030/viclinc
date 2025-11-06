@@ -1,26 +1,19 @@
 import { apiClient } from './client';
 
 export interface Department {
-  id: number;
+  _id?: string;
+  id?: string;
   name: string;
-  description: string;
-  clinicId: number;
+  description?: string;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  clinic?: {
-    id: number;
-    name: string;
-  };
-  doctors?: Array<{
-    id: number;
-    user: {
-      profile: {
-        firstName: string;
-        lastName: string;
-      };
-    };
-  }>;
+  logoUrl?: string;
+  logoPath?: string;
+  icon?: string;
+  doctorCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  doctors?: Array<any>;
+  services?: Array<any>;
 }
 
 export interface CreateDepartmentDto {
@@ -44,50 +37,44 @@ export interface DepartmentsQuery {
 }
 
 export const departmentsService = {
-  // جلب جميع الأقسام
+  // جلب جميع الأقسام النشطة (Public API)
   getDepartments: (query: DepartmentsQuery = {}): Promise<Department[]> => {
+    return apiClient.get('/departments/public');
+  },
+
+  // جلب قسم واحد مع التفاصيل (Public API)
+  getDepartment: (id: string): Promise<Department> => {
+    return apiClient.get(`/departments/public/${id}`);
+  },
+  
+  // جلب جميع الأقسام (Admin API - يحتاج auth)
+  getAllDepartments: (query: DepartmentsQuery = {}): Promise<Department[]> => {
     const params = new URLSearchParams();
     if (query.page) params.append('page', query.page.toString());
     if (query.limit) params.append('limit', query.limit.toString());
-    if (query.clinicId) params.append('clinicId', query.clinicId.toString());
     if (query.isActive !== undefined) params.append('isActive', query.isActive.toString());
     if (query.search) params.append('search', query.search);
 
-    return apiClient.get(`/departments?${params.toString()}`);
+    return apiClient.get(`/admin/departments?${params.toString()}`);
   },
 
-  // جلب قسم واحد
-  getDepartment: (id: number): Promise<Department> => {
-    return apiClient.get(`/departments/${id}`);
-  },
-
-  // إنشاء قسم جديد
+  // إنشاء قسم جديد (Admin API)
   createDepartment: (departmentData: CreateDepartmentDto): Promise<Department> => {
-    return apiClient.post('/departments', departmentData);
+    return apiClient.post('/admin/departments', departmentData);
   },
 
-  // تحديث قسم
-  updateDepartment: (id: number, departmentData: UpdateDepartmentDto): Promise<Department> => {
-    return apiClient.patch(`/departments/${id}`, departmentData);
+  // تحديث قسم (Admin API)
+  updateDepartment: (id: string, departmentData: UpdateDepartmentDto): Promise<Department> => {
+    return apiClient.patch(`/admin/departments/${id}`, departmentData);
   },
 
-  // حذف قسم
-  deleteDepartment: (id: number): Promise<{ success: boolean }> => {
-    return apiClient.delete(`/departments/${id}`);
+  // حذف قسم (Admin API)
+  deleteDepartment: (id: string): Promise<{ success: boolean }> => {
+    return apiClient.delete(`/admin/departments/${id}`);
   },
 
-  // تفعيل/إلغاء تفعيل قسم
-  toggleDepartmentStatus: (id: number, isActive: boolean): Promise<Department> => {
-    return apiClient.patch(`/departments/${id}/activate`, { isActive });
-  },
-
-  // إحصائيات الأقسام
-  getDepartmentsStats: (): Promise<{
-    totalDepartments: number;
-    activeDepartments: number;
-    inactiveDepartments: number;
-    departmentsByClinic: Record<string, number>;
-  }> => {
-    return apiClient.get('/departments/stats');
+  // تفعيل/إلغاء تفعيل قسم (Admin API)
+  toggleDepartmentStatus: (id: string, isActive: boolean): Promise<Department> => {
+    return apiClient.patch(`/admin/departments/${id}`, { isActive });
   },
 };

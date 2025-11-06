@@ -81,7 +81,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.log('AuthContext - User:', response.user)
 
       // تحديث state بشكل متزامن - React سيقوم بإعادة render تلقائياً
-      // استخدام callback للتأكد من التحديث
       setToken(response.access_token)
       setUser(response.user)
       
@@ -92,6 +91,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       // Force re-render للتأكد من تحديث isAuthenticated
       // React سيحدث تلقائياً بعد setState
+      
+      // انتظار قصير للتأكد من تحديث state
+      await new Promise(resolve => setTimeout(resolve, 50))
     } catch (error) {
       console.error('AuthContext - Login error:', error)
       // تنظيف localStorage في حالة الخطأ

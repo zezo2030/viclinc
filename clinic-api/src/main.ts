@@ -36,20 +36,68 @@ async function bootstrap() {
   });
   
   // CORS configuration - support for web and mobile apps
+  // Always allow localhost in development (even if NODE_ENV is not set correctly)
   const isDevelopment = process.env.NODE_ENV !== 'production';
+  const isLocalhost = process.env.NODE_ENV === undefined || 
+                      process.env.NODE_ENV === 'development' || 
+                      !process.env.NODE_ENV ||
+                      process.env.PORT === '3000';
+  
+  // Define allowed origins - be more permissive for localhost
+  const allowedOrigins = [
+    // Always allow localhost origins (for development)
+    'http://localhost',
+    'http://localhost:80',
+    'http://localhost:3000',
+    'http://localhost:3001', // الويبسايت
+    'http://localhost:3002', // لوحة الإدارة (Vite dev)
+    'http://127.0.0.1',
+    'http://127.0.0.1:80',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'http://127.0.0.1:3002',
+  ];
+
+  // Add production origins if in production
+  if (!isLocalhost && isDevelopment === false) {
+    allowedOrigins.push(
+      'http://medcodesa.cloud',
+      'https://medcodesa.cloud'
+    );
+  }
+
   app.enableCors({
-    origin: isDevelopment
-      ? true // Allow all origins in development (for mobile app testing)
-      : [
-          'http://localhost:3001', // الويبسايت
-          'http://localhost:3000', // الباك إند
-          'http://localhost:3002', // لوحة الإدارة (Vite dev)
-          'http://medcodesa.cloud', // الموقع الإنتاجي
-          'https://medcodesa.cloud', // الموقع الإنتاجي HTTPS
-        ],
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Always allow requests with no origin (like mobile apps or Postman)
+      if (!origin) {
+        console.log('[CORS] Allowing request with no origin');
+        return callback(null, true);
+      }
+      
+      console.log(`[CORS] Checking origin: ${origin}, NODE_ENV: ${process.env.NODE_ENV}, isLocalhost: ${isLocalhost}`);
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        console.log(`[CORS] Allowing origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Always allow any localhost origin (for development flexibility)
+      if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+        console.log(`[CORS] Allowing localhost origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Reject other origins
+      console.log(`[CORS] Rejecting origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-role'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-role', 'X-Requested-With'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true }),

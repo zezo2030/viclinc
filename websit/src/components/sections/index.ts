@@ -13,3 +13,6 @@ export { BlogList } from './BlogList';
 export { FAQSection } from './FAQSection';
 export { PricingSection } from './PricingSection';
 export { ContactForm } from './ContactForm';
+export { Features } from './Features';
+export { DepartmentsSection } from './DepartmentsSection';
+export { HowItWorks } from './HowItWorks';

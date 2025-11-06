@@ -35,9 +35,23 @@ export default function Login() {
       if (token && user) {
         // استخدام setTimeout لضمان تحديث React Router
         const timer = setTimeout(() => {
-          if (window.location.pathname === '/login') {
-            console.log('Login - useEffect: Redirecting via navigate')
+          const currentPath = window.location.pathname
+          console.log('Login - useEffect: Current path:', currentPath)
+          
+          // التحقق من أننا ما زلنا في صفحة login
+          if (currentPath.includes('/login') || currentPath.endsWith('/login')) {
+            console.log('Login - useEffect: Redirecting via navigate to:', from)
             navigate(from, { replace: true })
+            
+            // Force redirect كنسخة احتياطية
+            setTimeout(() => {
+              if (window.location.pathname.includes('/login')) {
+                console.log('Login - Navigate failed, forcing redirect...')
+                const basePath = import.meta.env.BASE_URL || '/admin/'
+                const redirectPath = from === '/' ? basePath : `${basePath}${from.replace(/^\//, '')}`
+                window.location.href = redirectPath
+              }
+            }, 300)
           }
         }, 100)
         
@@ -82,14 +96,45 @@ export default function Login() {
       // تحديث loading state
       setIsLoading(false)
       
-      // الانتظار قليلاً ثم إعادة التوجيه مباشرة
-      // نستخدم setTimeout لضمان تحديث state أولاً
+      // إعادة التوجيه مباشرة بعد التأكد من حفظ البيانات
+      console.log('Login - Redirecting to:', from)
+      
+      // استخدام setTimeout لضمان تحديث state و React Router
       setTimeout(() => {
-        console.log('Login - Redirecting to:', from)
-        if (window.location.pathname === '/login') {
-          navigate(from, { replace: true })
+        // التحقق مرة أخرى من وجود البيانات
+        const checkToken = localStorage.getItem('access_token')
+        const checkUser = localStorage.getItem('user')
+        
+        if (checkToken && checkUser) {
+          console.log('Login - Token and user confirmed, navigating...')
+          
+          // التحقق من base path
+          const basePath = import.meta.env.BASE_URL || '/admin/'
+          const redirectPath = from === '/' ? basePath : `${basePath}${from.replace(/^\//, '')}`
+          
+          console.log('Login - Redirect path:', redirectPath)
+          console.log('Login - Base path:', basePath)
+          
+          // إعادة التوجيه إلى Dashboard
+          try {
+            navigate(from, { replace: true })
+          } catch (error) {
+            console.error('Login - Navigate error:', error)
+          }
+          
+          // Force redirect إذا لم يعمل navigate (fallback)
+          setTimeout(() => {
+            const currentPath = window.location.pathname
+            if (currentPath.includes('/login') || currentPath.endsWith('/login')) {
+              console.log('Login - Navigate failed, forcing redirect to:', redirectPath)
+              window.location.href = redirectPath
+            }
+          }, 500)
+        } else {
+          console.error('Login - Token or user missing after login')
+          toast.error('حدث خطأ في حفظ بيانات تسجيل الدخول')
         }
-      }, 150)
+      }, 200)
       
     } catch (error: any) {
       console.error('Login error:', error)

@@ -31,9 +31,9 @@ export const Header: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white shadow-md sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* الشعار */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
@@ -54,9 +54,10 @@ export const Header: React.FC = () => {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-gray-700 hover:text-primary-600 transition-colors duration-200"
+                className="text-gray-700 hover:text-primary-600 transition-colors duration-200 font-medium relative group"
               >
                 {link.name}
+                <span className="absolute bottom-0 right-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
           </nav>
@@ -113,24 +114,24 @@ export const Header: React.FC = () => {
               </div>
             ) : (
               <>
+                <Link href="/appointments/new">
+                  <Button
+                    size="sm"
+                    className="gradient-medical text-white hover:opacity-90 shadow-md"
+                  >
+                    احجز موعد
+                  </Button>
+                </Link>
                 <Button
                   variant="outline"
                   size="sm"
+                  className="border-2 border-primary-500 text-primary-600 hover:bg-primary-50"
                   onClick={() => {
                     setAuthModalMode('login');
                     setShowAuthModal(true);
                   }}
                 >
                   تسجيل الدخول
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setAuthModalMode('register');
-                    setShowAuthModal(true);
-                  }}
-                >
-                  إنشاء حساب
                 </Button>
               </>
             )}

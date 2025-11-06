@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { SystemSettings, SystemSettingsDocument, SettingKey } from './schemas/system-settings.schema';
 import { UpdateAgoraSettingsDto, AgoraSettingsResponseDto, TestAgoraConnectionDto } from './dto/update-agora-settings.dto';
+import { SystemSettingsResponseDto, UpdateSettingsRequestDto } from './dto/system-settings.dto';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -307,5 +308,162 @@ export class SettingsService {
 
     // إذا لم توجد في أي مكان
     return null;
+  }
+
+  // Get default system settings
+  private getDefaultSystemSettings(): SystemSettingsResponseDto {
+    return {
+      general: {
+        appName: 'نظام العيادة الذكي',
+        logoUrl: undefined,
+        primaryColor: '#2563eb',
+        defaultLanguage: 'ar',
+        timezone: 'Asia/Riyadh',
+      },
+      appointments: {
+        defaultDurationMinutes: 30,
+        cancellationWindowHours: 24,
+        allowReschedule: true,
+        reminderOffsets: [24, 2],
+      },
+      payments: {
+        defaultCurrency: 'SAR',
+        provider: 'stripe',
+        providerConfig: {},
+        processingFeePercent: 2.5,
+        enableRefunds: true,
+      },
+      notifications: {
+        channels: {
+          email: true,
+          sms: true,
+          push: true,
+          inApp: true,
+        },
+        templates: [
+          {
+            id: '1',
+            name: 'إشعار موعد جديد',
+            subject: 'موعد جديد مع د. {{doctorName}}',
+            body: 'تم حجز موعد جديد مع {{doctorName}} في {{departmentName}} بتاريخ {{appointmentDate}}',
+            channel: 'email',
+          },
+          {
+            id: '2',
+            name: 'تذكير بالموعد',
+            subject: 'تذكير: موعدك غداً',
+            body: 'تذكير: لديك موعد مع {{doctorName}} غداً الساعة {{appointmentTime}}',
+            channel: 'sms',
+          },
+          {
+            id: '3',
+            name: 'إلغاء موعد',
+            subject: 'تم إلغاء موعدك',
+            body: 'تم إلغاء موعدك مع {{doctorName}} بتاريخ {{appointmentDate}}',
+            channel: 'push',
+          },
+        ],
+        defaultSenderEmail: 'noreply@clinicsystem.com',
+        defaultSenderName: 'نظام العيادة',
+        smsProvider: 'twilio',
+      },
+      updatedAt: new Date().toISOString(),
+      updatedBy: undefined,
+    };
+  }
+
+  async getSystemSettings(): Promise<SystemSettingsResponseDto> {
+    // Get system config from database
+    const systemConfig = await this.settingsModel.findOne({ key: SettingKey.SYSTEM_CONFIG });
+    const notificationConfig = await this.settingsModel.findOne({ key: SettingKey.NOTIFICATION_CONFIG });
+
+    // Start with defaults
+    const defaultSettings = this.getDefaultSystemSettings();
+
+    // Merge with database values if they exist
+    if (systemConfig && systemConfig.value) {
+      if (systemConfig.value.general) {
+        defaultSettings.general = { ...defaultSettings.general, ...systemConfig.value.general };
+      }
+      if (systemConfig.value.appointments) {
+        defaultSettings.appointments = { ...defaultSettings.appointments, ...systemConfig.value.appointments };
+      }
+      if (systemConfig.value.payments) {
+        defaultSettings.payments = { ...defaultSettings.payments, ...systemConfig.value.payments };
+      }
+      if (systemConfig.updatedAt) {
+        defaultSettings.updatedAt = systemConfig.updatedAt.toISOString();
+      }
+      if (systemConfig.updatedBy) {
+        defaultSettings.updatedBy = systemConfig.updatedBy.toString();
+      }
+    }
+
+    if (notificationConfig && notificationConfig.value) {
+      defaultSettings.notifications = { ...defaultSettings.notifications, ...notificationConfig.value };
+      if (notificationConfig.updatedAt) {
+        defaultSettings.updatedAt = notificationConfig.updatedAt.toISOString();
+      }
+      if (notificationConfig.updatedBy) {
+        defaultSettings.updatedBy = notificationConfig.updatedBy.toString();
+      }
+    }
+
+    return defaultSettings;
+  }
+
+  async updateSystemSettings(
+    updateDto: UpdateSettingsRequestDto,
+    updatedBy: string
+  ): Promise<SystemSettingsResponseDto> {
+    try {
+      // Get current settings
+      const currentSettings = await this.getSystemSettings();
+
+      // Prepare updates for system config
+      const systemConfigUpdates: any = {};
+      if (updateDto.general) {
+        systemConfigUpdates.general = { ...currentSettings.general, ...updateDto.general };
+      }
+      if (updateDto.appointments) {
+        systemConfigUpdates.appointments = { ...currentSettings.appointments, ...updateDto.appointments };
+      }
+      if (updateDto.payments) {
+        systemConfigUpdates.payments = { ...currentSettings.payments, ...updateDto.payments };
+      }
+
+      // Update system config if there are changes
+      if (Object.keys(systemConfigUpdates).length > 0) {
+        await this.settingsModel.findOneAndUpdate(
+          { key: SettingKey.SYSTEM_CONFIG },
+          {
+            value: systemConfigUpdates,
+            updatedBy: new Types.ObjectId(updatedBy),
+            updatedAt: new Date(),
+          },
+          { upsert: true, new: true }
+        );
+      }
+
+      // Update notification config if there are changes
+      if (updateDto.notifications) {
+        const notificationUpdates = { ...currentSettings.notifications, ...updateDto.notifications };
+        await this.settingsModel.findOneAndUpdate(
+          { key: SettingKey.NOTIFICATION_CONFIG },
+          {
+            value: notificationUpdates,
+            updatedBy: new Types.ObjectId(updatedBy),
+            updatedAt: new Date(),
+          },
+          { upsert: true, new: true }
+        );
+      }
+
+      // Return updated settings
+      return await this.getSystemSettings();
+    } catch (error) {
+      console.error('Error updating system settings:', error);
+      throw new BadRequestException(`Failed to update system settings: ${error.message}`);
+    }
   }
 }

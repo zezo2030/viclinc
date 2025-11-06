@@ -1,318 +1,329 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/Button';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Send, Paperclip, Image, FileText } from 'lucide-react';
-import { socketClient } from '@/lib/socket/socket-client';
-import { messageService, Message } from '@/lib/api/messages';
-import { useAuth } from '@/lib/contexts/auth-context';
+import { Button } from '@/components/ui/Button';
+import {
+  SendIcon,
+  FileIcon,
+  MoreVerticalIcon,
+  DownloadIcon,
+  PaperclipIcon,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface Message {
+  id: string;
+  sender: 'user' | 'doctor';
+  senderName: string;
+  avatar?: string;
+  content: string;
+  timestamp: Date;
+  attachments?: { id: string; name: string; size: number; url: string }[];
+  isRead: boolean;
+}
 
 interface ChatInterfaceProps {
-  consultationId: number;
-  onFileUpload?: (file: File) => void;
+  consultationId: string;
+  doctorName: string;
+  doctorAvatar?: string;
+  userName: string;
+  userAvatar?: string;
+  onSendMessage?: (message: string, attachments?: File[]) => void;
+  isDoctor?: boolean;
+  initialMessages?: Message[];
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   consultationId,
-  onFileUpload,
+  doctorName,
+  doctorAvatar,
+  userName,
+  userAvatar,
+  onSendMessage,
+  isDoctor = false,
+  initialMessages = [],
 }) => {
-  const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [inputValue, setInputValue] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    loadMessages();
-    setupSocketListeners();
-    
-    return () => {
-      cleanup();
-    };
-  }, [consultationId]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const loadMessages = async () => {
-    try {
-      setIsLoading(true);
-      const messagesData = await messageService.getMessagesByConsultation(consultationId);
-      setMessages(messagesData);
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      setError('فشل في تحميل الرسائل');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const setupSocketListeners = () => {
-    // الانضمام لرسائل الاستشارة
-    socketClient.joinConsultationMessages(consultationId, user?.id ? parseInt(user.id) : 0);
-
-    // الاستماع للرسائل الجديدة
-    socketClient.onMessageEvent('new-message', (data) => {
-      if (data.consultationId === consultationId) {
-        setMessages(prev => [...prev, {
-          id: Date.now(), // مؤقت
-          consultationId: data.consultationId,
-          senderId: data.senderId,
-          message: data.message,
-          messageType: data.messageType || 'TEXT',
-          fileUrl: data.fileUrl,
-          isRead: false,
-          createdAt: data.timestamp,
-          sender: {
-            id: data.senderId,
-            email: '',
-            profile: {
-              firstName: 'مستخدم',
-              lastName: '',
-            },
-          },
-        }]);
-      }
-    });
-
-    // الاستماع لحالة الكتابة
-    socketClient.onMessageEvent('user-typing', (data) => {
-      if (data.consultationId === consultationId) {
-        setTypingUsers(data.typingUsers || []);
-      }
-    });
-
-    // الاستماع لحالة قراءة الرسائل
-    socketClient.onMessageEvent('message-read-status', (data) => {
-      setMessages(prev => prev.map(msg => 
-        msg.id === data.messageId ? { ...msg, isRead: true } : msg
-      ));
-    });
-  };
-
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !user) return;
-
-    try {
-      // إرسال الرسالة عبر Socket
-      socketClient.sendMessage(
-        consultationId,
-        newMessage,
-        parseInt(user.id),
-        'TEXT'
-      );
-
-      // إضافة الرسالة للقائمة محلياً
-      const tempMessage: Message = {
-        id: Date.now(),
-        consultationId,
-        senderId: parseInt(user.id),
-        message: newMessage,
-        messageType: 'TEXT',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        sender: {
-          id: parseInt(user.id),
-          email: user.email || '',
-          profile: {
-            firstName: user.name || 'أنت',
-            lastName: '',
-          },
-        },
-      };
-
-      setMessages(prev => [...prev, tempMessage]);
-      setNewMessage('');
-
-      // إيقاف حالة الكتابة
-      handleTyping(false);
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setError('فشل في إرسال الرسالة');
-    }
-  };
-
-  const handleTyping = (typing: boolean) => {
-    if (typing) {
-      socketClient.sendTyping(consultationId, user?.id ? parseInt(user.id) : 0, true);
-      
-      // إيقاف حالة الكتابة بعد 3 ثوان
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      typingTimeoutRef.current = setTimeout(() => {
-        handleTyping(false);
-      }, 3000);
-    } else {
-      socketClient.sendTyping(consultationId, user?.id ? parseInt(user.id) : 0, false);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    }
-    setIsTyping(typing);
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && onFileUpload) {
-      onFileUpload(file);
-    }
-  };
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const cleanup = () => {
-    socketClient.leaveConsultationMessages(consultationId, user?.id ? parseInt(user.id) : 0);
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() && selectedFiles.length === 0) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      sender: isDoctor ? 'doctor' : 'user',
+      senderName: isDoctor ? doctorName : userName,
+      avatar: isDoctor ? doctorAvatar : userAvatar,
+      content: inputValue,
+      timestamp: new Date(),
+      attachments: selectedFiles.map((file) => ({
+        id: Date.now().toString(),
+        name: file.name,
+        size: file.size,
+        url: URL.createObjectURL(file),
+      })),
+      isRead: false,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setInputValue('');
+    setSelectedFiles([]);
+
+    // Callback to parent
+    if (onSendMessage) {
+      onSendMessage(inputValue, selectedFiles);
+    }
+
+    // Simulate doctor response (if user)
+    if (!isDoctor) {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        const response: Message = {
+          id: (Date.now() + 1).toString(),
+          sender: 'doctor',
+          senderName: doctorName,
+          avatar: doctorAvatar,
+          content: 'شكراً لرسالتك. سأقوم بمراجعتها والرد عليك قريباً.',
+          timestamp: new Date(),
+          isRead: false,
+        };
+        setMessages((prev) => [...prev, response]);
+      }, 2000);
     }
   };
 
-  const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('ar-SA', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
   };
 
-  if (isLoading) {
-    return (
-      <Card className="p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p>جاري تحميل الرسائل...</p>
-        </div>
-      </Card>
-    );
-  }
+  const handleFilesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedFiles((prev) => [...prev, ...Array.from(event.target.files || [])]);
+    }
+  };
 
-  if (error) {
-    return (
-      <Card className="p-6">
-        <div className="text-center text-red-600">
-          <p>{error}</p>
-          <Button onClick={loadMessages} className="mt-4">
-            إعادة المحاولة
-          </Button>
-        </div>
-      </Card>
-    );
-  }
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
 
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">الدردشة</h3>
-        
-        {/* منطقة الرسائل */}
-        <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3">
-          {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <p>لا توجد رسائل بعد</p>
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.senderId === parseInt(user?.id || '0') ? 'justify-end' : 'justify-start'}`}
-              >
+    <Card className="h-full flex flex-col border-2 border-gray-100">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary-50 to-secondary-50 p-4 border-b border-gray-200 flex items-center justify-between rounded-t-xl">
+        <div className="flex items-center gap-3">
+          {(isDoctor ? doctorAvatar : userAvatar) && (
+            <img
+              src={isDoctor ? doctorAvatar : userAvatar}
+              alt="Avatar"
+              className="w-10 h-10 rounded-full"
+            />
+          )}
+          <div>
+            <h3 className="font-bold text-gray-900">{isDoctor ? doctorName : userName}</h3>
+            <p className="text-xs text-gray-600">
+              {isTyping ? 'جاري الكتابة...' : 'متصل'}
+            </p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-gray-600 hover:text-gray-900"
+        >
+          <MoreVerticalIcon className="w-5 h-5" />
+        </Button>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white">
+        <AnimatePresence>
+          {messages.map((message) => (
+            <motion.div
+              key={message.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+            >
+              {/* Avatar */}
+              <div className="flex-shrink-0">
+                {message.avatar ? (
+                  <img
+                    src={message.avatar}
+                    alt={message.senderName}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full gradient-medical-light flex items-center justify-center text-xs font-bold text-primary-600">
+                    {message.senderName.charAt(0)}
+                  </div>
+                )}
+              </div>
+
+              {/* Message Content */}
+              <div className={`flex flex-col ${message.sender === 'user' ? 'items-end' : 'items-start'}`}>
                 <div
-                  className={`max-w-xs px-4 py-2 rounded-lg ${
-                    message.senderId === parseInt(user?.id || '0')
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-200 text-gray-900'
+                  className={`max-w-sm p-3 rounded-lg ${
+                    message.sender === 'user'
+                      ? 'bg-primary-500 text-white rounded-br-none'
+                      : 'bg-gray-100 text-gray-900 rounded-bl-none'
                   }`}
                 >
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="text-sm font-medium">
-                      {message.sender.profile.firstName}
-                    </span>
-                    <span className="text-xs opacity-75">
-                      {formatTime(message.createdAt)}
-                    </span>
-                  </div>
-                  <p className="text-sm">{message.message}</p>
-                  {message.fileUrl && (
-                    <div className="mt-2">
-                      {message.messageType === 'IMAGE' ? (
-                        <img
-                          src={message.fileUrl}
-                          alt="مرفق"
-                          className="max-w-full h-auto rounded"
-                        />
-                      ) : (
-                        <a
-                          href={message.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-300 hover:text-blue-200 underline"
-                        >
-                          📎 ملف مرفق
-                        </a>
-                      )}
-                    </div>
-                  )}
+                  <p className="text-sm">{message.content}</p>
                 </div>
-              </div>
-            ))
-          )}
-          
-          {/* مؤشر الكتابة */}
-          {typingUsers.length > 0 && (
-            <div className="text-sm text-gray-500 italic">
-              {typingUsers.length === 1 ? 'شخص واحد يكتب...' : `${typingUsers.length} أشخاص يكتبون...`}
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
-        </div>
 
-        {/* منطقة إدخال الرسالة */}
-        <div className="flex space-x-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => {
-              setNewMessage(e.target.value);
-              handleTyping(true);
-            }}
+                {/* Attachments */}
+                {message.attachments && message.attachments.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {message.attachments.map((attachment) => (
+                      <a
+                        key={attachment.id}
+                        href={attachment.url}
+                        download={attachment.name}
+                        className={`flex items-center gap-2 p-2 rounded text-xs ${
+                          message.sender === 'user'
+                            ? 'bg-primary-100 text-primary-700'
+                            : 'bg-gray-200 text-gray-700'
+                        } hover:opacity-80 transition-opacity`}
+                      >
+                        <FileIcon className="w-4 h-4" />
+                        <span className="truncate">{attachment.name}</span>
+                        <span className="text-xs">({formatFileSize(attachment.size)})</span>
+                        <DownloadIcon className="w-3 h-3 ml-auto" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                <span className="text-xs text-gray-500 mt-1">
+                  {formatTime(message.timestamp)}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Typing Indicator */}
+        {isTyping && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex gap-2"
+          >
+            <div className="w-8 h-8 rounded-full gradient-medical-light flex items-center justify-center text-xs font-bold text-primary-600">
+              {doctorName.charAt(0)}
+            </div>
+            <div className="flex items-center gap-1 bg-gray-100 px-3 py-2 rounded-lg">
+              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
+              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce animation-delay-200"></span>
+              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce animation-delay-400"></span>
+            </div>
+          </motion.div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-xl">
+        {/* File Preview */}
+        {selectedFiles.length > 0 && (
+          <div className="mb-3 space-y-2">
+            {selectedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between bg-white p-2 rounded border border-gray-200"
+              >
+                <span className="text-sm text-gray-700 flex items-center gap-2">
+                  <FileIcon className="w-4 h-4 text-primary-600" />
+                  {file.name}
+                </span>
+                <button
+                  onClick={() => removeFile(index)}
+                  className="text-error-600 hover:text-error-700"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="flex items-end gap-2">
+          <textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                sendMessage();
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
               }
             }}
             placeholder="اكتب رسالتك هنا..."
-            className="flex-1"
+            className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none min-h-[40px] max-h-32"
+            rows={1}
           />
-          
+
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleFileSelect}
+            className="text-primary-600 hover:bg-primary-100"
+            title="إرفاق ملف"
+          >
+            <PaperclipIcon className="w-5 h-5" />
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={handleSendMessage}
+            disabled={!inputValue.trim() && selectedFiles.length === 0}
+            className="gradient-medical text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="إرسال"
+          >
+            <SendIcon className="w-5 h-5" />
+          </Button>
+
           <input
+            ref={fileInputRef}
             type="file"
-            id="file-upload"
-            onChange={handleFileUpload}
+            multiple
+            onChange={handleFilesChange}
             className="hidden"
             accept="image/*,.pdf,.doc,.docx"
           />
-          
-          <label htmlFor="file-upload">
-            <Button variant="outline" size="sm" type="button">
-              <Paperclip className="w-4 h-4" />
-            </Button>
-          </label>
-          
-          <Button onClick={sendMessage} disabled={!newMessage.trim()}>
-            <Send className="w-4 h-4" />
-          </Button>
         </div>
+
+        <p className="text-xs text-gray-500 mt-2">
+          اضغط Shift + Enter للسطر الجديد
+        </p>
       </div>
     </Card>
   );

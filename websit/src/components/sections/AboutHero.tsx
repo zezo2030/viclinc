@@ -18,7 +18,7 @@ export const AboutHero: React.FC = () => {
             <div className="space-y-4">
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
                 من نحن
-                <span className="text-primary-600 block">
+                <span className="text-gradient-medical block mt-2">
                   رؤيتنا ورسالتنا
                 </span>
               </h1>
@@ -31,14 +31,14 @@ export const AboutHero: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div key={index} className="text-center bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                  <div className="w-16 h-16 gradient-medical-light rounded-full flex items-center justify-center mx-auto mb-4">
                     <stat.icon className="w-8 h-8 text-primary-600" />
                   </div>
-                  <div className="text-2xl font-bold text-primary-600 mb-2">
+                  <div className="text-2xl font-bold text-gradient-medical mb-2">
                     {stat.number}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 font-medium">
                     {stat.label}
                   </div>
                 </div>
@@ -46,14 +46,14 @@ export const AboutHero: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-primary-600 text-white hover:bg-primary-700">
+              <Button size="lg" className="gradient-medical text-white hover:opacity-90 shadow-md">
                 تعرف على فريقنا
                 <ArrowRightIcon className="w-5 h-5 ml-2" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="border-primary-600 text-primary-600 hover:bg-primary-50"
+                className="border-2 border-primary-500 text-primary-600 hover:bg-primary-50"
               >
                 انضم إلينا
               </Button>

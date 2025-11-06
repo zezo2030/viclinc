@@ -23,9 +23,9 @@ interface UpcomingAppointmentsProps {
 }
 
 const statusColors = {
-  confirmed: 'bg-green-100 text-green-800 border-green-200',
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  cancelled: 'bg-red-100 text-red-800 border-red-200',
+  confirmed: 'bg-success-100 text-success-700 border-success-200',
+  pending: 'bg-warning-100 text-warning-700 border-warning-200',
+  cancelled: 'bg-error-100 text-error-700 border-error-200',
 };
 
 const statusLabels = {
@@ -51,7 +51,7 @@ export const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
           <div className="text-center py-8">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">لا توجد مواعيد قادمة</p>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="gradient-medical text-white hover:opacity-90 shadow-md">
               حجز موعد جديد
             </Button>
           </div>
@@ -128,7 +128,7 @@ export const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
         </div>
 
         <div className="mt-6">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700">
+          <Button className="w-full gradient-medical text-white hover:opacity-90 shadow-md">
             عرض جميع المواعيد
           </Button>
         </div>

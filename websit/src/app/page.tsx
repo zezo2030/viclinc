@@ -2,7 +2,13 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Hero } from '@/components/sections/Hero';
+import { 
+  Hero, 
+  Features, 
+  DepartmentsSection, 
+  HowItWorks,
+  FAQSection 
+} from '@/components/sections';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AuthModal } from '@/components/auth';
@@ -26,6 +32,10 @@ function HomePageContent() {
       <Header />
       <main className="flex-1">
         <Hero />
+        <Features />
+        <DepartmentsSection />
+        <HowItWorks />
+        <FAQSection />
       </main>
       <Footer />
 

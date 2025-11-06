@@ -15,18 +15,23 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               الملف الشخصي
             </h1>
-            <p className="mt-2 text-gray-600">
-              إدارة معلومات حسابك الشخصية
+            <p className="text-gray-600">
+              إدارة معلومات حسابك الشخصية وإعداداتك
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* معلومات الحساب */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <Card className="p-6 border-2 border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full gradient-medical-light flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
                 معلومات الحساب
               </h3>
               <div className="space-y-4">
@@ -81,18 +86,23 @@ export default function ProfilePage() {
             </Card>
 
             {/* إعدادات الأمان */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <Card className="p-6 border-2 border-gray-100">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full gradient-medical-light flex items-center justify-center">
+                  <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
                 إعدادات الأمان
               </h3>
-              <div className="space-y-4">
-                <Button variant="outline" className="w-full justify-start">
+              <div className="space-y-3">
+                <Button variant="outline" className="w-full justify-start border-2 border-primary-200 text-primary-600 hover:bg-primary-50">
                   تغيير كلمة المرور
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start border-2 border-secondary-200 text-secondary-600 hover:bg-secondary-50">
                   تفعيل المصادقة الثنائية
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start border-2 border-gray-200 text-gray-600 hover:bg-gray-50">
                   إدارة الأجهزة المتصلة
                 </Button>
               </div>

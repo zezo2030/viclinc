@@ -143,11 +143,10 @@ export const ContactForm: React.FC = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full"
-                loading={isSubmitting}
+                className="w-full gradient-medical text-white hover:opacity-90 shadow-md"
               >
                 <SendIcon className="w-5 h-5 ml-2" />
-                إرسال الرسالة
+                {isSubmitting ? 'جاري الإرسال...' : 'إرسال الرسالة'}
               </Button>
             </form>
           </Card>
@@ -160,42 +159,42 @@ export const ContactForm: React.FC = () => {
               </h3>
               
               <div className="space-y-6">
-                <div className="flex items-start space-x-4 space-x-reverse">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                <div className="flex items-start space-x-4 space-x-reverse p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 gradient-medical-light rounded-full flex items-center justify-center flex-shrink-0">
                     <PhoneIcon className="w-6 h-6 text-primary-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">الهاتف</h4>
-                    <p className="text-gray-600">{CONTACT_INFO.phone}</p>
+                    <h4 className="font-bold text-gray-900 mb-1">الهاتف</h4>
+                    <a href={`tel:${CONTACT_INFO.phone}`} className="text-primary-600 hover:text-primary-700 font-medium">{CONTACT_INFO.phone}</a>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4 space-x-reverse">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                <div className="flex items-start space-x-4 space-x-reverse p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 gradient-medical-light rounded-full flex items-center justify-center flex-shrink-0">
                     <MailIcon className="w-6 h-6 text-primary-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">البريد الإلكتروني</h4>
-                    <p className="text-gray-600">{CONTACT_INFO.email}</p>
+                    <h4 className="font-bold text-gray-900 mb-1">البريد الإلكتروني</h4>
+                    <a href={`mailto:${CONTACT_INFO.email}`} className="text-primary-600 hover:text-primary-700 font-medium">{CONTACT_INFO.email}</a>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4 space-x-reverse">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                <div className="flex items-start space-x-4 space-x-reverse p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 gradient-medical-light rounded-full flex items-center justify-center flex-shrink-0">
                     <MapPinIcon className="w-6 h-6 text-primary-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">العنوان</h4>
+                    <h4 className="font-bold text-gray-900 mb-1">العنوان</h4>
                     <p className="text-gray-600">{CONTACT_INFO.address}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4 space-x-reverse">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                <div className="flex items-start space-x-4 space-x-reverse p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 gradient-medical-light rounded-full flex items-center justify-center flex-shrink-0">
                     <ClockIcon className="w-6 h-6 text-primary-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">ساعات العمل</h4>
+                    <h4 className="font-bold text-gray-900 mb-1">ساعات العمل</h4>
                     <p className="text-gray-600">الأحد - الخميس: 8:00 ص - 6:00 م</p>
                     <p className="text-gray-600">الجمعة - السبت: 9:00 ص - 2:00 م</p>
                   </div>
@@ -203,9 +202,9 @@ export const ContactForm: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-4">الرد السريع</h4>
-              <p className="text-gray-600 text-sm">
+            <div className="gradient-medical-light p-6 rounded-xl border-2 border-primary-100">
+              <h4 className="font-bold text-gray-900 mb-3">الرد السريع</h4>
+              <p className="text-gray-700 text-sm leading-relaxed">
                 نحن نرد على جميع الاستفسارات خلال 24 ساعة في أيام العمل. 
                 للطوارئ، يرجى الاتصال بنا مباشرة.
               </p>

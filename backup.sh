@@ -41,3 +41,5 @@ echo "📍 الموقع: $BACKUP_DIR"
 echo "📊 الملفات:"
 ls -lh $BACKUP_DIR/*-$DATE.tar.gz
 
+
+

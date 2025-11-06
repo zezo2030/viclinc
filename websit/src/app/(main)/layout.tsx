@@ -1,6 +1,12 @@
+import type { Metadata } from 'next';
 import React from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { createMetadata } from '@/lib/metadata';
+
+export const metadata: Metadata = createMetadata({
+  title: 'الرئيسية',
+});
 
 export default function MainLayout({
   children,

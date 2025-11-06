@@ -9,7 +9,7 @@ export interface Appointment {
   departmentId: number;
   appointmentDate: string;
   appointmentTime: string;
-  status: 'SCHEDULED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+  status: 'PENDING_CONFIRM' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW' | 'REJECTED';
   reason?: string;
   notes?: string;
   isEmergency: boolean;
@@ -71,7 +71,7 @@ export interface CreateAppointmentDto {
 export interface UpdateAppointmentDto {
   appointmentDate?: string;
   appointmentTime?: string;
-  status?: 'SCHEDULED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+  status?: 'PENDING_CONFIRM' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW' | 'REJECTED';
   reason?: string;
   notes?: string;
   isEmergency?: boolean;

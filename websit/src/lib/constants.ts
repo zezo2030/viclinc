@@ -4,7 +4,8 @@ export const SITE_CONFIG = {
   name: 'MedFlow',
   description: 'نظام إدارة العيادات المتطور',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  // Use nginx proxy in production, direct API in development
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.origin === 'http://localhost' ? 'http://localhost/api' : 'http://localhost:3000'),
 } as const;
 
 export const CONTACT_INFO = {

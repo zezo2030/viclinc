@@ -58,3 +58,5 @@ fi
 echo "✅ تم النشر بنجاح!"
 echo "📝 استخدم 'docker compose -f docker-compose.prod.yml logs -f' لعرض السجلات"
 
+
+

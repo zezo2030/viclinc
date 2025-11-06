@@ -8,12 +8,14 @@ interface AnimatedCardProps {
   children: React.ReactNode;
   className?: string;
   delay?: number;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 export const AnimatedCard: React.FC<AnimatedCardProps> = ({ 
   children, 
   className,
-  delay = 0
+  delay = 0,
+  onClick,
 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
@@ -27,6 +29,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
       className={className}
       transition={{ delay }}
       whileHover={{ y: -5 }}
+      onClick={onClick}
     >
       {children}
     </motion.div>

@@ -135,6 +135,49 @@ export class DoctorsService {
     return doctor.save();
   }
 
+  // تحديث ملف الطبيب بواسطة الأدمن (بالمعرف)
+  async updateDoctorProfileById(id: string, updateProfileDto: UpdateDoctorProfileDto) {
+    const doctor = await this.doctorProfileModel.findById(id);
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+
+    // التحقق من عدم تكرار رقم الترخيص إذا تم تحديثه
+    if (updateProfileDto.licenseNumber && updateProfileDto.licenseNumber !== doctor.licenseNumber) {
+      const existingLicense = await this.doctorProfileModel.findOne({ 
+        licenseNumber: updateProfileDto.licenseNumber,
+        _id: { $ne: doctor._id }
+      });
+      if (existingLicense) {
+        throw new ConflictException('License number already exists');
+      }
+    }
+
+    // التحقق من وجود القسم إذا تم تحديثه
+    if (updateProfileDto.departmentId) {
+      const department = await this.departmentModel.findById(updateProfileDto.departmentId);
+      if (!department) {
+        throw new NotFoundException('Department not found');
+      }
+      doctor.departmentId = new Types.ObjectId(updateProfileDto.departmentId);
+    }
+
+    // تحديث الحقول الأخرى
+    if (updateProfileDto.name) doctor.name = updateProfileDto.name;
+    if (updateProfileDto.licenseNumber) doctor.licenseNumber = updateProfileDto.licenseNumber;
+    if (updateProfileDto.yearsOfExperience !== undefined) doctor.yearsOfExperience = updateProfileDto.yearsOfExperience;
+    if (updateProfileDto.photos !== undefined) doctor.photos = updateProfileDto.photos;
+    if (updateProfileDto.bio !== undefined) doctor.bio = updateProfileDto.bio;
+
+    await doctor.save();
+    
+    // إرجاع البيانات مع populate
+    return this.doctorProfileModel
+      .findById(id)
+      .populate('userId', 'email phone')
+      .populate('departmentId', 'name');
+  }
+
   // الحصول على خدمات الطبيب
   async getDoctorServices(userId: string) {
     const doctor = await this.doctorProfileModel.findOne({ userId: new Types.ObjectId(userId) });

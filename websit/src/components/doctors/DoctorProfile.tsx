@@ -111,23 +111,25 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
       </Button>
 
       {/* Header Section */}
-      <Card className="p-8 mb-8">
+      <Card className="p-8 mb-8 gradient-medical-light border-2 border-primary-100">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Doctor Image */}
           <div className="flex-shrink-0">
             {doctor.photos && doctor.photos.length > 0 ? (
-              <img 
-                src={doctor.photos[0]} 
-                alt={doctor.name || 'طبيب'}
-                className="w-32 h-32 rounded-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                }}
-              />
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                <img 
+                  src={doctor.photos[0]} 
+                  alt={doctor.name || 'طبيب'}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              </div>
             ) : null}
-            <div className={`w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center ${doctor.photos && doctor.photos.length > 0 ? 'hidden' : ''}`}>
-              <Briefcase className="w-16 h-16 text-gray-400" />
+            <div className={`w-32 h-32 rounded-full gradient-medical-light flex items-center justify-center border-4 border-white shadow-lg ${doctor.photos && doctor.photos.length > 0 ? 'hidden' : ''}`}>
+              <Briefcase className="w-16 h-16 text-primary-500" />
             </div>
           </div>
 
@@ -142,33 +144,33 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
             
             {/* Rating */}
             {(doctor.averageRating || doctor.totalRatings) && (
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full">
                   <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                  <span className="text-lg font-semibold">{doctor.averageRating || 0}</span>
+                  <span className="text-lg font-bold text-gray-900">{doctor.averageRating || 0}</span>
                 </div>
-                <span className="text-gray-500">({doctor.totalRatings || 0} تقييم)</span>
+                <span className="text-gray-600">({doctor.totalRatings || 0} تقييم)</span>
               </div>
             )}
 
             {/* Quick Info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {doctor.yearsOfExperience && (
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-gray-400" />
-                  <span>{doctor.yearsOfExperience} سنوات خبرة</span>
+                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
+                  <Briefcase className="w-5 h-5 text-primary-500" />
+                  <span className="font-medium">{doctor.yearsOfExperience} سنوات خبرة</span>
                 </div>
               )}
               {doctor.consultationFee && (
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-gray-400" />
-                  <span>{doctor.consultationFee} ريال</span>
+                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
+                  <DollarSign className="w-5 h-5 text-success-500" />
+                  <span className="font-medium text-primary-600">{doctor.consultationFee} ريال</span>
                 </div>
               )}
               {doctor.departmentName && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-gray-400" />
-                  <span>{doctor.departmentName}</span>
+                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
+                  <MapPin className="w-5 h-5 text-secondary-500" />
+                  <span className="font-medium">{doctor.departmentName}</span>
                 </div>
               )}
             </div>
@@ -176,12 +178,12 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
             {/* Availability */}
             <div className="flex items-center gap-2">
               {doctor.status === 'APPROVED' ? (
-                <span className="text-green-600 flex items-center gap-1">
+                <span className="text-success-600 flex items-center gap-2 bg-success-50 px-4 py-2 rounded-full font-semibold">
                   <CheckCircle className="w-5 h-5" />
                   متاح للاستشارات
                 </span>
               ) : (
-                <span className="text-gray-400">غير متاح حالياً</span>
+                <span className="text-gray-400 bg-gray-100 px-4 py-2 rounded-full">غير متاح حالياً</span>
               )}
             </div>
           </div>
@@ -191,38 +193,44 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctorId }) => {
       {/* Booking Options */}
       <Card className="p-6 mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">خيارات الحجز</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-6 text-center cursor-pointer hover:shadow-lg transition-shadow">
-            <Calendar className="w-12 h-12 mx-auto mb-3 text-primary-600" />
-            <h3 className="text-lg font-semibold mb-2">حجز موعد</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="p-6 text-center cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-2 border-primary-100">
+            <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-primary-600" />
+            </div>
+            <h3 className="text-lg font-bold mb-2 text-gray-900">حجز موعد</h3>
             <p className="text-sm text-gray-600 mb-4">احجز موعداً شخصياً في العيادة</p>
             <Button 
-              className="w-full"
-              onClick={() => router.push(`/appointments/new?doctorId=${doctor._id || doctor.id}`)}
+              className="w-full gradient-medical text-white hover:opacity-90"
+              onClick={() => router.push(`/appointments/new?doctorId=${doctor._id || doctor.id}&type=IN_PERSON`)}
             >
               احجز الآن
             </Button>
           </Card>
           
-          <Card className="p-6 text-center cursor-pointer hover:shadow-lg transition-shadow">
-            <Video className="w-12 h-12 mx-auto mb-3 text-primary-600" />
-            <h3 className="text-lg font-semibold mb-2">استشارة فيديو</h3>
+          <Card className="p-6 text-center cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-2 border-secondary-100">
+            <div className="w-16 h-16 rounded-full bg-secondary-100 flex items-center justify-center mx-auto mb-4">
+              <Video className="w-8 h-8 text-secondary-600" />
+            </div>
+            <h3 className="text-lg font-bold mb-2 text-gray-900">استشارة فيديو</h3>
             <p className="text-sm text-gray-600 mb-4">استشارة مباشرة عبر الفيديو</p>
             <Button 
-              className="w-full"
-              onClick={() => router.push(`/consultations/new?doctorId=${doctor._id || doctor.id}&type=video`)}
+              className="w-full bg-secondary-500 text-white hover:bg-secondary-600"
+              onClick={() => router.push(`/appointments/new?doctorId=${doctor._id || doctor.id}&type=VIDEO`)}
             >
               ابدأ استشارة
             </Button>
           </Card>
           
-          <Card className="p-6 text-center cursor-pointer hover:shadow-lg transition-shadow">
-            <MessageSquare className="w-12 h-12 mx-auto mb-3 text-primary-600" />
-            <h3 className="text-lg font-semibold mb-2">استشارة نصية</h3>
+          <Card className="p-6 text-center cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-2 border-primary-100">
+            <div className="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 text-primary-500" />
+            </div>
+            <h3 className="text-lg font-bold mb-2 text-gray-900">استشارة نصية</h3>
             <p className="text-sm text-gray-600 mb-4">محادثة نصية مع الطبيب</p>
             <Button 
-              className="w-full"
-              onClick={() => router.push(`/consultations/new?doctorId=${doctor._id || doctor.id}&type=chat`)}
+              className="w-full border-2 border-primary-500 text-primary-600 hover:bg-primary-50"
+              onClick={() => router.push(`/appointments/new?doctorId=${doctor._id || doctor.id}&type=CHAT`)}
             >
               ابدأ محادثة
             </Button>

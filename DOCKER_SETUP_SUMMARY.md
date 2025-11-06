@@ -203,3 +203,5 @@ docker exec -it virclinc-mongo mongosh clinic
 
 **🎉 تم إعداد كل شيء! جاهز للنشر على VPS**
 
+
+

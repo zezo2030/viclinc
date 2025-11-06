@@ -85,7 +85,7 @@ export default function DashboardPage() {
       time: appointment.appointmentTime,
       location: appointment.clinic?.name || appointment.clinic?.address || 'مستشفى الرياض التخصصي',
       phone: (appointment.clinic as any)?.phone || '',
-      status: appointment.status.toLowerCase() as 'confirmed' | 'pending' | 'cancelled',
+      status: appointment.status.toLowerCase() as 'pending_confirm' | 'confirmed' | 'cancelled' | 'completed' | 'no_show' | 'rejected',
     };
   }) || [];
 
@@ -120,31 +120,31 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatsCard
               title="المواعيد القادمة"
-              value={formattedAppointments.length.toString()}
+              value={formattedAppointments.filter((a: any) => a.status === 'confirmed' || a.status === 'pending_confirm').length.toString()}
               icon={Calendar}
               color="blue"
-              trend="+1 هذا الأسبوع"
+              trend={`${formattedAppointments.length} إجمالي المواعيد`}
             />
             <StatsCard
               title="الاستشارات النشطة"
-              value={consultations?.filter((c: any) => c.status === 'IN_PROGRESS').length || 0}
+              value={(consultations?.filter((c: any) => c.status === 'IN_PROGRESS' || c.status === 'ACTIVE').length || 0).toString()}
               icon={Video}
               color="green"
               trend="جارية الآن"
             />
             <StatsCard
-              title="الرسائل الجديدة"
-              value="5"
+              title="المواعيد المؤكدة"
+              value={formattedAppointments.filter((a: any) => a.status === 'confirmed').length.toString()}
               icon={MessageSquare}
               color="orange"
-              trend="+2 اليوم"
+              trend="هذا الشهر"
             />
             <StatsCard
               title="الاستشارات المكتملة"
-              value={consultations?.filter((c: any) => c.status === 'COMPLETED').length || 0}
+              value={(consultations?.filter((c: any) => c.status === 'COMPLETED').length || 0).toString()}
               icon={Users}
               color="purple"
-              trend="هذا الشهر"
+              trend="إجمالي"
             />
           </div>
 

@@ -185,7 +185,7 @@ export default function ConsultationsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">جارية</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {consultations?.filter(c => c.status === 'IN_PROGRESS').length || 0}
+                  {consultations?.filter((c: Consultation) => c.status === 'IN_PROGRESS').length || 0}
                 </p>
               </div>
             </div>
@@ -199,7 +199,7 @@ export default function ConsultationsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">مكتملة</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {consultations?.filter(c => c.status === 'COMPLETED').length || 0}
+                  {consultations?.filter((c: Consultation) => c.status === 'COMPLETED').length || 0}
                 </p>
               </div>
             </div>
@@ -213,7 +213,7 @@ export default function ConsultationsPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">مجدولة</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {consultations?.filter(c => c.status === 'SCHEDULED').length || 0}
+                  {consultations?.filter((c: Consultation) => c.status === 'SCHEDULED').length || 0}
                 </p>
               </div>
             </div>
@@ -223,7 +223,7 @@ export default function ConsultationsPage() {
         {/* Consultations List */}
         {filteredConsultations && filteredConsultations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredConsultations.map((consultation) => (
+            {filteredConsultations.map((consultation: Consultation) => (
               <ConsultationCard
                 key={consultation.id}
                 consultation={consultation}

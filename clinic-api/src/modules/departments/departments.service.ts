@@ -77,6 +77,7 @@ export class DepartmentsService {
       const logoUrl = dept.logoPath ? this.buildLogoUrl(dept.logoPath) : undefined;
       return {
         ...dept,
+        logoPath: dept.logoPath, // إضافة logoPath للاستجابة
         logoUrl,
         icon: logoUrl, // استخدام الشعار كأيقونة
       };
@@ -89,6 +90,7 @@ export class DepartmentsService {
       const logoUrl = dept.logoPath ? this.buildLogoUrl(dept.logoPath) : undefined;
       return {
         ...dept,
+        logoPath: dept.logoPath, // إضافة logoPath للاستجابة العامة أيضاً
         logoUrl,
         icon: logoUrl, // استخدام الشعار كأيقونة
       };
@@ -112,6 +114,7 @@ export class DepartmentsService {
     
     const result: any = {
       ...department,
+      logoPath: (department as any).logoPath, // التأكد من إضافة logoPath
       doctors,
       services,
     };

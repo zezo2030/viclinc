@@ -22,6 +22,7 @@ function NewAppointmentContent() {
   const [selectedService, setSelectedService] = useState<ServiceApi | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<{ startTime: string; endTime: string } | null>(null);
+  const [appointmentType, setAppointmentType] = useState<'IN_PERSON' | 'VIDEO' | 'CHAT'>('IN_PERSON');
   const [reason, setReason] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [weekStart, setWeekStart] = useState<string>(
@@ -31,6 +32,14 @@ function NewAppointmentContent() {
   // Get URL parameters
   const doctorId = searchParams.get('doctorId');
   const specialtyId = searchParams.get('specialtyId');
+  const typeParam = searchParams.get('type') as 'IN_PERSON' | 'VIDEO' | 'CHAT' | null;
+  
+  // Set appointment type from URL parameter
+  useEffect(() => {
+    if (typeParam && ['IN_PERSON', 'VIDEO', 'CHAT'].includes(typeParam)) {
+      setAppointmentType(typeParam);
+    }
+  }, [typeParam]);
 
   // جلب بيانات الطبيب المحدد مباشرة إذا كان doctorId موجود
   const { data: doctorData, isLoading: doctorLoading } = useQuery({
@@ -132,7 +141,7 @@ function NewAppointmentContent() {
         doctorId: typeof doctorIdValue === 'string' ? doctorIdValue : String(doctorIdValue),
         serviceId: typeof serviceIdValue === 'string' ? serviceIdValue : String(serviceIdValue),
         startAt: startAt,
-        type: 'IN_PERSON', // يمكن تغييره لاحقاً حسب نوع الخدمة
+        type: appointmentType,
         metadata: reason.trim() ? { reason: reason.trim() } : undefined,
       });
 
@@ -171,8 +180,52 @@ function NewAppointmentContent() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             العودة
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">حجز موعد جديد</h1>
-          <p className="text-gray-600 mt-2">اختر طبيبك وحدد موعدك</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">حجز موعد جديد</h1>
+          <p className="text-gray-600">اختر طبيبك وحدد موعدك</p>
+          
+          {/* Appointment Type Selection */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => setAppointmentType('IN_PERSON')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                appointmentType === 'IN_PERSON'
+                  ? 'border-primary-500 bg-primary-50 shadow-md'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <Calendar className={`w-6 h-6 mx-auto mb-2 ${appointmentType === 'IN_PERSON' ? 'text-primary-600' : 'text-gray-400'}`} />
+              <div className="font-semibold text-gray-900">حجز عيادة</div>
+              <div className="text-sm text-gray-600">موعد شخصي في العيادة</div>
+            </button>
+            <button
+              onClick={() => setAppointmentType('VIDEO')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                appointmentType === 'VIDEO'
+                  ? 'border-secondary-500 bg-secondary-50 shadow-md'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <svg className={`w-6 h-6 mx-auto mb-2 ${appointmentType === 'VIDEO' ? 'text-secondary-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <div className="font-semibold text-gray-900">استشارة فيديو</div>
+              <div className="text-sm text-gray-600">استشارة مباشرة عبر الفيديو</div>
+            </button>
+            <button
+              onClick={() => setAppointmentType('CHAT')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                appointmentType === 'CHAT'
+                  ? 'border-primary-400 bg-primary-50 shadow-md'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <svg className={`w-6 h-6 mx-auto mb-2 ${appointmentType === 'CHAT' ? 'text-primary-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <div className="font-semibold text-gray-900">استشارة نصية</div>
+              <div className="text-sm text-gray-600">محادثة نصية مع الطبيب</div>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -448,7 +501,7 @@ function NewAppointmentContent() {
           <Button
             onClick={handleCreateAppointment}
             disabled={!selectedDoctor || !selectedService || !selectedDate || !selectedSlot || isCreating}
-            className="bg-primary-600 hover:bg-primary-700"
+            className="gradient-medical text-white hover:opacity-90 shadow-md"
           >
             {isCreating ? 'جاري الحجز...' : 'تأكيد الحجز'}
           </Button>

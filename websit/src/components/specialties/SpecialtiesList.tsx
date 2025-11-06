@@ -38,9 +38,17 @@ export const SpecialtiesList: React.FC = () => {
     );
   }
 
+  if (!specialties || specialties.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600 mb-4">لا توجد تخصصات متاحة حالياً</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {specialties?.map((specialty) => (
+      {specialties.map((specialty) => (
         <SpecialtyCard
           key={specialty._id}
           id={specialty._id}

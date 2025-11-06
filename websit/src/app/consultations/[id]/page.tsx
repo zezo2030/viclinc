@@ -1,356 +1,312 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import React, { Suspense, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/Button';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Button } from '@/components/ui/Button';
+import {
+  VideoIcon,
+  MessageSquareIcon,
+  ClockIcon,
+  PhoneOffIcon,
+  SettingsIcon,
+  HelpCircleIcon,
+  DownloadIcon,
+  ShareIcon,
+} from 'lucide-react';
+import { consultationService, type Consultation, type Message as APIMessage } from '@/lib/api/consultations';
+import { useAuth } from '@/lib/contexts/auth-context';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Loading } from '@/components/ui/Loading';
 import { VideoCall } from '@/components/consultation/VideoCall';
 import { ChatInterface } from '@/components/consultation/ChatInterface';
-import { FileUpload } from '@/components/consultation/FileUpload';
-import { RatingModal } from '@/components/consultation/RatingModal';
-import { 
-  ArrowLeft, 
-  User, 
-  Calendar, 
-  Clock, 
-  Video, 
-  MessageSquare,
-  FileText,
-  Star
-} from 'lucide-react';
-import { consultationService, Consultation } from '@/lib/api/consultations';
-import { fileUploadService } from '@/lib/api/file-upload';
-import { useAuth } from '@/lib/contexts/auth-context';
-import { useRouter } from 'next/navigation';
 
-export default function ConsultationDetailsPage() {
-  const params = useParams();
-  const searchParams = useSearchParams();
+// Type for ChatInterface messages
+interface ChatMessage {
+  id: string;
+  sender: 'user' | 'doctor';
+  senderName: string;
+  avatar?: string;
+  content: string;
+  timestamp: Date;
+  attachments?: { id: string; name: string; size: number; url: string }[];
+  isRead: boolean;
+}
+
+// Convert API messages to ChatInterface format
+function convertMessages(
+  apiMessages: APIMessage[],
+  currentUserId: number,
+  doctorId?: number
+): ChatMessage[] {
+  return apiMessages.map((msg) => {
+    // Determine if sender is doctor by comparing senderId with doctorId
+    const isDoctor = doctorId ? msg.senderId === doctorId : false;
+    const senderName = msg.sender?.profile
+      ? `${msg.sender.profile.firstName} ${msg.sender.profile.lastName}`
+      : 'مستخدم';
+    
+    return {
+      id: msg.id.toString(),
+      sender: isDoctor ? 'doctor' : 'user',
+      senderName,
+      content: msg.message,
+      timestamp: new Date(msg.createdAt),
+      attachments: msg.fileUrl
+        ? [
+            {
+              id: msg.id.toString(),
+              name: msg.fileUrl.split('/').pop() || 'ملف',
+              size: 0,
+              url: msg.fileUrl,
+            },
+          ]
+        : undefined,
+      isRead: msg.isRead,
+    };
+  });
+}
+
+function ConsultationContent() {
   const router = useRouter();
+  const params = useParams();
   const { user } = useAuth();
-  const consultationId = parseInt(params.id as string);
-  
-  const [activeTab, setActiveTab] = useState<'video' | 'chat'>('video');
-  const [showRatingModal, setShowRatingModal] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const consultationId = params.id as string;
+  const [consultationType, setConsultationType] = useState<'video' | 'chat'>('video');
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
 
   const { data: consultation, isLoading, error } = useQuery({
     queryKey: ['consultation', consultationId],
-    queryFn: () => consultationService.getConsultation(consultationId),
+    queryFn: () => consultationService.getConsultation(parseInt(consultationId)),
+    enabled: !!consultationId,
   });
 
-  useEffect(() => {
-    // فتح نافذة التقييم إذا كان هناك معامل rate في URL
-    if (searchParams.get('rate') === 'true') {
-      setShowRatingModal(true);
-    }
-  }, [searchParams]);
+  const { data: messages } = useQuery({
+    queryKey: ['consultation-messages', consultationId],
+    queryFn: () => consultationService.getConsultationMessages(parseInt(consultationId)),
+    enabled: !!consultationId && consultationType === 'chat',
+  });
 
-  const handleFileSelect = (file: File) => {
-    // يمكن إضافة منطق للتحقق من الملف قبل الرفع
-    console.log('File selected:', file.name);
-  };
-
-  const handleFileUpload = async (file: File): Promise<string> => {
-    try {
-      // رفع الملف
-      const uploadedFile = await fileUploadService.uploadFile(file);
-      
-      // إرسال الرابط في الدردشة
-      if (consultation) {
-        await consultationService.sendMessage(
-          consultationId,
-          `تم رفع ملف: ${file.name}`,
-          'FILE',
-          uploadedFile.url
-        );
-      }
-      
-      setUploadedFiles(prev => [...prev, file]);
-      return uploadedFile.url;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      throw error;
-    }
-  };
-
-  const handleStartConsultation = async () => {
-    if (!consultation) return;
-    
-    try {
-      await consultationService.startConsultation(consultationId, {});
-      // إعادة تحميل البيانات
-      window.location.reload();
-    } catch (error) {
-      console.error('Error starting consultation:', error);
-    }
-  };
-
-  const handleEndConsultation = async () => {
-    if (!consultation) return;
-    
-    try {
-      await consultationService.endConsultation(consultationId, {});
-      // إعادة تحميل البيانات
-      window.location.reload();
-    } catch (error) {
-      console.error('Error ending consultation:', error);
-    }
-  };
-
-  const canJoin = consultation?.status === 'SCHEDULED' || consultation?.status === 'IN_PROGRESS';
-  const canStart = consultation?.status === 'SCHEDULED' && user?.role === 'DOCTOR';
-  const canEnd = consultation?.status === 'IN_PROGRESS' && user?.role === 'DOCTOR';
-  const canRate = consultation?.status === 'COMPLETED' && user?.role === 'PATIENT';
+  // Convert API messages to ChatInterface format
+  const chatMessages = messages && user?.id && consultation
+    ? convertMessages(
+        messages,
+        parseInt(user.id),
+        typeof consultation.appointment?.doctorId === 'string'
+          ? parseInt(consultation.appointment.doctorId)
+          : consultation.appointment?.doctorId
+      )
+    : [];
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p>جاري تحميل الاستشارة...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loading text="جاري تحميل الاستشارة..." />;
   }
 
   if (error || !consultation) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-red-600">
-            <p>حدث خطأ في تحميل الاستشارة</p>
-            <Button onClick={() => router.back()} className="mt-4">
-              العودة
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">حدث خطأ</h1>
+          <p className="text-gray-600 mb-6">لم نتمكن من تحميل الاستشارة</p>
+          <Link href="/consultations">
+            <Button className="gradient-medical text-white hover:opacity-90">
+              العودة للاستشارات
             </Button>
-          </div>
+          </Link>
         </div>
       </div>
     );
   }
 
+  const isVideoType = consultation.type === 'VIDEO';
+  const canJoin = consultation.status === 'COMPLETED' || consultation.status === 'IN_PROGRESS';
+  const doctorName = consultation.appointment?.doctor?.profile
+    ? `د. ${consultation.appointment.doctor.profile.firstName} ${consultation.appointment.doctor.profile.lastName}`
+    : 'الطبيب';
+  const doctorSpecialization = (consultation.appointment?.doctor as any)?.specialization || 'متخصص';
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <Button
-              onClick={() => router.back()}
-              variant="outline"
-              size="sm"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              العودة
-            </Button>
-            <h1 className="text-3xl font-bold text-gray-900">
-              الاستشارة الطبية الافتراضية
-            </h1>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-white shadow-md border-b-2 border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {isVideoType ? 'جلسة فيديو' : 'استشارة نصية'}
+              </h1>
+              <p className="text-sm text-gray-600">{doctorName}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {isCallActive && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="flex items-center gap-2 bg-success-100 text-success-700 px-4 py-2 rounded-full font-semibold"
+                >
+                  <span className="w-2 h-2 bg-success-600 rounded-full animate-pulse"></span>
+                  جارية الآن {callDuration > 0 && `${Math.floor(callDuration / 60)}:${String(callDuration % 60).padStart(2, '0')}`}
+                </motion.div>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-error-500 text-error-600 hover:bg-error-50"
+                onClick={() => {
+                  setIsCallActive(false);
+                  router.push('/consultations');
+                }}
+              >
+                <PhoneOffIcon className="w-4 h-4 ml-2" />
+                إنهاء الاستشارة
+              </Button>
+            </div>
           </div>
-
-          {/* معلومات الاستشارة */}
-          <Card className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center space-x-3">
-                <User className="w-6 h-6 text-gray-600" />
-                <div>
-                  <p className="text-sm text-gray-600">الطبيب</p>
-                  <p className="font-medium">
-                    {consultation.appointment.doctor.profile.firstName} {consultation.appointment.doctor.profile.lastName}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Calendar className="w-6 h-6 text-gray-600" />
-                <div>
-                  <p className="text-sm text-gray-600">التاريخ</p>
-                  <p className="font-medium">
-                    {new Date(consultation.appointment.appointmentDate).toLocaleDateString('ar-SA')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Clock className="w-6 h-6 text-gray-600" />
-                <div>
-                  <p className="text-sm text-gray-600">الوقت</p>
-                  <p className="font-medium">
-                    {new Date(consultation.appointment.appointmentTime).toLocaleTimeString('ar-SA')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* أزرار الإجراءات */}
-            <div className="flex space-x-4 mt-6">
-              {canStart && (
-                <Button
-                  onClick={handleStartConsultation}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  بدء الاستشارة
-                </Button>
-              )}
-
-              {canEnd && (
-                <Button
-                  onClick={handleEndConsultation}
-                  variant="destructive"
-                >
-                  إنهاء الاستشارة
-                </Button>
-              )}
-
-              {canRate && (
-                <Button
-                  onClick={() => setShowRatingModal(true)}
-                  variant="outline"
-                  className="text-green-600 border-green-600 hover:bg-green-50"
-                >
-                  <Star className="w-4 h-4 mr-2" />
-                  تقييم الاستشارة
-                </Button>
-              )}
-            </div>
-          </Card>
         </div>
+      </div>
 
-        {/* المحتوى الرئيسي */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* منطقة الاستشارة */}
-          <div className="lg:col-span-2">
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'video' | 'chat')}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="video" className="flex items-center space-x-2">
-                  <Video className="w-4 h-4" />
-                  <span>مكالمة فيديو</span>
-                </TabsTrigger>
-                <TabsTrigger value="chat" className="flex items-center space-x-2">
-                  <MessageSquare className="w-4 h-4" />
-                  <span>دردشة</span>
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="video" className="mt-6">
-                {canJoin ? (
-                  <VideoCall
-                    consultationId={consultationId}
-                    userId={user?.id ? parseInt(user.id) : 0}
-                    onCallEnd={() => {
-                      // يمكن إضافة منطق إضافي عند انتهاء المكالمة
-                    }}
-                  />
-                ) : (
-                  <Card className="p-6 text-center">
-                    <Video className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      مكالمة الفيديو غير متاحة
-                    </h3>
-                    <p className="text-gray-600">
-                      {consultation.status === 'SCHEDULED' 
-                        ? 'الاستشارة لم تبدأ بعد'
-                        : consultation.status === 'COMPLETED'
-                        ? 'الاستشارة انتهت'
-                        : 'لا يمكن الانضمام للمكالمة في هذه الحالة'
-                      }
-                    </p>
-                  </Card>
-                )}
-              </TabsContent>
-
-              <TabsContent value="chat" className="mt-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Video/Chat Area */}
+          <div className="lg:col-span-3">
+            {isVideoType ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-black rounded-2xl overflow-hidden shadow-xl min-h-96"
+              >
+                <VideoCall
+                  consultationId={parseInt(consultationId)}
+                  userId={parseInt(user?.id || '0')}
+                  onCallEnd={() => setIsCallActive(false)}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="h-96"
+              >
                 <ChatInterface
                   consultationId={consultationId}
-                  onFileUpload={handleFileUpload}
+                  doctorName={doctorName}
+                  userName={user?.name || 'أنت'}
+                  isDoctor={user?.role === 'DOCTOR'}
+                  initialMessages={chatMessages}
                 />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* الشريط الجانبي */}
-          <div className="space-y-6">
-            {/* معلومات الاستشارة */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">معلومات الاستشارة</h3>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full ${
-                    consultation.status === 'IN_PROGRESS' ? 'bg-yellow-500' :
-                    consultation.status === 'COMPLETED' ? 'bg-green-500' :
-                    consultation.status === 'CANCELLED' ? 'bg-red-500' :
-                    'bg-blue-500'
-                  }`} />
-                  <span className="text-sm">
-                    {consultation.status === 'SCHEDULED' ? 'مجدولة' :
-                     consultation.status === 'IN_PROGRESS' ? 'جارية' :
-                     consultation.status === 'COMPLETED' ? 'مكتملة' :
-                     'ملغية'}
-                  </span>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  {consultation.type === 'VIDEO' ? (
-                    <Video className="w-4 h-4 text-blue-600" />
-                  ) : (
-                    <MessageSquare className="w-4 h-4 text-green-600" />
-                  )}
-                  <span className="text-sm">
-                    {consultation.type === 'VIDEO' ? 'مكالمة فيديو' : 'دردشة'}
-                  </span>
-                </div>
-
-                {consultation.duration && (
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm">المدة: {consultation.duration} دقيقة</span>
-                  </div>
-                )}
-
-                {consultation.messages && (
-                  <div className="flex items-center space-x-2">
-                    <MessageSquare className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm">{consultation.messages.length} رسالة</span>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {/* رفع الملفات */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">رفع الملفات</h3>
-              <FileUpload
-                onFileSelect={handleFileSelect}
-                onFileUpload={handleFileUpload}
-                maxFileSize={10 * 1024 * 1024} // 10MB
-                allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
-              />
-            </Card>
-
-            {/* ملاحظات */}
-            {consultation.notes && (
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">ملاحظات</h3>
-                <p className="text-sm text-gray-700">{consultation.notes}</p>
-              </Card>
+              </motion.div>
             )}
           </div>
-        </div>
 
-        {/* نافذة التقييم */}
-        {showRatingModal && (
-          <RatingModal
-            consultationId={consultationId}
-            doctorId={consultation.appointment.doctorId}
-            isOpen={showRatingModal}
-            onClose={() => setShowRatingModal(false)}
-          />
-        )}
+          {/* Sidebar */}
+          <div className="space-y-4">
+            {/* Consultation Info */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="p-6 border-2 border-gray-100">
+                <h3 className="font-bold text-gray-900 mb-4">معلومات الاستشارة</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="w-5 h-5 text-primary-600" />
+                    <span className="text-sm text-gray-700">
+                      {new Date(consultation.appointment?.appointmentDate || '').toLocaleDateString('ar-SA')}
+                    </span>
+                  </div>
+                  <div className="p-3 bg-primary-50 rounded-lg text-sm">
+                    <p className="font-semibold text-primary-900 mb-2">الحالة</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                      consultation.status === 'IN_PROGRESS'
+                        ? 'bg-success-200 text-success-800'
+                        : consultation.status === 'COMPLETED'
+                        ? 'bg-blue-200 text-blue-800'
+                        : 'bg-warning-200 text-warning-800'
+                    }`}>
+                      {consultation.status === 'IN_PROGRESS' ? 'جارية'
+                        : consultation.status === 'COMPLETED' ? 'مكتملة'
+                        : 'مجدولة'}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Actions */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-2"
+            >
+              <Button
+                variant="outline"
+                className="w-full border-2 border-gray-300 justify-start"
+              >
+                <DownloadIcon className="w-4 h-4 ml-2" />
+                حفظ الجلسة
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full border-2 border-gray-300 justify-start"
+              >
+                <ShareIcon className="w-4 h-4 ml-2" />
+                مشاركة
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full border-2 border-gray-300 justify-start"
+              >
+                <SettingsIcon className="w-4 h-4 ml-2" />
+                الإعدادات
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full border-2 border-gray-300 justify-start"
+              >
+                <HelpCircleIcon className="w-4 h-4 ml-2" />
+                مساعدة
+              </Button>
+            </motion.div>
+
+            {/* Doctor Info */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card className="p-6 border-2 border-gray-100 text-center">
+                <div className="w-16 h-16 mx-auto mb-3 rounded-full gradient-medical-light flex items-center justify-center">
+                  <span className="text-2xl">👨‍⚕️</span>
+                </div>
+                <h4 className="font-bold text-gray-900 mb-1">{doctorName}</h4>
+                <p className="text-sm text-gray-600 mb-4">
+                  {doctorSpecialization}
+                </p>
+                <Button className="w-full border-2 border-primary-500 text-primary-600 hover:bg-primary-50 text-sm">
+                  الملف الشخصي
+                </Button>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function ConsultationPage() {
+  return (
+    <ProtectedRoute>
+      <Suspense fallback={<Loading text="جاري التحميل..." />}>
+        <ConsultationContent />
+      </Suspense>
+    </ProtectedRoute>
   );
 }

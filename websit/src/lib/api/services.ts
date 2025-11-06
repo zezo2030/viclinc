@@ -12,19 +12,17 @@ export interface ServiceApi {
   isActive?: boolean;
 }
 
-// For now, return mock data instead of actual API calls
+// Public services API
 export const servicesApi = {
   getAll: async (departmentId?: string): Promise<ServiceApi[]> => {
     try {
       const params = departmentId ? `?departmentId=${departmentId}` : '';
-      // استخدام endpoint عام بدلاً من admin endpoint
+      // استخدام public endpoint
       const response = await apiClient.get<ServiceApi[]>(`/services${params}`);
-      return response || [];
+      return Array.isArray(response) ? response : [];
     } catch (error) {
-      console.error('Error fetching services from API, falling back to mock:', error);
-      // Fallback to mock data
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return mockServices as any;
+      console.error('Error fetching services from API:', error);
+      return [];
     }
   },
   

@@ -54,10 +54,10 @@ export const doctorsService = {
   async getDoctors(): Promise<Doctor[]> {
     try {
       // استخدام endpoint العام للأطباء المعتمدين
-      const response = await apiClient.get('/doctors/public');
+      const response = await apiClient.get<any>('/doctors/public');
       
       // البيانات القادمة من الباك إند تكون على شكل DoctorListItem
-      const doctors = Array.isArray(response) ? response : (response?.data || []);
+      const doctors = Array.isArray(response) ? response : ((response as any)?.data || []);
       
       // تحويل البيانات من شكل الباك إند إلى شكل الواجهة
       return doctors.map((doctor: any) => {
@@ -118,7 +118,7 @@ export const doctorsService = {
   async getDoctor(id: number | string): Promise<Doctor> {
     try {
       // استخدام endpoint العام للأطباء المعتمدين
-      const response = await apiClient.get(`/doctors/public/${id}`);
+      const response = await apiClient.get<any>(`/doctors/public/${id}`);
       
       // تحويل البيانات من شكل الباك إند إلى شكل الواجهة
       const doctor = response as any;

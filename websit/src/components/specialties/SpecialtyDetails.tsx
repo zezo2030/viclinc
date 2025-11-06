@@ -75,17 +75,37 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
         </Button>
         
         <div className="flex items-center space-x-4 space-x-reverse">
-          {(specialty.logoUrl || specialty.icon) && (
-            <div className="w-20 h-20">
+          {(specialty.logoUrl || specialty.icon) ? (
+            <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
               <img 
                 src={getDepartmentImageUrl(specialty.logoUrl, specialty.icon)}
                 alt={specialty.name}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   // Fallback to placeholder if image fails to load
-                  (e.target as HTMLImageElement).src = '/service.jpg';
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== '/service.jpg') {
+                    target.src = '/service.jpg';
+                  } else {
+                    // If placeholder also fails, hide the image and show icon
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `
+                        <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      `;
+                    }
+                  }
                 }}
               />
+            </div>
+          ) : (
+            <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
             </div>
           )}
           <div>

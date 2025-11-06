@@ -1,8 +1,9 @@
 // تنظيف API_BASE_URL من /v1 في النهاية إذا كان موجوداً
 const getBaseURL = (): string => {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  // Use nginx proxy in production (when running in Docker), direct API in development
+  const url = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.origin === 'http://localhost' ? 'http://localhost/api' : 'http://localhost:3000');
   // إزالة /v1 من النهاية إذا كان موجوداً
-  return url.replace(/\/v1\/?$/, '');
+  return url.replace(/\/v1\/?$/, '').replace(/\/api\/?$/, '/api');
 };
 
 const API_BASE_URL = getBaseURL();
@@ -26,12 +27,23 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    // إضافة /v1 prefix إذا لم يكن موجوداً
+    // إذا كان baseURL يحتوي على /api، لا نضيف /v1 (nginx سيقوم بـ rewrite)
+    // إذا كان baseURL يحتوي على localhost:3000، نضيف /v1
     let normalizedEndpoint = endpoint;
-    if (!normalizedEndpoint.startsWith('/v1/')) {
-      normalizedEndpoint = normalizedEndpoint.startsWith('/') 
-        ? `/v1${normalizedEndpoint}` 
-        : `/v1/${normalizedEndpoint}`;
+    const isUsingNginxProxy = this.baseURL.includes('/api');
+    
+    if (!isUsingNginxProxy) {
+      // Development mode: add /v1 prefix
+      if (!normalizedEndpoint.startsWith('/v1/')) {
+        normalizedEndpoint = normalizedEndpoint.startsWith('/') 
+          ? `/v1${normalizedEndpoint}` 
+          : `/v1/${normalizedEndpoint}`;
+      }
+    } else {
+      // Production mode with nginx: use endpoint as-is (nginx will rewrite /api/* to /v1/*)
+      if (!normalizedEndpoint.startsWith('/')) {
+        normalizedEndpoint = `/${normalizedEndpoint}`;
+      }
     }
     const url = `${this.baseURL}${normalizedEndpoint}`;
 
