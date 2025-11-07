@@ -36,15 +36,14 @@ async function bootstrap() {
   });
   
   // CORS configuration - support for web and mobile apps
-  // Always allow localhost in development (even if NODE_ENV is not set correctly)
-  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const isProduction = process.env.NODE_ENV === 'production';
   const isLocalhost = process.env.NODE_ENV === undefined || 
                       process.env.NODE_ENV === 'development' || 
                       !process.env.NODE_ENV ||
-                      process.env.PORT === '3000';
-  
+                      (!isProduction && process.env.PORT === '3000');
+
   // Define allowed origins - be more permissive for localhost
-  const allowedOrigins = [
+  const allowedOrigins = new Set<string>([
     // Always allow localhost origins (for development)
     'http://localhost',
     'http://localhost:80',
@@ -56,14 +55,22 @@ async function bootstrap() {
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3001',
     'http://127.0.0.1:3002',
-  ];
+    'http://medcodesa.cloud',
+    'https://medcodesa.cloud',
+  ]);
 
-  // Add production origins if in production
-  if (!isLocalhost && isDevelopment === false) {
-    allowedOrigins.push(
+  if (isProduction) {
+    const productionDefaults = [
       'http://medcodesa.cloud',
-      'https://medcodesa.cloud'
-    );
+      'https://medcodesa.cloud',
+    ];
+
+    const envOrigins = (process.env.ALLOWED_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    [...productionDefaults, ...envOrigins].forEach((origin) => allowedOrigins.add(origin));
   }
 
   app.enableCors({
@@ -74,10 +81,10 @@ async function bootstrap() {
         return callback(null, true);
       }
       
-      console.log(`[CORS] Checking origin: ${origin}, NODE_ENV: ${process.env.NODE_ENV}, isLocalhost: ${isLocalhost}`);
+      console.log(`[CORS] Checking origin: ${origin}, NODE_ENV: ${process.env.NODE_ENV}, isLocalhost: ${isLocalhost}, isProduction: ${isProduction}`);
       
       // Check if origin is in allowed list
-      if (allowedOrigins.includes(origin)) {
+      if (allowedOrigins.has(origin)) {
         console.log(`[CORS] Allowing origin: ${origin}`);
         return callback(null, true);
       }
