@@ -137,9 +137,11 @@ services:
       - "443:443"
     volumes:
       - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./deploy/nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      # SSL config is optional - uncomment when SSL certificates are available
+      # - ./deploy/nginx-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
       - api_uploads:/var/www/virclinc/uploads:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Uncomment when SSL certificates are available
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - api
       - website
