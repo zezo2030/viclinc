@@ -7,6 +7,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
 import { DoctorProfile, DoctorProfileSchema } from '../doctors/schemas/doctor-profile.schema';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { AdminInitializerService } from './admin-initializer.service';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { AuthController } from './auth.controller';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, AdminInitializerService],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
