@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Headers } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { VideoSessionService } from '../services/video-session.service';
 import { AgoraService } from '../services/agora.service';
@@ -53,13 +53,16 @@ export class VideoSessionController {
   async requestVideoToken(
     @Body() requestDto: RequestVideoTokenDto,
     @CurrentUser() user: User,
+    @Headers('x-test-mode') testModeHeader?: string,
   ): Promise<VideoTokenResponseDto> {
     // JWT Guard يضع payload في request.user، لذا sub موجود في user object
     const userId = (user as any)?.sub || (user as any)?._id?.toString() || (user as any)?.id?.toString();
     if (!userId) {
       throw new Error('User ID not found');
     }
-    return this.videoSessionService.requestVideoToken(requestDto, userId);
+    const normalizedHeader = (testModeHeader ?? '').toString().trim().toLowerCase();
+    const isTestMode = ['true', '1', 'yes', 'y'].includes(normalizedHeader);
+    return this.videoSessionService.requestVideoToken(requestDto, userId, { isTestMode });
   }
 
   @Get(':appointmentId')

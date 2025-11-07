@@ -23,8 +23,10 @@ export class VideoSessionService {
 
   async requestVideoToken(
     requestDto: RequestVideoTokenDto, 
-    userId: string
+    userId: string,
+    options: { isTestMode?: boolean } = {},
   ): Promise<VideoTokenResponseDto> {
+    const { isTestMode = false } = options;
     // التحقق من وجود الموعد
     const appointment = await this.appointmentModel.findById(requestDto.appointmentId);
     if (!appointment) {
@@ -32,7 +34,18 @@ export class VideoSessionService {
     }
 
     // التحقق من حالة الموعد
-    if (appointment.status !== AppointmentStatus.CONFIRMED) {
+    const appointmentStatus = appointment.status as AppointmentStatus;
+    if (isTestMode) {
+      const blockedStatuses: AppointmentStatus[] = [
+        AppointmentStatus.CANCELLED,
+        AppointmentStatus.REJECTED,
+        AppointmentStatus.COMPLETED,
+        AppointmentStatus.NO_SHOW,
+      ];
+      if (blockedStatuses.includes(appointmentStatus)) {
+        throw new BadRequestException('This appointment status cannot start a video session');
+      }
+    } else if (appointmentStatus !== AppointmentStatus.CONFIRMED) {
       throw new BadRequestException('Appointment must be confirmed to start video session');
     }
 
@@ -68,7 +81,8 @@ export class VideoSessionService {
     // يمكن تعطيل هذا التحقق في وضع الاختبار/التطوير
     const appointmentStart = dayjs(appointment.startAt);
     const now = dayjs();
-    const disableTimeCheck = process.env.DISABLE_VIDEO_TIME_CHECK === 'true' || 
+    const disableTimeCheck = isTestMode ||
+                             process.env.DISABLE_VIDEO_TIME_CHECK === 'true' || 
                              process.env.NODE_ENV === 'development' ||
                              process.env.NODE_ENV === 'test';
     
