@@ -22,8 +22,11 @@ export class AdminInitializerService implements OnApplicationBootstrap {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const phone = this.configService.get<string>('DEFAULT_ADMIN_PHONE') || '+10000000000';
-    const name = this.configService.get<string>('DEFAULT_ADMIN_NAME') || 'System Administrator';
+    const phoneFromEnv = this.configService.get<string>('DEFAULT_ADMIN_PHONE');
+    const nameFromEnv = this.configService.get<string>('DEFAULT_ADMIN_NAME');
+
+    const phone = phoneFromEnv?.trim();
+    const name = nameFromEnv?.trim();
 
     try {
       const existingUser = await this.userModel.findOne({ email: normalizedEmail });
@@ -31,9 +34,9 @@ export class AdminInitializerService implements OnApplicationBootstrap {
 
       if (!existingUser) {
         await this.userModel.create({
-          name,
+          ...(name ? { name } : {}),
           email: normalizedEmail,
-          phone,
+          ...(phone ? { phone } : {}),
           passwordHash: hashedPassword,
           role: Role.ADMIN,
           status: UserStatus.ACTIVE,
@@ -45,8 +48,8 @@ export class AdminInitializerService implements OnApplicationBootstrap {
       const needsPasswordUpdate = !(await bcrypt.compare(password, existingUser.passwordHash));
       const needsRoleUpdate = existingUser.role !== Role.ADMIN;
       const needsStatusUpdate = existingUser.status !== UserStatus.ACTIVE;
-      const needsNameUpdate = existingUser.name !== name;
-      const needsPhoneUpdate = existingUser.phone !== phone;
+      const needsNameUpdate = Boolean(name) && existingUser.name !== name;
+      const needsPhoneUpdate = Boolean(phone) && existingUser.phone !== phone;
 
       if (needsPasswordUpdate || needsRoleUpdate || needsStatusUpdate || needsNameUpdate || needsPhoneUpdate) {
         await this.userModel.updateOne(

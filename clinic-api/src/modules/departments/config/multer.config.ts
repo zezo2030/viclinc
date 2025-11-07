@@ -1,6 +1,6 @@
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { existsSync, mkdirSync } from 'fs';
 import type { Request } from 'express';
 
@@ -16,7 +16,7 @@ export const multerConfig = {
   storage: diskStorage({
     destination: uploadsDir,
     filename: (_req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
-      const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
+      const uniqueName = `${randomUUID()}${extname(file.originalname)}`;
       cb(null, uniqueName);
     },
   }),
