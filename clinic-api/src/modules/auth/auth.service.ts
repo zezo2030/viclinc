@@ -16,10 +16,11 @@ export class AuthService {
 
   async registerPatient(input: { name: string; email: string; phone: string; password: string }) {
     const { name, email, phone, password } = input;
-    const exists = await this.userModel.findOne({ $or: [{ email }, { phone }] }).lean();
+    const normalizedEmail = email.trim().toLowerCase();
+    const exists = await this.userModel.findOne({ $or: [{ email: normalizedEmail }, { phone }] }).lean();
     if (exists) throw new ConflictException('Email or phone already exists');
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await this.userModel.create({ name, email, phone, passwordHash, role: Role.PATIENT, status: UserStatus.ACTIVE });
+    const user = await this.userModel.create({ name, email: normalizedEmail, phone, passwordHash, role: Role.PATIENT, status: UserStatus.ACTIVE });
     return { id: String(user._id), email: user.email, name: user.name, role: user.role };
   }
 
@@ -41,7 +42,8 @@ export class AuthService {
   }
 
   async login(input: { email: string; password: string }) {
-    const user = await this.userModel.findOne({ email: input.email });
+    const email = input.email.trim().toLowerCase();
+    const user = await this.userModel.findOne({ email });
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const ok = await bcrypt.compare(input.password, user.passwordHash);
     if (!ok) throw new UnauthorizedException('Invalid credentials');
