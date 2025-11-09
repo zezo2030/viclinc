@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    font-family: 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    direction: rtl;
+    text-align: start;
+  }
+  
+  body {
+    margin: 0;
+    background-color: var(--surface-white);
+    color: var(--neutral-900);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+  
+  img {
+    @apply max-w-full h-auto;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Enhanced scrollbar */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--neutral-100);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-image: linear-gradient(to bottom, #40a9ff, #597ef7);
+    border-radius: 9999px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-image: linear-gradient(to bottom, #1890ff, #2f54eb);
+  }
+}
+
+@layer utilities {
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Custom gradient text animation */
+  .animate-gradient {
+    background-size: 200% auto;
+    animation: gradient 3s linear infinite;
+  }
+  
+  @keyframes gradient {
+    to {
+      background-position: 200% center;
+    }
+  }
+  
+  /* Glass morphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Neumorphism */
+  .neumorphic {
+    background: #f0f0f0;
+    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.1),
+                -8px -8px 16px rgba(255, 255, 255, 0.7);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    html {
+      scroll-behavior: auto !important;
+    }
+  }
+}

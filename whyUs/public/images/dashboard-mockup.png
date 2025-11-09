@@ -1,0 +1,98 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="800" fill="#F9FAFB"/>
+  
+  <!-- Dashboard Container -->
+  <rect x="50" y="50" width="700" height="700" rx="20" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- Header Bar -->
+  <rect x="50" y="50" width="700" height="80" rx="20" fill="#1890FF"/>
+  <rect x="50" y="110" width="700" height="20" fill="#1890FF"/>
+  
+  <!-- Logo/Title Area -->
+  <circle cx="90" cy="90" r="20" fill="white" opacity="0.9"/>
+  <rect x="130" y="75" width="150" height="15" rx="7.5" fill="white" opacity="0.9"/>
+  <rect x="130" y="100" width="100" height="10" rx="5" fill="white" opacity="0.7"/>
+  
+  <!-- User Menu -->
+  <circle cx="710" cy="90" r="25" fill="white" opacity="0.9"/>
+  
+  <!-- Stats Cards Row -->
+  <rect x="80" y="160" width="150" height="120" rx="10" fill="#F0F7FF" stroke="#91D5FF" stroke-width="1"/>
+  <rect x="260" y="160" width="150" height="120" rx="10" fill="#F0F5FF" stroke="#ADC6FF" stroke-width="1"/>
+  <rect x="440" y="160" width="150" height="120" rx="10" fill="#E6F7FF" stroke="#91D5FF" stroke-width="1"/>
+  <rect x="620" y="160" width="110" height="120" rx="10" fill="#F9F0FF" stroke="#D3ADF7" stroke-width="1"/>
+  
+  <!-- Card Icons -->
+  <circle cx="115" cy="195" r="15" fill="#1890FF" opacity="0.2"/>
+  <circle cx="295" cy="195" r="15" fill="#2F54EB" opacity="0.2"/>
+  <circle cx="475" cy="195" r="15" fill="#1890FF" opacity="0.2"/>
+  <circle cx="655" cy="195" r="15" fill="#722ED1" opacity="0.2"/>
+  
+  <!-- Card Titles -->
+  <rect x="95" y="225" width="80" height="12" rx="6" fill="#6B7280"/>
+  <rect x="275" y="225" width="80" height="12" rx="6" fill="#6B7280"/>
+  <rect x="455" y="225" width="80" height="12" rx="6" fill="#6B7280"/>
+  <rect x="635" y="225" width="60" height="12" rx="6" fill="#6B7280"/>
+  
+  <!-- Card Values -->
+  <rect x="95" y="245" width="100" height="20" rx="10" fill="#1890FF" opacity="0.8"/>
+  <rect x="275" y="245" width="100" height="20" rx="10" fill="#2F54EB" opacity="0.8"/>
+  <rect x="455" y="245" width="100" height="20" rx="10" fill="#1890FF" opacity="0.8"/>
+  <rect x="635" y="245" width="70" height="20" rx="10" fill="#722ED1" opacity="0.8"/>
+  
+  <!-- Chart Section -->
+  <rect x="80" y="310" width="510" height="280" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <rect x="100" y="330" width="120" height="15" rx="7.5" fill="#1890FF" opacity="0.6"/>
+  
+  <!-- Bar Chart -->
+  <rect x="120" y="450" width="40" height="110" rx="5" fill="#1890FF" opacity="0.6"/>
+  <rect x="180" y="410" width="40" height="150" rx="5" fill="#1890FF" opacity="0.7"/>
+  <rect x="240" y="430" width="40" height="130" rx="5" fill="#1890FF" opacity="0.6"/>
+  <rect x="300" y="390" width="40" height="170" rx="5" fill="#1890FF" opacity="0.8"/>
+  <rect x="360" y="420" width="40" height="140" rx="5" fill="#1890FF" opacity="0.7"/>
+  <rect x="420" y="440" width="40" height="120" rx="5" fill="#1890FF" opacity="0.6"/>
+  <rect x="480" y="400" width="40" height="160" rx="5" fill="#1890FF" opacity="0.8"/>
+  
+  <!-- Recent Appointments List -->
+  <rect x="620" y="310" width="110" height="280" rx="10" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+  <rect x="635" y="330" width="80" height="12" rx="6" fill="#1890FF" opacity="0.6"/>
+  
+  <!-- List Items -->
+  <rect x="635" y="360" width="80" height="30" rx="5" fill="#F0F7FF"/>
+  <circle cx="645" cy="375" r="8" fill="#1890FF" opacity="0.3"/>
+  <rect x="660" y="370" width="45" height="5" rx="2.5" fill="#6B7280"/>
+  <rect x="660" y="380" width="30" height="4" rx="2" fill="#9CA3AF"/>
+  
+  <rect x="635" y="400" width="80" height="30" rx="5" fill="#F0F5FF"/>
+  <circle cx="645" cy="415" r="8" fill="#2F54EB" opacity="0.3"/>
+  <rect x="660" y="410" width="45" height="5" rx="2.5" fill="#6B7280"/>
+  <rect x="660" y="420" width="30" height="4" rx="2" fill="#9CA3AF"/>
+  
+  <rect x="635" y="440" width="80" height="30" rx="5" fill="#E6F7FF"/>
+  <circle cx="645" cy="455" r="8" fill="#1890FF" opacity="0.3"/>
+  <rect x="660" y="450" width="45" height="5" rx="2.5" fill="#6B7280"/>
+  <rect x="660" y="460" width="30" height="4" rx="2" fill="#9CA3AF"/>
+  
+  <rect x="635" y="480" width="80" height="30" rx="5" fill="#F0F7FF"/>
+  <circle cx="645" cy="495" r="8" fill="#1890FF" opacity="0.3"/>
+  <rect x="660" y="490" width="45" height="5" rx="2.5" fill="#6B7280"/>
+  <rect x="660" y="500" width="30" height="4" rx="2" fill="#9CA3AF"/>
+  
+  <rect x="635" y="520" width="80" height="30" rx="5" fill="#F9F0FF"/>
+  <circle cx="645" cy="535" r="8" fill="#722ED1" opacity="0.3"/>
+  <rect x="660" y="530" width="45" height="5" rx="2.5" fill="#6B7280"/>
+  <rect x="660" y="540" width="30" height="4" rx="2" fill="#9CA3AF"/>
+  
+  <!-- Bottom Section - Quick Actions -->
+  <rect x="80" y="620" width="340" height="100" rx="10" fill="#F0F7FF" stroke="#91D5FF" stroke-width="1"/>
+  <rect x="440" y="620" width="290" height="100" rx="10" fill="#F0F5FF" stroke="#ADC6FF" stroke-width="1"/>
+  
+  <!-- Quick Action Buttons -->
+  <rect x="110" y="650" width="100" height="40" rx="20" fill="#1890FF"/>
+  <rect x="230" y="650" width="100" height="40" rx="20" fill="#2F54EB"/>
+  
+  <rect x="470" y="650" width="100" height="40" rx="20" fill="#52C41A"/>
+  <rect x="590" y="650" width="100" height="40" rx="20" fill="#722ED1"/>
+</svg>
+
