@@ -120,7 +120,7 @@ const Hero = () => {
               transition={{ delay: 0.4, duration: 0.8 }}
             >
               منصّة متكاملة لإدارة العيادات من الحجز أونلاين إلى السجل الطبي ولوحة تحكم غنية بالتحليلات. 
-              <strong className="theme-accent"> حجز، ملفات، فواتير وتليميديسن</strong> — في مكانٍ واحد
+              <strong className="theme-accent"> حجز، ملفات، فواتير واستشارة فيديو</strong> — في مكانٍ واحد
             </motion.p>
 
             <motion.div

@@ -75,7 +75,7 @@ const Footer = () => {
             <ul className="space-y-2 footer-text text-sm">
               <li>الحجز الإلكتروني</li>
               <li>السجل الطبي</li>
-              <li>التليميديسن</li>
+              <li>استشارة فيديو</li>
               <li>الفوترة والدفع</li>
               <li>التقارير والتحليلات</li>
             </ul>
