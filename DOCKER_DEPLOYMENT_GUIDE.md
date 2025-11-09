@@ -539,3 +539,5 @@ docker compose logs > logs-$(date +%Y%m%d).txt
 
 
 
+
+
