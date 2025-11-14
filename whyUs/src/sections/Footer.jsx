@@ -36,6 +36,14 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <button
+                  onClick={() => scrollToSection('about')}
+                  className="footer-link transition-colors"
+                >
+                  من نحن
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => scrollToSection('features')}
                   className="footer-link transition-colors"
                 >
@@ -44,18 +52,26 @@ const Footer = () => {
               </li>
               <li>
                 <button
-                  onClick={() => scrollToSection('how-it-works')}
+                  onClick={() => scrollToSection('options')}
                   className="footer-link transition-colors"
                 >
-                  كيف يعمل
+                  الخيارات
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => scrollToSection('integrations')}
+                  onClick={() => scrollToSection('benefits')}
                   className="footer-link transition-colors"
                 >
-                  التكاملات
+                  الفوائد
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToSection('testimonials')}
+                  className="footer-link transition-colors"
+                >
+                  آراء العملاء
                 </button>
               </li>
               <li>

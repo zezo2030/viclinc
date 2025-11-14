@@ -50,22 +50,28 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <button 
+              onClick={() => scrollToSection('about')}
+              className="nav-link transition-all duration-300"
+            >
+              من نحن
+            </button>
+            <button 
               onClick={() => scrollToSection('features')}
               className="nav-link transition-all duration-300"
             >
               الميزات
             </button>
             <button 
-              onClick={() => scrollToSection('how-it-works')}
+              onClick={() => scrollToSection('options')}
               className="nav-link transition-all duration-300"
             >
-              كيف يعمل
+              الخيارات
             </button>
             <button 
-              onClick={() => scrollToSection('integrations')}
+              onClick={() => scrollToSection('benefits')}
               className="nav-link transition-all duration-300"
             >
-              التكاملات
+              الفوائد
             </button>
             <button 
               onClick={() => scrollToSection('testimonials')}

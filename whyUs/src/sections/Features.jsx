@@ -8,35 +8,12 @@ const Features = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
-      title: 'الحجز الإلكتروني',
-      description: 'نظام حجز ذكي يتيح للمرضى حجز المواعيد أونلاين على مدار الساعة مع تذكيرات تلقائية'
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      title: 'السجل الطبي الإلكتروني',
-      description: 'إدارة كاملة للملفات الطبية والوصفات والتحاليل بشكل آمن ومنظم'
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-        </svg>
-      ),
-      title: 'تذكيرات ذكية',
-      description: 'إرسال تلقائي للتذكيرات عبر SMS وواتساب للمرضى قبل المواعيد'
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      ),
-      title: 'استشارة فيديو',
-      description: 'استشارات طبية عن بُعد بجودة عالية مع نظام فيديو آمن ومشفّر'
+      title: 'تطبيق خاص باسم عيادتك',
+      points: [
+        'هوية رقمية مستقلة تحمل اسمك وشعارك.',
+        'تصميم عصري يتناسب مع تخصصك الطبي.',
+        'لا حاجة لأي معرفة تقنية — فقط أرسل شعارك وابدأ.',
+      ],
     },
     {
       icon: (
@@ -44,35 +21,90 @@ const Features = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       ),
-      title: 'الفوترة والدفع',
-      description: 'نظام فوترة متكامل مع تكامل بوابات الدفع الإلكتروني الآمنة'
+      title: 'حجز المواعيد صار أسهل',
+      points: [
+        'واجهة حجز ذكية للمواعيد الحضورية أو الافتراضية.',
+        'تنبيهات تلقائية للمريض والطبيب لتقليل الغياب.',
+        'إدارة جدول الأطباء بسهولة من لوحة التحكم.',
+      ],
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
       ),
-      title: 'تعدد الفروع',
-      description: 'إدارة عيادات متعددة بصلاحيات منفصلة من لوحة تحكم واحدة'
+      title: 'العيادة الافتراضية (Virtual Clinic)',
+      points: [
+        'مكالمات فيديو آمنة ومشفرة.',
+        'وصفات طبية إلكترونية.',
+        'أرشفة تلقائية لكل الاستشارات في ملف المريض.',
+      ],
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm6 0v-4a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2zM3 5a2 2 0 012-2h3.28a1 1 0 01.948.684L10.726 8.5" />
         </svg>
       ),
-      title: 'التقارير والتحليلات',
-      description: 'تقارير تفصيلية ولوحة تحكم غنية بالرسوم البيانية لمتابعة الأداء'
+      title: 'الرعاية المنزلية (HomeCare)',
+      points: [
+        'طلبات زيارة منزلية بواجهة سهلة.',
+        'تتبع مباشر للممارسين عبر GPS.',
+        'تقارير فورية وتوقيع إلكتروني بعد الخدمة.',
+      ],
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16M4 9h16M4 9v9a2 2 0 002 2h12a2 2 0 002-2V9m-9 0v12" />
         </svg>
       ),
-      title: 'التكاملات',
-      description: 'تكامل سلس مع بوابات الدفع، واتساب، وأنظمة التأمين الطبي'
+      title: 'التكامل مع الأنظمة الداخلية',
+      points: [
+        'يعمل جنبًا إلى جنب مع نظامك الحالي (ديسكتوب أو سحابي).',
+        'استيراد بيانات المرضى والفواتير بسلاسة.',
+        'لا يتعارض مع أي برنامج إداري موجود مسبقًا.',
+      ],
+    },
+    {
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      title: 'مدفوعات إلكترونية آمنة',
+      points: [
+        'ربط مباشر مع بوابات الدفع السعودية (مدى، STC Pay، Apple Pay).',
+        'تسوية مالية تلقائية بين الفروع أو الأطباء.',
+        'لا عمولات على الحجز — فقط اشتراك ثابت.',
+      ],
+    },
+    {
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17a4 4 0 010-8h1a4 4 0 010 8h-1zm0-8V5m0 12v2m5-8h2m-14 0h2" />
+        </svg>
+      ),
+      title: 'لوحة تحكم وتقارير ذكية',
+      points: [
+        'رؤية شاملة للأداء: عدد الحجوزات، الإيرادات، نسبة الغياب.',
+        'تقارير مالية وتشغيلية قابلة للتصدير.',
+        'أدوات تحليل تساعدك في اتخاذ قرارات النمو.',
+      ],
+    },
+    {
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+      title: 'أمان وخصوصية عالية',
+      points: [
+        'استضافة سعودية متوافقة مع لوائح وزارة الصحة.',
+        'تشفير كامل للبيانات الطبية.',
+        'صلاحيات مرنة للمستخدمين وسجلات تدقيق تفصيلية.',
+      ],
     },
   ];
 
@@ -107,14 +139,14 @@ const Features = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="section-title text-4xl mb-4">
-            ميزات تجعل إدارة عيادتك{' '}
+          <h2 className="section-title text-4xl md:text-5xl mb-4">
+            مميزات{' '}
             <span className="section-highlight">
-              أسهل وأذكى
+              MedFlw
             </span>
           </h2>
-          <p className="section-description text-xl max-w-3xl mx-auto">
-            كل ما تحتاجه لإدارة عيادتك بكفاءة واحترافية في منصة واحدة متكاملة
+          <p className="section-description text-xl max-w-4xl mx-auto">
+            كل ميزة مصممة لتمنح عيادتك تجربة رقمية مكتملة من أول تواصل مع المريض وحتى التقارير الذكية.
           </p>
         </motion.div>
 
@@ -143,9 +175,14 @@ const Features = () => {
               <h3 className="feature-card-title">
                 {feature.title}
               </h3>
-              <p className="feature-card-text">
-                {feature.description}
-              </p>
+              <ul className="feature-card-text space-y-2">
+                {feature.points.map((point) => (
+                  <li key={point} className="flex items-start gap-2">
+                    <span className="mt-1 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
             </motion.div>
           ))}
         </motion.div>
