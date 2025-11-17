@@ -45,8 +45,14 @@ services:
       AGORA_APP_CERTIFICATE: ${AGORA_APP_CERTIFICATE:-}
       AGORA_TOKEN_EXPIRATION_TIME: ${AGORA_TOKEN_EXPIRATION_TIME:-3600}
       AGORA_ENABLED: ${AGORA_ENABLED:-true}
+      # Firebase Cloud Messaging configuration
+      # Use either a mounted service account file or a base64-encoded key
+      FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH:-./config/firebase-service-account.json}
+      # FIREBASE_SERVICE_ACCOUNT_KEY: ${FIREBASE_SERVICE_ACCOUNT_KEY}
     volumes:
       - api_uploads:/app/uploads
+      # Mount Firebase service account config directory (contains firebase-service-account.json)
+      - ./clinic-api/config:/app/config:ro
     depends_on:
       mongo:
         condition: service_healthy

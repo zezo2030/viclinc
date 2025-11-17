@@ -10,6 +10,7 @@ import Departments from '@/pages/Departments'
 import Doctors from '@/pages/Doctors'
 import PlaceholderPage from '@/pages/PlaceholderPage'
 import Appointments from '@/pages/Appointments'
+import AppointmentDetailsPage from '@/pages/AppointmentDetailsPage'
 import Payments from '@/pages/Payments'
 import MedicalRecords from '@/pages/MedicalRecords'
 import Reports from '@/pages/Reports'
@@ -84,6 +85,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Appointments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/appointments/:id"
+            element={
+              <ProtectedRoute>
+                <AppointmentDetailsPage />
               </ProtectedRoute>
             }
           />

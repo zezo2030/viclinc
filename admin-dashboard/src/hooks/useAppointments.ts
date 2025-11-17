@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { appointmentsApi } from '@/api/appointments'
 import type { AppointmentQueryParams } from '@/types'
+import { AppointmentStatus } from '@/types'
 
 export function useAppointments(params?: AppointmentQueryParams) {
   return useQuery({
@@ -24,6 +25,7 @@ export function useUpdateAppointmentStatus() {
       appointmentsApi.updateStatus(id, { status, reason }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['appointments'] })
+      qc.invalidateQueries({ queryKey: ['appointments', 'notifications'] })
     },
   })
 }
@@ -38,4 +40,28 @@ export function useCheckConflicts() {
   })
 }
 
+export function useDeleteAppointment() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => appointmentsApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['appointments'] })
+      qc.invalidateQueries({ queryKey: ['appointments', 'notifications'] })
+    },
+  })
+}
+
+// إشعارات المواعيد الجديدة للداشبورد (حجوزات في حالة قيد التأكيد)
+export function useNewAppointmentsNotifications() {
+  return useQuery({
+    queryKey: ['appointments', 'notifications'],
+    queryFn: () =>
+      appointmentsApi.getAll({
+        status: AppointmentStatus.PENDING_CONFIRM,
+        page: 1,
+        limit: 5,
+      }),
+    refetchInterval: 30_000, // تحديث كل 30 ثانية
+  })
+}
 

@@ -15,6 +15,13 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 ENV NEXT_PUBLIC_SITE_NAME=${NEXT_PUBLIC_SITE_NAME}
 
+# Configure npm for better network handling
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000 && \
+    npm config set maxsockets 15
+
 # Copy package files
 COPY package*.json ./
 COPY tsconfig*.json ./
@@ -22,9 +29,16 @@ COPY next.config.* ./
 COPY tailwind.config.* ./
 COPY postcss.config.* ./
 
-# Install dependencies
+# Install dependencies with retry logic
 # Use npm install if package-lock.json doesn't exist, otherwise use npm ci
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN set -eux; \
+    for i in 1 2 3 4 5; do \
+        if [ -f package-lock.json ]; then \
+            npm ci --prefer-offline --no-audit && break || sleep 10; \
+        else \
+            npm install --prefer-offline --no-audit && break || sleep 10; \
+        fi; \
+    done
 
 # Copy source code
 COPY src ./src

@@ -13,6 +13,7 @@ import { AvailabilityService } from './availability.service';
 import { DoctorService, DoctorServiceDocument } from '../../doctors/schemas/doctor-service.schema';
 import { Service, ServiceDocument } from '../../services/schemas/service.schema';
 import { DoctorProfile, DoctorProfileDocument } from '../../doctors/schemas/doctor-profile.schema';
+import { NotificationsService } from '../../notifications/notifications.service';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -76,6 +77,7 @@ export class AppointmentService {
     private readonly doctorProfileModel: Model<DoctorProfileDocument>,
     private readonly redisService: RedisService,
     private readonly availabilityService: AvailabilityService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -149,6 +151,36 @@ export class AppointmentService {
 
       const savedAppointment = await appointment.save();
 
+      // إرسال إشعار للطبيب بوجود حجز جديد
+      try {
+        await this.appointmentModel.populate(savedAppointment, [
+          { path: 'patientId', select: 'name' },
+          { path: 'serviceId', select: 'name' },
+        ]);
+
+        const patientName = (savedAppointment.patientId as any)?.name || 'مريض';
+        const serviceName = (savedAppointment.serviceId as any)?.name || '';
+        const appointmentDate = dayjs(savedAppointment.startAt).format('YYYY-MM-DD');
+        const appointmentTime = dayjs(savedAppointment.startAt).format('HH:mm');
+
+        const title = 'حجز موعد جديد';
+        const body = `${patientName} حجز موعد${serviceName ? ` لخدمة ${serviceName}` : ''} في ${appointmentDate} الساعة ${appointmentTime}`;
+
+        await this.notificationsService.sendNotificationToUser(
+          savedAppointment.doctorId.toString(),
+          title,
+          body,
+          {
+            type: 'new_appointment',
+            appointmentId: String(
+              (savedAppointment as AppointmentDocument)._id || (savedAppointment as any).id,
+            ),
+          },
+        );
+      } catch (error) {
+        console.error('Failed to send notification for new appointment:', error);
+      }
+
       // حفظ Idempotency Key
       if (idempotencyKey) {
         await this.redisService.setIdempotencyKey(
@@ -208,6 +240,59 @@ export class AppointmentService {
     appointment.cancelledBy = new Types.ObjectId(patientId);
 
     const updatedAppointment = await appointment.save();
+    
+    // Send notification to doctor about cancellation
+    try {
+      await this.appointmentModel.populate(updatedAppointment, [
+        { path: 'patientId', select: 'name' },
+        { path: 'doctorId', select: 'name' },
+        { path: 'serviceId', select: 'name' },
+      ]);
+      
+      const patientName = (updatedAppointment.patientId as any)?.name || 'المريض';
+      const doctorName = (updatedAppointment.doctorId as any)?.name || 'الطبيب';
+      const serviceName = (updatedAppointment.serviceId as any)?.name || '';
+      const appointmentDate = dayjs(updatedAppointment.startAt).format('YYYY-MM-DD');
+      const appointmentTime = dayjs(updatedAppointment.startAt).format('HH:mm');
+      
+      // Notify doctor
+      const doctorTitle = 'تم إلغاء موعد';
+      const doctorBody = `تم إلغاء موعد مع ${patientName} في ${appointmentDate} الساعة ${appointmentTime}`;
+      
+      await this.notificationsService.sendNotificationToUser(
+        updatedAppointment.doctorId.toString(),
+        doctorTitle,
+        doctorBody,
+        {
+          type: 'appointment_cancelled',
+          appointmentId: String((updatedAppointment as AppointmentDocument)._id || (updatedAppointment as any).id),
+        },
+      );
+
+      // Notify patient about cancellation
+      // Handle patientId - it might be ObjectId or populated object
+      const patientId = updatedAppointment.patientId instanceof Types.ObjectId
+        ? updatedAppointment.patientId.toString()
+        : (updatedAppointment.patientId as any)?._id
+        ? (updatedAppointment.patientId as any)._id.toString()
+        : String(updatedAppointment.patientId);
+      
+      const patientTitle = 'تم إلغاء موعدك';
+      const patientBody = `تم إلغاء موعدك مع ${doctorName}${serviceName ? ` - ${serviceName}` : ''} في ${appointmentDate} الساعة ${appointmentTime}${cancelDto.reason ? `. السبب: ${cancelDto.reason}` : ''}`;
+      
+      await this.notificationsService.sendNotificationToUser(
+        patientId,
+        patientTitle,
+        patientBody,
+        {
+          type: 'appointment_cancelled',
+          appointmentId: String((updatedAppointment as AppointmentDocument)._id || (updatedAppointment as any).id),
+        },
+      );
+    } catch (error) {
+      console.error('Failed to send notification for appointment cancellation:', error);
+    }
+    
     return this.mapToResponse(updatedAppointment);
   }
 
@@ -624,6 +709,42 @@ export class AppointmentService {
     }
 
     const updatedAppointment = await appointment.save();
+
+    // Send notification to patient about confirmation
+    try {
+      await this.appointmentModel.populate(updatedAppointment, [
+        { path: 'doctorId', select: 'name' },
+        { path: 'serviceId', select: 'name' },
+      ]);
+      
+      const doctorName = (updatedAppointment.doctorId as any)?.name || 'الطبيب';
+      const serviceName = (updatedAppointment.serviceId as any)?.name || '';
+      const appointmentDate = dayjs(updatedAppointment.startAt).format('YYYY-MM-DD');
+      const appointmentTime = dayjs(updatedAppointment.startAt).format('HH:mm');
+      
+      const title = 'تم تأكيد موعدك';
+      const body = `تم تأكيد موعدك مع ${doctorName}${serviceName ? ` - ${serviceName}` : ''} في ${appointmentDate} الساعة ${appointmentTime}`;
+      
+      // Handle patientId - it might be ObjectId or populated object
+      const patientId = updatedAppointment.patientId instanceof Types.ObjectId
+        ? updatedAppointment.patientId.toString()
+        : (updatedAppointment.patientId as any)?._id
+        ? (updatedAppointment.patientId as any)._id.toString()
+        : String(updatedAppointment.patientId);
+      
+      await this.notificationsService.sendNotificationToUser(
+        patientId,
+        title,
+        body,
+        {
+          type: 'appointment_confirmed',
+          appointmentId: String((updatedAppointment as AppointmentDocument)._id || (updatedAppointment as any).id),
+        },
+      );
+    } catch (error) {
+      console.error('Failed to send notification for appointment confirmation:', error);
+    }
+
     return this.mapToResponse(updatedAppointment);
   }
 
@@ -666,6 +787,40 @@ export class AppointmentService {
     };
 
     const updatedAppointment = await appointment.save();
+    
+    // Send notification to patient about rejection
+    try {
+      await this.appointmentModel.populate(updatedAppointment, [
+        { path: 'doctorId', select: 'name' },
+      ]);
+      
+      const doctorName = (updatedAppointment.doctorId as any)?.name || 'الطبيب';
+      const appointmentDate = dayjs(updatedAppointment.startAt).format('YYYY-MM-DD');
+      const appointmentTime = dayjs(updatedAppointment.startAt).format('HH:mm');
+      
+      // Handle patientId - it might be ObjectId or populated object
+      const patientId = updatedAppointment.patientId instanceof Types.ObjectId
+        ? updatedAppointment.patientId.toString()
+        : (updatedAppointment.patientId as any)?._id
+        ? (updatedAppointment.patientId as any)._id.toString()
+        : String(updatedAppointment.patientId);
+      
+      const title = 'تم رفض موعدك';
+      const body = `تم رفض موعدك مع ${doctorName} في ${appointmentDate} الساعة ${appointmentTime}${rejectDto.reason ? `. السبب: ${rejectDto.reason}` : ''}`;
+      
+      await this.notificationsService.sendNotificationToUser(
+        patientId,
+        title,
+        body,
+        {
+          type: 'appointment_rejected',
+          appointmentId: String((updatedAppointment as AppointmentDocument)._id || (updatedAppointment as any).id),
+        },
+      );
+    } catch (error) {
+      console.error('Failed to send notification for appointment rejection:', error);
+    }
+    
     return this.mapToResponse(updatedAppointment);
   }
 

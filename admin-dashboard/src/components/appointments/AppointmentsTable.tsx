@@ -7,6 +7,7 @@ interface AppointmentsTableProps {
   pagination?: { page: number; totalPages: number; total: number }
   onPageChange?: (page: number) => void
   onOpenDetails?: (appointment: Appointment) => void
+  onDelete?: (appointment: Appointment) => void
 }
 
 export default function AppointmentsTable({
@@ -15,6 +16,7 @@ export default function AppointmentsTable({
   pagination,
   onPageChange,
   onOpenDetails,
+  onDelete,
 }: AppointmentsTableProps) {
   if (isLoading) {
     return (
@@ -109,22 +111,26 @@ export default function AppointmentsTable({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {(
-                        (a as any).patient?.name ??
-                        (typeof (a as any).patientId === 'object'
-                          ? (a as any).patientId?.name ?? (a as any).patientId?._id
-                          : (a as any).patientId)
-                      ) ?? 'غير محدد'}
+                      {a.patientName ??
+                        (
+                          (a as any).patient?.name ??
+                          (typeof (a as any).patientId === 'object'
+                            ? (a as any).patientId?.name ?? (a as any).patientId?._id
+                            : (a as any).patientId)
+                        ) ??
+                        'غير محدد'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {(
-                        (a as any).doctor?.name ??
-                        (typeof (a as any).doctorId === 'object'
-                          ? (a as any).doctorId?.name ?? (a as any).doctorId?._id
-                          : (a as any).doctorId)
-                      ) ?? 'غير محدد'}
+                      {a.doctorName ??
+                        (
+                          (a as any).doctor?.name ??
+                          (typeof (a as any).doctorId === 'object'
+                            ? (a as any).doctorId?.name ?? (a as any).doctorId?._id
+                            : (a as any).doctorId)
+                        ) ??
+                        'غير محدد'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -140,12 +146,22 @@ export default function AppointmentsTable({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <button
-                      onClick={() => onOpenDetails?.(a)}
-                      className="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:scale-105 transition-all duration-300 shadow-lg shadow-pink-500/30 hover:shadow-xl"
-                    >
-                      📋 التفاصيل
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onOpenDetails?.(a)}
+                        className="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:scale-105 transition-all duration-300 shadow-lg shadow-pink-500/30 hover:shadow-xl"
+                      >
+                        📋 التفاصيل
+                      </button>
+                      {a.status === 'CANCELLED' && (
+                        <button
+                          onClick={() => onDelete?.(a)}
+                          className="px-3 py-2 text-xs font-semibold bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:scale-105 transition-all duration-300 shadow-md shadow-red-500/30 hover:shadow-lg"
+                        >
+                          🗑 حذف
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )

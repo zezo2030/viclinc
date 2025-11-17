@@ -39,8 +39,10 @@ services:
       AGORA_APP_CERTIFICATE: ${AGORA_APP_CERTIFICATE:-}
       AGORA_TOKEN_EXPIRATION_TIME: ${AGORA_TOKEN_EXPIRATION_TIME:-3600}
       AGORA_ENABLED: ${AGORA_ENABLED:-true}
+      FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH:-./config/firebase-service-account.json}
     volumes:
       - api_uploads:/app/uploads
+      - ./clinic-api/config:/app/config:ro
     ports:
       - "3000:3000"
     depends_on:

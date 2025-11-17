@@ -14,6 +14,9 @@ export const appointmentsApi = {
       doctorId: a.doctorId || a.doctor?._id || a.doctor?.id,
       patientId: a.patientId || a.patient?._id || a.patient?.id,
       serviceId: a.serviceId || a.service?._id || a.service?.id,
+      doctorName: a.doctor?.name,
+      patientName: a.patient?.name,
+      serviceName: a.service?.name,
       startAt: a.startAt,
       endAt: a.endAt,
       status: a.status,
@@ -56,6 +59,9 @@ export const appointmentsApi = {
       doctorId: a.doctorId || a.doctor?._id || a.doctor?.id,
       patientId: a.patientId || a.patient?._id || a.patient?.id,
       serviceId: a.serviceId || a.service?._id || a.service?.id,
+      doctorName: a.doctor?.name,
+      patientName: a.patient?.name,
+      serviceName: a.service?.name,
       startAt: a.startAt,
       endAt: a.endAt,
       status: a.status,
@@ -75,6 +81,12 @@ export const appointmentsApi = {
   // تحديث حالة الموعد
   updateStatus: async (id: string, data: { status: string; reason?: string }) => {
     const response = await apiClient.patch(`/admin/appointments/${id}/status`, data)
+    return response.data
+  },
+
+  // حذف موعد (مسموح فقط للملغي في الباكيند)
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/admin/appointments/${id}`)
     return response.data
   },
 

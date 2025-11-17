@@ -25,6 +25,10 @@ export interface Appointment {
   doctorId: string
   patientId: string
   serviceId: string
+  // أسماء اختيارية للاستخدام في الواجهة (إذا أرسلها الـ API)
+  doctorName?: string
+  patientName?: string
+  serviceName?: string
   startAt: string
   endAt: string
   status: AppointmentStatus

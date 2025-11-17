@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, UseInterceptors, UnauthorizedException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ChatService } from '../services/chat.service';
@@ -14,6 +14,33 @@ import { User } from '../../users/schemas/user.schema';
 @UseGuards(JwtAuthGuard)
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
+
+  /**
+   * Helper method to extract user ID from user object
+   * Handles different user object structures (JWT payload, Mongoose document, etc.)
+   */
+  private extractUserId(user: any): string {
+    if (!user) {
+      throw new UnauthorizedException('User not found in request');
+    }
+
+    // Try JWT payload format (sub field)
+    if (user.sub) {
+      return typeof user.sub === 'string' ? user.sub : user.sub.toString();
+    }
+
+    // Try Mongoose document format (_id field)
+    if (user._id) {
+      return typeof user._id === 'string' ? user._id : user._id.toString();
+    }
+
+    // Try id field
+    if (user.id) {
+      return typeof user.id === 'string' ? user.id : user.id.toString();
+    }
+
+    throw new UnauthorizedException('User ID not found in user object');
+  }
 
   @Get(':appointmentId')
   @ApiOperation({ summary: 'Get chat session information' })
@@ -33,7 +60,8 @@ export class ChatController {
     @Param('appointmentId') appointmentId: string,
     @CurrentUser() user: User,
   ) {
-    return this.chatService.getChatSession(appointmentId, (user as any)._id.toString());
+    const userId = this.extractUserId(user);
+    return this.chatService.getChatSession(appointmentId, userId);
   }
 
   @Get(':appointmentId/messages')
@@ -58,13 +86,14 @@ export class ChatController {
     @Query('limit') limit: number = 50,
     @CurrentUser() user: User,
   ) {
+    const userId = this.extractUserId(user);
     // تحديد حد أقصى للرسائل في الصفحة الواحدة
     const maxLimit = Math.min(limit, 100);
     const pageNum = Math.max(page, 1);
     
     return this.chatService.getMessages(
       appointmentId, 
-      (user as any)._id.toString(), 
+      userId, 
       pageNum, 
       maxLimit
     );
@@ -95,9 +124,10 @@ export class ChatController {
     @Body() messageDto: SendMessageDto,
     @CurrentUser() user: User,
   ): Promise<MessageResponseDto> {
+    const userId = this.extractUserId(user);
     return this.chatService.sendMessage(
       appointmentId, 
-      (user as any)._id.toString(), 
+      userId, 
       messageDto
     );
   }
@@ -116,7 +146,8 @@ export class ChatController {
     @Param('appointmentId') appointmentId: string,
     @CurrentUser() user: User,
   ) {
-    await this.chatService.markAsRead(appointmentId, (user as any)._id.toString());
+    const userId = this.extractUserId(user);
+    await this.chatService.markAsRead(appointmentId, userId);
     return { message: 'Messages marked as read' };
   }
 
@@ -134,7 +165,8 @@ export class ChatController {
     @Param('appointmentId') appointmentId: string,
     @CurrentUser() user: User,
   ) {
-    const count = await this.chatService.getUnreadCount(appointmentId, (user as any)._id.toString());
+    const userId = this.extractUserId(user);
+    const count = await this.chatService.getUnreadCount(appointmentId, userId);
     return { unreadCount: count };
   }
 
@@ -156,7 +188,8 @@ export class ChatController {
     @Param('appointmentId') appointmentId: string,
     @CurrentUser() user: User,
   ) {
-    await this.chatService.archiveChat(appointmentId, (user as any)._id.toString());
+    const userId = this.extractUserId(user);
+    await this.chatService.archiveChat(appointmentId, userId);
     return { message: 'Chat archived successfully' };
   }
 
@@ -176,9 +209,10 @@ export class ChatController {
     @Body() reportDto: ReportChatDto,
     @CurrentUser() user: User,
   ): Promise<ReportResponseDto> {
+    const userId = this.extractUserId(user);
     return this.chatService.reportChat(
       appointmentId, 
-      (user as any)._id.toString(), 
+      userId, 
       reportDto
     );
   }

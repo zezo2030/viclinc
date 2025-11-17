@@ -26,6 +26,7 @@ import { ServicesController } from './modules/services/services.controller';
 import { PublicServicesController } from './modules/services/public-services.controller';
 import { RedisModule } from './modules/shared/redis/redis.module';
 import { GuardsModule } from './modules/shared/guards/guards.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 const isProd = process.env.NODE_ENV === 'production';
 const i18nPath = isProd
@@ -70,6 +71,7 @@ const i18nPath = isProd
     MedicalRecordsModule,
     AdminModule,
     DepartmentsModule,
+    NotificationsModule,
     Feature.forFeature([
       { name: Svc.name, schema: ServiceSchema },
     ]),
