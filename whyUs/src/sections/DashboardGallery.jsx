@@ -1,17 +1,19 @@
 import { motion } from 'framer-motion';
+import calendarImage from '../assets/calendar.jpg';
+import analizImage from '../assets/analiz.jpg';
 
 const dashboards = [
   {
     title: 'لوحة المواعيد الفورية',
     description: 'متابعة الحجوزات اليومية مع حالة التأكيد والتنبيهات الذكية.',
     stats: '32 زيارة مؤكدة اليوم',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
+    image: calendarImage,
   },
   {
     title: 'تحليلات الأداء',
     description: 'رؤية شاملة لنسب الحضور، مصادر المرضى، ومتوسط زمن الانتظار.',
     stats: '+18% نمو شهري',
-    image: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=1200&q=80',
+    image: analizImage,
   },
   {
     title: 'إدارة الملفات الطبية',
@@ -65,7 +67,7 @@ const DashboardGallery = () => {
                 <h3 className="feature-card-title mb-2">{dashboard.title}</h3>
                 <p className="feature-card-text mb-4">{dashboard.description}</p>
                 <a
-                  href="https://wa.me/966500000000"
+                  href="https://wa.me/966599773417"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="link-inline font-semibold"

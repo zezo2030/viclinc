@@ -130,7 +130,7 @@ const Hero = () => {
               transition={{ delay: 0.6, duration: 0.8 }}
             >
               <motion.a
-                href="https://wa.me/966500000000"
+                href="https://wa.me/966599773417"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-primary group"

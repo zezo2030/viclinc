@@ -108,7 +108,7 @@ const Integrations = () => {
         >
           <p className="section-description mb-4">وتكاملات أخرى كثيرة...</p>
           <a
-            href="https://wa.me/966500000000"
+            href="https://wa.me/966599773417"
             target="_blank"
             rel="noopener noreferrer"
             className="link-inline inline-flex items-center gap-2 font-semibold"

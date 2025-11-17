@@ -54,7 +54,7 @@ const CTA = () => {
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
             <motion.a
-              href="https://wa.me/966500000000"
+              href="https://wa.me/966599773417"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary group w-full sm:w-auto text-xl font-black"

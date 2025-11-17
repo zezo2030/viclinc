@@ -126,7 +126,7 @@ const HowItWorks = () => {
           className="text-center mt-16"
         >
           <a
-            href="https://wa.me/966500000000"
+            href="https://wa.me/966599773417"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary inline-flex items-center justify-center gap-3"
