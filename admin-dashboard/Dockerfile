@@ -15,14 +15,24 @@ ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_SITE_URL=${VITE_SITE_URL}
 ENV VITE_SITE_NAME=${VITE_SITE_NAME}
 
+# Configure npm for better network handling
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000 && \
+    npm config set maxsockets 15
+
 # Copy package files
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY vite.config.ts ./
 COPY index.html ./
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
+# Install dependencies with retry logic
+RUN set -eux; \
+    for i in 1 2 3 4 5; do \
+        npm install --legacy-peer-deps --prefer-offline --no-audit && break || sleep 10; \
+    done
 
 # Copy source code
 COPY src ./src

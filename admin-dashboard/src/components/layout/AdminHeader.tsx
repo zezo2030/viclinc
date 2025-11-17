@@ -10,6 +10,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNewAppointmentsNotifications } from '@/hooks/useAppointments';
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
@@ -21,6 +22,10 @@ export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderPro
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const { data: notificationsData } = useNewAppointmentsNotifications();
+
+  const notifications = notificationsData?.data || [];
+  const hasNotifications = notifications.length > 0;
 
   const handleLogout = () => {
     logout();
@@ -60,7 +65,9 @@ export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderPro
               className="relative p-2.5 hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-md group"
             >
               <Bell className="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-br from-red-500 to-red-600 rounded-full animate-pulse shadow-lg shadow-red-500/50"></span>
+              {hasNotifications && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-br from-red-500 to-red-600 rounded-full animate-pulse shadow-lg shadow-red-500/50"></span>
+              )}
             </button>
 
             {/* Notifications Dropdown */}
@@ -69,10 +76,49 @@ export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderPro
                 <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
                   <h3 className="font-bold text-gray-900">الإشعارات</h3>
                 </div>
-                <div className="p-6">
-                  <p className="text-sm text-gray-500 text-center">
-                    لا توجد إشعارات جديدة
-                  </p>
+                <div className="p-1 max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-6">
+                      <p className="text-sm text-gray-500 text-center">
+                        لا توجد إشعارات جديدة
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="divide-y divide-gray-100">
+                      {notifications.map((apt) => (
+                        <li key={apt.id}>
+                          <button
+                            className="w-full px-4 py-3 text-right hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-purple-50/60 transition-colors duration-200"
+                            onClick={() => {
+                              navigate(`/appointments/${apt.id}`);
+                              setShowNotifications(false);
+                            }}
+                          >
+                            <p className="text-sm font-semibold text-gray-900">
+                              حجز موعد جديد
+                            </p>
+                            <p className="mt-1 text-xs text-gray-600">
+                              {apt.patientName
+                                ? `المريض ${apt.patientName}`
+                                : 'مريض جديد'}{' '}
+                              ·{' '}
+                              {new Date(apt.startAt).toLocaleDateString('ar-SA', {
+                                weekday: 'short',
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              })}{' '}
+                              -{' '}
+                              {new Date(apt.startAt).toLocaleTimeString('ar-SA', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             )}

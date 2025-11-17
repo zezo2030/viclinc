@@ -211,6 +211,20 @@ export class AdminController {
     return this.adminService.getAppointments(query);
   }
 
+  @Get('appointments/:id')
+  @ApiOperation({ summary: 'Get appointment by id' })
+  @ApiResponse({ status: 200, description: 'Appointment retrieved successfully' })
+  async getAppointmentById(@Param('id') id: string) {
+    return this.adminService.getAppointmentById(id);
+  }
+
+  @Delete('appointments/:id')
+  @ApiOperation({ summary: 'Delete cancelled appointment' })
+  @ApiResponse({ status: 200, description: 'Appointment deleted successfully' })
+  async deleteAppointment(@Param('id') id: string) {
+    return this.adminService.deleteAppointment(id);
+  }
+
   @Patch('appointments/:id/status')
   @ApiOperation({ summary: 'Update appointment status' })
   @ApiResponse({ status: 200, description: 'Appointment status updated successfully' })

@@ -77,7 +77,10 @@ async function bootstrap() {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Always allow requests with no origin (like mobile apps or Postman)
       if (!origin) {
-        console.log('[CORS] Allowing request with no origin');
+        // Only log in development mode to reduce production log noise
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[CORS] Allowing request with no origin');
+        }
         return callback(null, true);
       }
       

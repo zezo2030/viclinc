@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { DoctorProfile, DoctorProfileDocument } from '../doctors/schemas/doctor-profile.schema';
-import { Appointment, AppointmentDocument } from '../schedule/schemas/appointment.schema';
+import { Appointment, AppointmentDocument, AppointmentStatus } from '../schedule/schemas/appointment.schema';
 import { AdminAudit, AdminAuditDocument } from './schemas/admin-audit.schema';
+import { AppointmentService } from '../schedule/services/appointment.service';
+import { ConfirmAppointmentDto } from '../schedule/dto/confirm-appointment.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class AdminService {
@@ -15,6 +18,8 @@ export class AdminService {
     private readonly appointmentModel: Model<AppointmentDocument>,
     @InjectModel(AdminAudit.name)
     private readonly adminAuditModel: Model<AdminAuditDocument>,
+    private readonly appointmentService: AppointmentService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async getDoctors(query: any) {
@@ -223,10 +228,73 @@ export class AdminService {
     };
   }
 
+  async getAppointmentById(appointmentId: string) {
+    const appointment = await this.appointmentModel
+      .findById(appointmentId)
+      .populate('doctorId', 'name licenseNumber')
+      .populate('patientId', 'email phone name')
+      .populate('serviceId', 'name')
+      .lean();
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    return appointment;
+  }
+
+  async deleteAppointment(appointmentId: string) {
+    const appointment = await this.appointmentModel.findById(appointmentId);
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    if (appointment.status !== AppointmentStatus.CANCELLED) {
+      throw new BadRequestException('لا يمكن حذف إلا المواعيد الملغاة فقط');
+    }
+
+    await this.appointmentModel.deleteOne({ _id: appointmentId });
+
+    return {
+      success: true,
+      message: 'تم حذف الموعد بنجاح',
+    };
+  }
+
   async updateAppointmentStatus(appointmentId: string, updateStatusDto: any) {
+    // If status is being changed to CONFIRMED, use AppointmentService.confirmAppointment
+    // to ensure all business logic and notifications are triggered
+    if (updateStatusDto.status === AppointmentStatus.CONFIRMED) {
+      // Get the appointment first to get doctorId
+      const appointment = await this.appointmentModel.findById(appointmentId);
+      
+      if (!appointment) {
+        throw new Error('Appointment not found');
+      }
+
+      // Use AppointmentService.confirmAppointment which handles all validation and notifications
+      const confirmDto: ConfirmAppointmentDto = {
+        notes: updateStatusDto.notes || undefined,
+      };
+      
+      return await this.appointmentService.confirmAppointment(
+        appointmentId,
+        appointment.doctorId.toString(),
+        confirmDto,
+      );
+    }
+
+    // For other status changes, use the direct update
     const appointment = await this.appointmentModel.findByIdAndUpdate(
       appointmentId,
-      { status: updateStatusDto.status },
+      { 
+        status: updateStatusDto.status,
+        ...(updateStatusDto.status === AppointmentStatus.CANCELLED && {
+          cancellationReason: updateStatusDto.reason,
+          cancelledAt: new Date(),
+        }),
+      },
       { new: true }
     ).populate('doctorId', 'name licenseNumber')
      .populate('patientId', 'email phone name')
@@ -234,6 +302,45 @@ export class AdminService {
 
     if (!appointment) {
       throw new Error('Appointment not found');
+    }
+
+    // Send notification to patient if appointment is cancelled from dashboard
+    if (updateStatusDto.status === AppointmentStatus.CANCELLED) {
+      try {
+        const doctorName = (appointment.doctorId as any)?.name || 'الطبيب';
+        const serviceName = (appointment.serviceId as any)?.name || '';
+        const appointmentDate = dayjs(appointment.startAt).format('YYYY-MM-DD');
+        const appointmentTime = dayjs(appointment.startAt).format('HH:mm');
+        
+        // Handle patientId - it might be ObjectId or populated object
+        let patientId: string;
+        if (appointment.patientId instanceof Types.ObjectId) {
+          patientId = appointment.patientId.toString();
+        } else if ((appointment.patientId as any)?._id) {
+          // Populated object
+          patientId = (appointment.patientId as any)._id.toString();
+        } else if (typeof appointment.patientId === 'string') {
+          patientId = appointment.patientId;
+        } else {
+          // Fallback: try toString()
+          patientId = String(appointment.patientId);
+        }
+        
+        const title = 'تم إلغاء موعدك';
+        const body = `تم إلغاء موعدك مع ${doctorName}${serviceName ? ` - ${serviceName}` : ''} في ${appointmentDate} الساعة ${appointmentTime}${updateStatusDto.reason ? `. السبب: ${updateStatusDto.reason}` : ''}`;
+        
+        await this.notificationsService.sendNotificationToUser(
+          patientId,
+          title,
+          body,
+          {
+            type: 'appointment_cancelled',
+            appointmentId: String((appointment as AppointmentDocument)._id || (appointment as any).id),
+          },
+        );
+      } catch (error) {
+        console.error('Failed to send notification for appointment cancellation from dashboard:', error);
+      }
     }
 
     return appointment;

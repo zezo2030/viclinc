@@ -17,6 +17,8 @@ import { Department, DepartmentSchema } from '../departments/schemas/department.
 import { Service, ServiceSchema } from '../services/schemas/service.schema';
 import { Payment, PaymentSchema } from '../payments/schemas/payment.schema';
 import { RedisModule } from '../shared/redis/redis.module';
+import { ScheduleModule } from '../schedule/schedule.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { AdminPaymentsController } from './controllers/admin-payments.controller';
 import { AdminPaymentsService } from './services/admin-payments.service';
 
@@ -34,6 +36,8 @@ import { AdminPaymentsService } from './services/admin-payments.service';
     ]),
     AuthModule,
     RedisModule,
+    ScheduleModule,
+    NotificationsModule,
   ],
   controllers: [AdminController, AdminPaymentsController],
   providers: [

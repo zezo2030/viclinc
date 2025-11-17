@@ -90,7 +90,7 @@ const Header = () => {
           {/* CTA Button */}
           <div className="flex items-center gap-4">
             <motion.a
-              href="https://wa.me/966500000000"
+              href="https://wa.me/966599773417"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary"

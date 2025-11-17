@@ -7,6 +7,7 @@ import { AvailabilityService } from './services/availability.service';
 import { AppointmentService } from './services/appointment.service';
 import { SharedSchemasModule } from '../shared/schemas/schemas.module';
 import { RedisModule } from '../shared/redis/redis.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RedisModule } from '../shared/redis/redis.module';
     ]),
     SharedSchemasModule,
     RedisModule,
+    NotificationsModule,
   ],
   providers: [DoctorScheduleService, AvailabilityService, AppointmentService],
   exports: [DoctorScheduleService, AvailabilityService, AppointmentService],

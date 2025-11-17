@@ -1,19 +1,24 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import AdminLayout from '@/components/layout/AdminLayout'
 import Breadcrumbs from '@/components/layout/Breadcrumbs'
 import AppointmentFilters from '@/components/appointments/AppointmentFilters'
 import AppointmentsCalendar from '@/components/appointments/AppointmentsCalendar'
 import AppointmentsTable from '@/components/appointments/AppointmentsTable'
-import AppointmentDetails from '@/components/appointments/AppointmentDetails'
-import { useAppointments, useUpdateAppointmentStatus } from '@/hooks/useAppointments'
+import ConfirmDialog from '@/components/common/ConfirmDialog'
+import { useAppointments, useDeleteAppointment } from '@/hooks/useAppointments'
 import type { Appointment } from '@/types/appointment.types'
 
 export default function AppointmentsPage() {
+  const navigate = useNavigate()
   const [filters, setFilters] = useState<any>({ status: 'ALL', type: 'ALL' })
   const [page, setPage] = useState(1)
   const [view, setView] = useState<'day' | 'week' | 'month'>('week')
-  const [selected, setSelected] = useState<Appointment | null>(null)
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; appointment: Appointment | null }>({
+    isOpen: false,
+    appointment: null,
+  })
 
   const params = useMemo(() => {
     const p: any = { page, limit: 10 }
@@ -28,21 +33,10 @@ export default function AppointmentsPage() {
   }, [page, filters])
 
   const { data, isLoading, error } = useAppointments(params)
-  const updateStatus = useUpdateAppointmentStatus()
+  const deleteAppointment = useDeleteAppointment()
 
   const list = data?.data || []
   const pagination = data?.meta
-
-  const handleChangeStatus = async (status: string) => {
-    if (!selected) return
-    try {
-      await updateStatus.mutateAsync({ id: selected.id, status })
-      toast.success('تم تحديث حالة الموعد')
-      setSelected(null)
-    } catch (e: any) {
-      toast.error(e?.response?.data?.message || 'فشل تحديث حالة الموعد')
-    }
-  }
 
   if (error) {
     return (
@@ -116,10 +110,33 @@ export default function AppointmentsPage() {
           isLoading={isLoading}
           pagination={pagination ? { page: pagination.page, totalPages: pagination.totalPages, total: pagination.total } : undefined}
           onPageChange={setPage}
-          onOpenDetails={setSelected}
+          onOpenDetails={(appointment) => navigate(`/appointments/${appointment.id}`)}
+          onDelete={(appointment) => {
+            setDeleteDialog({ isOpen: true, appointment })
+          }}
         />
 
-      <AppointmentDetails appointment={selected} onClose={() => setSelected(null)} onChangeStatus={handleChangeStatus} />
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, appointment: null })}
+        onConfirm={async () => {
+          if (!deleteDialog.appointment) return
+          try {
+            await deleteAppointment.mutateAsync(deleteDialog.appointment.id)
+            toast.success('تم حذف الموعد بنجاح')
+            setDeleteDialog({ isOpen: false, appointment: null })
+          } catch (e: any) {
+            toast.error(e?.response?.data?.message || 'فشل حذف الموعد')
+          }
+        }}
+        title="تأكيد حذف الموعد"
+        message={`هل أنت متأكد من حذف هذا الموعد الملغى نهائياً؟\n\nهذا الإجراء لا يمكن التراجع عنه.`}
+        confirmText="حذف نهائياً"
+        cancelText="إلغاء"
+        confirmButtonColor="red"
+        isLoading={deleteAppointment.isPending}
+      />
     </AdminLayout>
   )
 }

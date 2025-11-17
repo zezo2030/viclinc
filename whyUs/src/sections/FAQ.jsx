@@ -135,7 +135,7 @@ const FAQ = () => {
             فريقنا جاهز للإجابة على جميع استفساراتك
           </p>
           <a
-            href="https://wa.me/966500000000"
+            href="https://wa.me/966599773417"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary inline-flex items-center justify-center gap-2"
