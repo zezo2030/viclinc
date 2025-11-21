@@ -14,14 +14,14 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async registerPatient(input: { name: string; email: string; phone: string; password: string }) {
-    const { name, email, phone, password } = input;
+  async registerPatient(input: { name: string; email: string; phone: string; password: string; avatar?: string }) {
+    const { name, email, phone, password, avatar } = input;
     const normalizedEmail = email.trim().toLowerCase();
     const exists = await this.userModel.findOne({ $or: [{ email: normalizedEmail }, { phone }] }).lean();
     if (exists) throw new ConflictException('Email or phone already exists');
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await this.userModel.create({ name, email: normalizedEmail, phone, passwordHash, role: Role.PATIENT, status: UserStatus.ACTIVE });
-    return { id: String(user._id), email: user.email, name: user.name, role: user.role };
+    const user = await this.userModel.create({ name, email: normalizedEmail, phone, passwordHash, role: Role.PATIENT, status: UserStatus.ACTIVE, avatar });
+    return { id: String(user._id), email: user.email, name: user.name, role: user.role, avatar: user.avatar };
   }
 
   /**
@@ -37,7 +37,8 @@ export class AuthService {
       email: user.email,
       name: user.name,
       phone: user.phone,
-      role: user.role
+      role: user.role,
+      avatar: user.avatar
     };
   }
 
@@ -64,7 +65,8 @@ export class AuthService {
         email: user.email,
         name: user.name,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        avatar: user.avatar
       }
     };
   }

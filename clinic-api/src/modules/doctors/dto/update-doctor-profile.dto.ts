@@ -1,5 +1,6 @@
-import { IsString, IsNumber, IsOptional, IsArray, Min, Max, MinLength, MaxLength, IsMongoId } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, Max, MinLength, MaxLength, IsMongoId } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class UpdateDoctorProfileDto {
   @ApiProperty({ description: 'Doctor full name', example: 'Dr. Ahmed Mohamed', required: false, minLength: 2, maxLength: 100 })
@@ -18,6 +19,7 @@ export class UpdateDoctorProfileDto {
 
   @ApiProperty({ description: 'Years of experience', example: 5, required: false, minimum: 0, maximum: 50 })
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   @Max(50)
@@ -28,11 +30,10 @@ export class UpdateDoctorProfileDto {
   @IsMongoId()
   departmentId?: string;
 
-  @ApiProperty({ description: 'Doctor photos URLs', example: ['https://example.com/photo1.jpg'], required: false, type: [String] })
+  @ApiProperty({ description: 'Doctor avatar URL', example: 'https://example.com/avatar.jpg', required: false })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  photos?: string[];
+  @IsString()
+  avatar?: string;
 
   @ApiProperty({ description: 'Doctor biography', example: 'Specialist in general surgery', required: false, maxLength: 1000 })
   @IsOptional()

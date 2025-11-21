@@ -32,9 +32,9 @@ export class DoctorProfile {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Department' })
   departmentId: Types.ObjectId;
 
-  @ApiProperty({ description: 'Doctor photos URLs', example: ['https://example.com/photo1.jpg'], type: [String] })
-  @Prop({ type: [String], default: [] })
-  photos: string[];
+  @ApiProperty({ description: 'Doctor avatar URL', example: 'https://example.com/avatar.jpg', required: false })
+  @Prop({ trim: true })
+  avatar?: string;
 
   @ApiProperty({ description: 'Doctor biography', example: 'Specialist in general surgery', required: false })
   @Prop({ trim: true })

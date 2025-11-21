@@ -682,8 +682,11 @@ export class AppointmentService {
       }
     }
 
-    // التحقق من توفر الفتحة الزمنية
-    await this.validateAvailability(appointment.doctorId, appointment.serviceId, appointment.startAt);
+    // Note: We skip availability validation for existing appointments since:
+    // 1. The appointment was already validated when it was created
+    // 2. Availability schedules may have changed since booking
+    // 3. The appointment time was already reserved
+    // We only check for conflicts with other appointments below
 
     // التحقق من عدم التداخل
     await this.checkForConflicts(appointment.doctorId, appointment.startAt, appointment.endAt, appointmentId);

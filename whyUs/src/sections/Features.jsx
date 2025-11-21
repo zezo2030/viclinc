@@ -175,14 +175,6 @@ const Features = () => {
               <h3 className="feature-card-title">
                 {feature.title}
               </h3>
-              <ul className="feature-card-text space-y-2">
-                {feature.points.map((point) => (
-                  <li key={point} className="flex items-start gap-2">
-                    <span className="mt-1 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
             </motion.div>
           ))}
         </motion.div>

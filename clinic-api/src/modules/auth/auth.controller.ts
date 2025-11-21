@@ -1,8 +1,10 @@
-import { Body, Controller, Post, Get, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Post, Get, UseGuards, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
-import { ApiTags, ApiOperation, ApiResponse, ApiProperty, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiProperty, ApiBody, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
+import { avatarUploadConfig } from './config/avatar-upload.config';
 
 class RegisterPatientDto {
   @ApiProperty({ description: 'Patient full name', example: 'Ahmed Mohamed' })
@@ -61,9 +63,22 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('register/patient')
-  @ApiOperation({ summary: 'Register a new patient' })
+  @ApiOperation({ 
+    summary: 'Register a new patient',
+    description: 'Supports both JSON and multipart/form-data. If using multipart/form-data, you can upload an avatar image.'
+  })
+  @ApiConsumes('application/json', 'multipart/form-data')
+  @UseInterceptors(FileInterceptor('avatar', avatarUploadConfig))
   @ApiResponse({ status: 201, description: 'Patient registered successfully' })
-  registerPatient(@Body() dto: RegisterPatientDto) {
+  registerPatient(
+    @Body() dto: RegisterPatientDto,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    // إذا تم رفع ملف، أضف مساره إلى DTO
+    if (file) {
+      const avatarPath = `/static/uploads/avatars/${file.filename}`;
+      return this.auth.registerPatient({ ...dto, avatar: avatarPath });
+    }
     return this.auth.registerPatient(dto);
   }
 

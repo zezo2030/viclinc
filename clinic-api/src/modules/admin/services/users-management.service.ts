@@ -350,7 +350,7 @@ export class UsersManagementService {
   }
 
   async createUser(createUserDto: CreateUserDto) {
-    const { name, email, phone, password, role } = createUserDto;
+    const { name, email, phone, password, role, avatar } = createUserDto;
     
     // التحقق من عدم وجود المستخدم
     const exists = await this.userModel.findOne({ $or: [{ email }, { phone }] });
@@ -368,6 +368,7 @@ export class UsersManagementService {
       phone,
       passwordHash,
       role,
+      avatar,
       status: UserStatus.ACTIVE,
     });
     
@@ -384,6 +385,7 @@ export class UsersManagementService {
       email: createdUser.email,
       phone: createdUser.phone,
       role: createdUser.role,
+      avatar: (createdUser as any).avatar,
       status: createdUser.status,
       createdAt: (createdUser as any).createdAt || new Date(),
     };

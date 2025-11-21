@@ -1,5 +1,6 @@
-import { IsString, IsNumber, IsOptional, IsArray, Min, Max, IsMongoId, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, Max, IsMongoId, MinLength, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateDoctorDto {
   @ApiProperty({ description: 'User ID', example: '64f1a2b3c4d5e6f7g8h9i0j1' })
@@ -19,6 +20,7 @@ export class CreateDoctorDto {
   licenseNumber: string;
 
   @ApiProperty({ description: 'Years of experience', example: 5, minimum: 0, maximum: 50 })
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   @Max(50)
@@ -28,11 +30,18 @@ export class CreateDoctorDto {
   @IsMongoId()
   departmentId: string;
 
-  @ApiProperty({ description: 'Doctor photos URLs', example: ['https://example.com/photo1.jpg'], required: false, type: [String] })
+  @ApiProperty({ description: 'Doctor avatar URL', example: 'https://example.com/avatar.jpg', required: false })
+  @Transform(({ value }) => {
+    // إذا كان value ليس string (مثل File object من FormData)، تجاهله
+    // سيتم التعامل مع الملف من خلال @UploadedFile() في الـ controller
+    if (value && typeof value !== 'string') {
+      return undefined;
+    }
+    return value;
+  })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  photos?: string[];
+  @IsString()
+  avatar?: string;
 
   @ApiProperty({ description: 'Doctor biography', example: 'Specialist in general surgery', required: false, maxLength: 1000 })
   @IsOptional()

@@ -22,7 +22,7 @@ export interface DoctorListItem {
   departmentName: string;
   status: DoctorStatus;
   bio?: string;
-  photos: string[];
+  avatar?: string | null;
   services: {
     serviceId: string;
     serviceName: string;
@@ -104,7 +104,7 @@ export class PatientsService {
           departmentName: doctor.departmentId?.name || '',
           status: doctor.status,
           bio: doctor.bio,
-          photos: doctor.photos,
+          avatar: doctor.avatar || null,
           services,
         };
       })
@@ -144,7 +144,7 @@ export class PatientsService {
       departmentName: doctor.departmentId?.name || '',
       status: doctor.status,
       bio: doctor.bio,
-      photos: doctor.photos,
+      avatar: doctor.avatar || null,
       services,
     };
   }

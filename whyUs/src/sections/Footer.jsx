@@ -36,14 +36,6 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <button
-                  onClick={() => scrollToSection('about')}
-                  className="footer-link transition-colors"
-                >
-                  من نحن
-                </button>
-              </li>
-              <li>
-                <button
                   onClick={() => scrollToSection('features')}
                   className="footer-link transition-colors"
                 >
@@ -56,22 +48,6 @@ const Footer = () => {
                   className="footer-link transition-colors"
                 >
                   الخيارات
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection('benefits')}
-                  className="footer-link transition-colors"
-                >
-                  الفوائد
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection('testimonials')}
-                  className="footer-link transition-colors"
-                >
-                  آراء العملاء
                 </button>
               </li>
               <li>
@@ -116,13 +92,13 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="mailto:info@medflow.com"
+                  href="mailto:virtualclinic7@gmail.com"
                   className="flex items-center gap-2 footer-link transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  info@medflow.com
+                  virtualclinic7@gmail.com
                 </a>
               </li>
               <li>

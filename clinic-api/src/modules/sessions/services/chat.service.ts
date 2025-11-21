@@ -8,6 +8,8 @@ import { ReportChatDto, ReportResponseDto } from '../dto/report-chat.dto';
 import { InjectModel as InjectAppointmentModel } from '@nestjs/mongoose';
 import { Appointment, AppointmentStatus } from '../../schedule/schemas/appointment.schema';
 import { DoctorProfile, DoctorProfileDocument } from '../../doctors/schemas/doctor-profile.schema';
+import { User, UserDocument } from '../../users/schemas/user.schema';
+import { NotificationsService } from '../../notifications/notifications.service';
 import dayjs from 'dayjs';
 
 @Injectable()
@@ -21,6 +23,9 @@ export class ChatService {
     private appointmentModel: Model<any>,
     @InjectModel(DoctorProfile.name)
     private doctorProfileModel: Model<DoctorProfileDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -275,6 +280,12 @@ export class ChatService {
     }
     const sessionObjectId = new Types.ObjectId(session.sessionId);
 
+    // الحصول على session object كامل للحصول على patientId و doctorId
+    const fullSession = await this.chatSessionModel.findById(session.sessionId);
+    if (!fullSession) {
+      throw new NotFoundException('Chat session not found');
+    }
+
     // إنشاء الرسالة
     const message = new this.chatMessageModel({
       sessionId: sessionObjectId,
@@ -293,6 +304,41 @@ export class ChatService {
       $inc: { messageCount: 1 },
       lastMessageAt: new Date(),
     });
+
+    // إرسال إشعار للطرف الآخر
+    try {
+      // تحديد الطرف الآخر (المستقبل)
+      const recipientId = senderRole === SenderRole.DOCTOR 
+        ? fullSession.patientId 
+        : fullSession.doctorId;
+
+      // الحصول على اسم المرسل
+      const sender = await this.userModel.findById(userId).select('name').lean();
+      const senderName = sender?.name || (senderRole === SenderRole.DOCTOR ? 'الطبيب' : 'المريض');
+
+      // إعداد نص الرسالة للإشعار (اقتطاع إذا كانت طويلة)
+      const notificationContent = messageDto.content && messageDto.content.length > 50
+        ? messageDto.content.substring(0, 50) + '...'
+        : messageDto.content || 'رسالة جديدة';
+
+      // إرسال الإشعار
+      await this.notificationsService.sendNotificationToUser(
+        recipientId.toString(),
+        `رسالة جديدة من ${senderName}`,
+        notificationContent,
+        {
+          type: 'chat_message',
+          appointmentId: appointmentId,
+          sessionId: session.sessionId,
+          messageId: (message as any)._id.toString(),
+          senderId: userId,
+          senderRole: senderRole,
+        },
+      );
+    } catch (error) {
+      // لا نرمي خطأ إذا فشل إرسال الإشعار - فقط نسجل الخطأ
+      console.error('Failed to send notification for chat message:', error);
+    }
 
     return {
       id: (message as any)._id.toString(),
