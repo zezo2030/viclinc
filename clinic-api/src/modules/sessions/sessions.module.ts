@@ -6,6 +6,7 @@ import { ChatSession, ChatSessionSchema } from './schemas/chat-session.schema';
 import { ChatMessage, ChatMessageSchema } from './schemas/chat-message.schema';
 import { Appointment, AppointmentSchema } from '../schedule/schemas/appointment.schema';
 import { DoctorProfile, DoctorProfileSchema } from '../doctors/schemas/doctor-profile.schema';
+import { User, UserSchema } from '../users/schemas/user.schema';
 import { AgoraService } from './services/agora.service';
 import { VideoSessionService } from './services/video-session.service';
 import { ChatService } from './services/chat.service';
@@ -13,6 +14,7 @@ import { VideoSessionController } from './controllers/video-session.controller';
 import { ChatController } from './controllers/chat.controller';
 import { SessionGuardsModule } from './guards/guards.module';
 import { SettingsModule } from '../settings/settings.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { SettingsModule } from '../settings/settings.module';
       { name: ChatMessage.name, schema: ChatMessageSchema },
       { name: Appointment.name, schema: AppointmentSchema },
       { name: DoctorProfile.name, schema: DoctorProfileSchema },
+      { name: User.name, schema: UserSchema },
     ]),
     ThrottlerModule.forRoot([
       {
@@ -32,6 +35,7 @@ import { SettingsModule } from '../settings/settings.module';
     ]),
     SessionGuardsModule,
     SettingsModule,
+    NotificationsModule,
   ],
   controllers: [VideoSessionController, ChatController],
   providers: [AgoraService, VideoSessionService, ChatService],

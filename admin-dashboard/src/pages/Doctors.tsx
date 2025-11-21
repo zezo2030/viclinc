@@ -59,7 +59,10 @@ export default function DoctorsPage() {
         fd.append('yearsOfExperience', String(payload.yearsOfExperience))
         fd.append('departmentId', payload.departmentId)
         if (payload.bio) fd.append('bio', payload.bio)
-        files.forEach((file) => fd.append('photos', file))
+        // إرسال صورة واحدة فقط (avatar) بدلاً من photos array
+        if (files && files.length > 0) {
+          fd.append('avatar', files[0])
+        }
         await createDoctor.mutateAsync(fd as unknown as any)
       } else {
         const doctorReq: AdminCreateDoctorRequest = {

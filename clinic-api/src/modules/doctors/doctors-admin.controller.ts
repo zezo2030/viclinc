@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiConsumes } from '@nestjs/swagger';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorStatusDto } from './dto/update-doctor-status.dto';
@@ -7,6 +8,7 @@ import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto';
 import { AdminRoleGuard } from '../shared/guards/admin-role.guard';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 import { DoctorStatus } from './schemas/doctor-profile.schema';
+import { avatarUploadConfig } from '../auth/config/avatar-upload.config';
 
 @ApiTags('Admin - Doctors')
 @ApiBearerAuth()
@@ -16,9 +18,22 @@ export class DoctorsAdminController {
   constructor(private readonly doctorsService: DoctorsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new doctor' })
+  @ApiOperation({ 
+    summary: 'Create a new doctor',
+    description: 'Supports both JSON and multipart/form-data. If using multipart/form-data, you can upload an avatar image.'
+  })
+  @ApiConsumes('application/json', 'multipart/form-data')
+  @UseInterceptors(FileInterceptor('avatar', avatarUploadConfig))
   @ApiResponse({ status: 201, description: 'Doctor created successfully' })
-  createDoctor(@Body() createDoctorDto: CreateDoctorDto) {
+  createDoctor(
+    @Body() createDoctorDto: CreateDoctorDto,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    // إذا تم رفع ملف، أضف مساره إلى DTO
+    if (file) {
+      const avatarPath = `/static/uploads/avatars/${file.filename}`;
+      return this.doctorsService.createDoctor({ ...createDoctorDto, avatar: avatarPath });
+    }
     return this.doctorsService.createDoctor(createDoctorDto);
   }
 

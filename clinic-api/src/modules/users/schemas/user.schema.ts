@@ -42,6 +42,10 @@ export class User {
   @Prop({ required: true, enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
+  @ApiProperty({ description: 'Profile picture URL', example: 'https://example.com/avatar.jpg', required: false })
+  @Prop({ trim: true })
+  avatar?: string;
+
   @ApiProperty({ description: 'Additional user metadata', example: { preferences: {}, settings: {} }, required: false })
   @Prop({ type: Object })
   metadata?: Record<string, any>;

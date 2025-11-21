@@ -32,3 +32,10 @@ export const DeviceTokenSchema = SchemaFactory.createForClass(DeviceToken);
 // Compound index for userId and deviceToken
 DeviceTokenSchema.index({ userId: 1, deviceToken: 1 });
 
+
+
+
+
+
+
+

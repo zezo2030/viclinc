@@ -166,7 +166,7 @@ export class DoctorsService {
     if (updateProfileDto.name) doctor.name = updateProfileDto.name;
     if (updateProfileDto.licenseNumber) doctor.licenseNumber = updateProfileDto.licenseNumber;
     if (updateProfileDto.yearsOfExperience !== undefined) doctor.yearsOfExperience = updateProfileDto.yearsOfExperience;
-    if (updateProfileDto.photos !== undefined) doctor.photos = updateProfileDto.photos;
+    if (updateProfileDto.avatar !== undefined) doctor.avatar = updateProfileDto.avatar;
     if (updateProfileDto.bio !== undefined) doctor.bio = updateProfileDto.bio;
 
     await doctor.save();
@@ -309,7 +309,7 @@ export class DoctorsService {
           departmentName: doctor.departmentId?.name || '',
           status: doctor.status,
           bio: doctor.bio,
-          photos: doctor.photos || [],
+          avatar: doctor.avatar || null,
           services,
         };
       })
@@ -350,7 +350,7 @@ export class DoctorsService {
       departmentName: doctor.departmentId?.name || '',
       status: doctor.status,
       bio: doctor.bio,
-      photos: doctor.photos || [],
+      avatar: doctor.avatar || null,
       services,
     };
   }

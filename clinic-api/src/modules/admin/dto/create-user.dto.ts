@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, Matches, IsEnum } from 'class-validator';
+import { IsEmail, IsString, MinLength, Matches, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../../users/schemas/user.schema';
 
@@ -24,4 +24,9 @@ export class CreateUserDto {
   @ApiProperty({ description: 'User role', enum: Role, example: Role.PATIENT })
   @IsEnum(Role)
   role: Role;
+
+  @ApiProperty({ description: 'Profile picture URL', example: 'https://example.com/avatar.jpg', required: false })
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 }
