@@ -4,7 +4,7 @@
 
 ### المتطلبات الأساسية
 - ✅ Docker و Docker Compose مثبتين
-- ✅ دومين (مثل: `medcodesa.cloud`)
+- ✅ دومين (مثل: `medflowsa.cloud`)
 - ✅ SSL/TLS Certificate (Let's Encrypt موصى به)
 - ✅ Server مع 2GB RAM على الأقل
 
@@ -30,10 +30,10 @@ openssl rand -base64 32
 JWT_SECRET=the-generated-key-here
 
 # الدومين الخاص بك
-NEXT_PUBLIC_SITE_URL=https://medcodesa.cloud
-NEXT_PUBLIC_API_URL=https://medcodesa.cloud/api
-VITE_SITE_URL=https://medcodesa.cloud/admin
-VITE_API_URL=https://medcodesa.cloud/api
+NEXT_PUBLIC_SITE_URL=https://medflowsa.cloud
+NEXT_PUBLIC_API_URL=https://medflowsa.cloud/api
+VITE_SITE_URL=https://medflowsa.cloud/admin
+VITE_API_URL=https://medflowsa.cloud/api
 ```
 
 ---
@@ -49,7 +49,7 @@ VITE_API_URL=https://medcodesa.cloud/api
 add_header 'Access-Control-Allow-Origin' '*' always;
 
 # استخدم
-add_header 'Access-Control-Allow-Origin' 'https://medcodesa.cloud' always;
+add_header 'Access-Control-Allow-Origin' 'https://medflowsa.cloud' always;
 ```
 
 ### إضافة SSL
@@ -59,7 +59,7 @@ add_header 'Access-Control-Allow-Origin' 'https://medcodesa.cloud' always;
 ```nginx
 server {
     listen 80;
-    server_name medcodesa.cloud www.medcodesa.cloud;
+    server_name medflowsa.cloud www.medflowsa.cloud;
     
     # إعادة توجيه لـ HTTPS
     return 301 https://$server_name$request_uri;
@@ -67,11 +67,11 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name medcodesa.cloud www.medcodesa.cloud;
+    server_name medflowsa.cloud www.medflowsa.cloud;
 
     # SSL certificates
-    ssl_certificate /etc/letsencrypt/live/medcodesa.cloud/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/medcodesa.cloud/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/medflowsa.cloud/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/medflowsa.cloud/privkey.pem;
     
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -82,14 +82,14 @@ server {
     client_max_body_size 5m;
 
     # CORS headers
-    add_header 'Access-Control-Allow-Origin' 'https://medcodesa.cloud' always;
+    add_header 'Access-Control-Allow-Origin' 'https://medflowsa.cloud' always;
     add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
     add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, Accept, x-role' always;
     add_header 'Access-Control-Allow-Credentials' 'true' always;
 
     # OPTIONS
     if ($request_method = 'OPTIONS') {
-        add_header 'Access-Control-Allow-Origin' 'https://medcodesa.cloud' always;
+        add_header 'Access-Control-Allow-Origin' 'https://medflowsa.cloud' always;
         add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
         add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, Accept, x-role' always;
         add_header 'Access-Control-Max-Age' 1728000;
@@ -131,10 +131,10 @@ sudo apt update
 sudo apt install certbot
 
 # الحصول على certificate
-sudo certbot certonly --standalone -d medcodesa.cloud -d www.medcodesa.cloud
+sudo certbot certonly --standalone -d medflowsa.cloud -d www.medflowsa.cloud
 
 # سيتم حفظ الملفات في:
-# /etc/letsencrypt/live/medcodesa.cloud/
+# /etc/letsencrypt/live/medflowsa.cloud/
 ```
 
 ---
@@ -197,7 +197,7 @@ node dist/seed-data.js
 
 ### 1. API Health Check
 ```bash
-curl https://medcodesa.cloud/v1/health
+curl https://medflowsa.cloud/v1/health
 ```
 
 يجب أن يرجع:
@@ -206,10 +206,10 @@ curl https://medcodesa.cloud/v1/health
 ```
 
 ### 2. Swagger Documentation
-افتح: `https://medcodesa.cloud/api-docs`
+افتح: `https://medflowsa.cloud/api-docs`
 
 ### 3. Admin Dashboard
-افتح: `https://medcodesa.cloud/admin`
+افتح: `https://medflowsa.cloud/admin`
 
 ### 4. تسجيل الدخول
 - Email: `admin@clinic.com`

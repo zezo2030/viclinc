@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost', 'medcodesa.cloud'],
+    domains: ['localhost', 'medflowsa.cloud'],
     unoptimized: true, // للصور المحلية
   },
   env: {

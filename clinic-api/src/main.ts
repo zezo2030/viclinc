@@ -55,14 +55,14 @@ async function bootstrap() {
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3001',
     'http://127.0.0.1:3002',
-    'http://medcodesa.cloud',
-    'https://medcodesa.cloud',
+    'http://medflowsa.cloud',
+    'https://medflowsa.cloud',
   ]);
 
   if (isProduction) {
     const productionDefaults = [
-      'http://medcodesa.cloud',
-      'https://medcodesa.cloud',
+      'http://medflowsa.cloud',
+      'https://medflowsa.cloud',
     ];
 
     const envOrigins = (process.env.ALLOWED_ORIGINS ?? '')

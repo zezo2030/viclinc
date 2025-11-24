@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as admin from 'firebase-admin';
 import { ConfigService } from '@nestjs/config';
+import { existsSync } from 'fs';
 import { DeviceToken, DeviceTokenDocument } from './schemas/device-token.schema';
 import { SaveDeviceTokenDto, DeleteDeviceTokenDto } from './dto/save-device-token.dto';
 
@@ -55,6 +56,14 @@ export class NotificationsService implements OnModuleInit {
           resolvedPath = path.resolve(process.cwd(), resolvedPath);
         }
         
+        // Check if file exists before requiring it
+        if (!existsSync(resolvedPath)) {
+          this.logger.warn(
+            `Firebase service account file not found at ${resolvedPath}. Firebase notifications will be disabled.`,
+          );
+          return;
+        }
+        
         const serviceAccount = require(resolvedPath);
         this.firebaseApp = admin.initializeApp({
           credential: admin.credential.cert(serviceAccount),
@@ -84,7 +93,11 @@ export class NotificationsService implements OnModuleInit {
       }
     } catch (error) {
       this.logger.error('Failed to initialize Firebase Admin SDK', error);
-      throw error;
+      // Don't throw error - allow API to start without Firebase
+      // Firebase-dependent features will be disabled but API will still work
+      this.logger.warn(
+        'API will continue without Firebase notifications. Set FIREBASE_SERVICE_ACCOUNT_PATH or FIREBASE_SERVICE_ACCOUNT_KEY to enable.',
+      );
     }
   }
 

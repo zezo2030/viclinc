@@ -62,9 +62,9 @@ docker-compose -f docker-compose.prod.yml up -d admin-dashboard
 
 ## 🌐 الروابط العاملة
 
-- ✅ `http://medcodesa.cloud/` - الويب سايت
-- ✅ `http://medcodesa.cloud/admin/` - لوحة الإدارة
-- ✅ `http://medcodesa.cloud/api/` - API
+- ✅ `http://medflowsa.cloud/` - الويب سايت
+- ✅ `http://medflowsa.cloud/admin/` - لوحة الإدارة
+- ✅ `http://medflowsa.cloud/api/` - API
 
 ## 📋 ملخص التغييرات
 
@@ -76,4 +76,4 @@ docker-compose -f docker-compose.prod.yml up -d admin-dashboard
 
 ## 🎉 المشكلة محلولة!
 
-لوحة الإدارة تعمل الآن بشكل صحيح ويمكن الوصول إليها عبر `http://medcodesa.cloud/admin/`
+لوحة الإدارة تعمل الآن بشكل صحيح ويمكن الوصول إليها عبر `http://medflowsa.cloud/admin/`
