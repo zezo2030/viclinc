@@ -38,7 +38,8 @@ const i18nPath = isProd
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: process.env.STATIC_PREFIX || '/static',
+      serveRoot: '/static', // لا نستخدم /v1 هنا لأن ServeStaticModule لا يتأثر بـ globalPrefix
+      // لكن يمكن الوصول للملفات من /v1/static/ أو /static/ مباشرة
     }),
     I18nModule.forRoot({
       fallbackLanguage: 'ar',

@@ -30,8 +30,10 @@ export class DoctorsAdminController {
     @UploadedFile() file?: Express.Multer.File
   ) {
     // إذا تم رفع ملف، أضف مساره إلى DTO
+    // ServeStaticModule يخدم من uploads/ على /static/
+    // الملفات تُحفظ في uploads/avatars/ لذلك المسار هو /static/avatars/
     if (file) {
-      const avatarPath = `/static/uploads/avatars/${file.filename}`;
+      const avatarPath = `/static/avatars/${file.filename}`;
       return this.doctorsService.createDoctor({ ...createDoctorDto, avatar: avatarPath });
     }
     return this.doctorsService.createDoctor(createDoctorDto);

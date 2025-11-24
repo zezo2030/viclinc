@@ -12,7 +12,7 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(DoctorProfile.name) private readonly doctorProfileModel: Model<any>,
     private readonly jwt: JwtService,
-  ) {}
+  ) { }
 
   async registerPatient(input: { name: string; email: string; phone: string; password: string; avatar?: string }) {
     const { name, email, phone, password, avatar } = input;
@@ -48,7 +48,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const ok = await bcrypt.compare(input.password, user.passwordHash);
     if (!ok) throw new UnauthorizedException('Invalid credentials');
-    
+
     // التحقق من حالة الطبيب إذا كان دور المستخدم DOCTOR
     if (user.role === Role.DOCTOR) {
       const doctorProfile = await this.doctorProfileModel.findOne({ userId: user._id });
@@ -56,9 +56,9 @@ export class AuthService {
         throw new ForbiddenException('Doctor account not approved yet');
       }
     }
-    
+
     const accessToken = await this.jwt.signAsync({ sub: String(user._id), role: user.role });
-    return { 
+    return {
       access_token: accessToken,
       user: {
         id: String(user._id),
@@ -102,7 +102,7 @@ export class AuthService {
   async validateImpersonationToken(token: string) {
     try {
       const payload = await this.jwt.verifyAsync(token);
-      
+
       if (!payload.isImpersonation) {
         throw new UnauthorizedException('Invalid impersonation token');
       }
@@ -135,6 +135,47 @@ export class AuthService {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(userId: string, input: { name?: string; phone?: string; avatar?: string }) {
+    const updates: any = {};
+
+    if (input.name) updates.name = input.name;
+    if (input.avatar) updates.avatar = input.avatar;
+
+    if (input.phone) {
+      // Check if phone is taken by another user
+      const exists = await this.userModel.findOne({
+        phone: input.phone,
+        _id: { $ne: userId }
+      });
+      if (exists) {
+        throw new ConflictException('Phone number already in use');
+      }
+      updates.phone = input.phone;
+    }
+
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true }
+    ).select('-passwordHash');
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      id: String(user._id),
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      role: user.role,
+      avatar: user.avatar
+    };
   }
 }
 

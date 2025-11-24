@@ -27,8 +27,8 @@ class RegisterPatientDto {
 }
 
 class LoginDto {
-  @ApiProperty({ 
-    description: 'User email address (works for Admin, Doctor, and Patient)', 
+  @ApiProperty({
+    description: 'User email address (works for Admin, Doctor, and Patient)',
     example: 'admin@clinic.com',
     examples: {
       admin: {
@@ -48,8 +48,8 @@ class LoginDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ 
-    description: 'User password', 
+  @ApiProperty({
+    description: 'User password',
     example: 'password123',
     minLength: 6
   })
@@ -60,10 +60,10 @@ class LoginDto {
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(private readonly auth: AuthService) { }
 
   @Post('register/patient')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Register a new patient',
     description: 'Supports both JSON and multipart/form-data. If using multipart/form-data, you can upload an avatar image.'
   })
@@ -83,7 +83,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'User login (Admin, Doctor, Patient)',
     description: 'Login endpoint works for all user roles. Returns JWT token and user information. For admin login, use email: admin@clinic.com and password: password123'
   })
@@ -150,8 +150,8 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Login successful',
     schema: {
       type: 'object',
@@ -168,8 +168,8 @@ export class AuthController {
             email: { type: 'string', example: 'admin@clinic.com' },
             name: { type: 'string', example: 'مدير النظام' },
             phone: { type: 'string', example: '+966501234567' },
-            role: { 
-              type: 'string', 
+            role: {
+              type: 'string',
               enum: ['ADMIN', 'DOCTOR', 'PATIENT'],
               example: 'ADMIN',
               description: 'User role - ADMIN, DOCTOR, or PATIENT'
@@ -179,12 +179,12 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 401, 
+  @ApiResponse({
+    status: 401,
     description: 'Invalid credentials - email or password is incorrect'
   })
-  @ApiResponse({ 
-    status: 403, 
+  @ApiResponse({
+    status: 403,
     description: 'Doctor account not approved yet (for DOCTOR role only)'
   })
   login(@Body() dto: LoginDto) {
@@ -194,12 +194,12 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get current user profile',
     description: 'Returns the authenticated user\'s profile information based on the JWT token'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'User profile retrieved successfully',
     schema: {
       type: 'object',
@@ -208,8 +208,8 @@ export class AuthController {
         email: { type: 'string', example: 'admin@clinic.com' },
         name: { type: 'string', example: 'مدير النظام' },
         phone: { type: 'string', example: '+966501234567' },
-        role: { 
-          type: 'string', 
+        role: {
+          type: 'string',
           enum: ['ADMIN', 'DOCTOR', 'PATIENT'],
           example: 'ADMIN',
           description: 'User role - ADMIN, DOCTOR, or PATIENT'
@@ -217,16 +217,51 @@ export class AuthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 401, 
+  @ApiResponse({
+    status: 401,
     description: 'Unauthorized - invalid or missing token'
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: 'User not found'
   })
   async getMe(@Req() req: any) {
     return this.auth.getUserById(req.user.sub);
+  }
+
+  @Post('profile/update')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Update user profile',
+    description: 'Update user name, phone, and avatar. Supports multipart/form-data for avatar upload.'
+  })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('avatar', avatarUploadConfig))
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'Ahmed Mohamed' },
+        phone: { type: 'string', example: '+1234567890' },
+        avatar: { type: 'string', format: 'binary' }
+      }
+    }
+  })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  async updateProfile(
+    @Req() req: any,
+    @Body() body: { name?: string; phone?: string },
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    const userId = req.user.sub;
+    const updates: any = { ...body };
+
+    if (file) {
+      updates.avatar = `/static/uploads/avatars/${file.filename}`;
+    }
+
+    return this.auth.updateProfile(userId, updates);
   }
 }
 

@@ -5,8 +5,34 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { json, urlencoded } from 'express';
 import type { Request, Response, NextFunction } from 'express';
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { static as expressStatic } from 'express';
 
 async function bootstrap() {
+  // إنشاء مجلدات الرفع عند بدء التطبيق
+  const uploadsDirs = [
+    join(process.cwd(), 'uploads'),
+    join(process.cwd(), 'uploads', 'avatars'),
+    join(process.cwd(), 'uploads', 'sections'),
+    join(process.cwd(), 'uploads', 'sections', 'logos'),
+  ];
+  
+  uploadsDirs.forEach((dir) => {
+    if (!existsSync(dir)) {
+      try {
+        mkdirSync(dir, { recursive: true });
+        console.log(`[Bootstrap] Created directory: ${dir}`);
+      } catch (error) {
+        console.error(`[Bootstrap] Failed to create directory: ${dir}`, error);
+      }
+    } else {
+      console.log(`[Bootstrap] Directory exists: ${dir}`);
+    }
+  });
+  
+  console.log(`[Bootstrap] Current working directory: ${process.cwd()}`);
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
     rawBody: false,
@@ -114,6 +140,12 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
   app.setGlobalPrefix('v1');
+  
+  // إضافة route يدوي لخدمة الملفات الثابتة من /v1/static/
+  // لأن ServeStaticModule يخدم من /static/ فقط
+  const uploadsPath = join(process.cwd(), 'uploads');
+  app.use('/v1/static', expressStatic(uploadsPath));
+  console.log(`[Bootstrap] Serving static files from /v1/static -> ${uploadsPath}`);
   
   // إعداد Swagger بعد setGlobalPrefix لتضمين الـ routes بشكل صحيح
   const config = new DocumentBuilder()
