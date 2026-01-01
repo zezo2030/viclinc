@@ -111,84 +111,96 @@ export const DoctorsList: React.FC = () => {
             <AnimatedCard 
               key={doctor.id} 
               delay={index * 0.1}
-              className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer bg-white border border-gray-100 rounded-2xl group"
               onClick={() => router.push(`/doctors/${doctor.id}`)}
             >
-              <div className="text-center">
-                <div className="w-24 h-24 rounded-full gradient-medical-light flex items-center justify-center mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg">
-                  {doctor.avatar ? (
-                    <img src={doctor.avatar} alt={doctor.user.profile.firstName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-3xl">👨‍⚕️</span>
-                  )}
-                </div>
-                
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  د. {doctor.user.profile.firstName} {doctor.user.profile.lastName}
-                </h3>
-                
-                <p className="text-primary-600 font-semibold mb-3">
-                  {doctor.specialization || doctor.department?.name}
-                </p>
-                
-                <div className="flex items-center justify-center mb-4">
-                  <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
-                    {[...Array(5)].map((_, i) => (
-                      <StarIcon
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(4.5)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                    <span className="text-sm font-semibold text-gray-700 mr-2">
-                      4.5
-                    </span>
+              {/* صورة الطبيب بكامل العرض مع حواف دائرية من الأعلى */}
+              <div className="relative w-full h-64 overflow-hidden rounded-t-2xl">
+                {doctor.avatar ? (
+                  <img 
+                    src={doctor.avatar} 
+                    alt={doctor.user.profile.firstName} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                  />
+                ) : (
+                  <div className="w-full h-full gradient-medical-light flex items-center justify-center">
+                    <span className="text-7xl">👨‍⚕️</span>
                   </div>
-                </div>
+                )}
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 
-                <div className="space-y-2 text-sm text-gray-600 mb-6">
-                  {doctor.clinic?.name && (
-                    <div className="flex items-center justify-center">
-                      <MapPinIcon className="w-4 h-4 ml-2 text-primary-500" />
-                      <span>{doctor.clinic.name}</span>
+                {/* Badge التخصص في الزاوية */}
+                <div className="absolute top-4 left-4">
+                  <span className="bg-white/95 backdrop-blur-sm text-primary-600 px-3 py-1 rounded-full text-xs font-bold shadow-md">
+                    {doctor.specialization || doctor.department?.name}
+                  </span>
+                </div>
+              </div>
+              
+              {/* محتوى الكارد */}
+              <div className="p-6">
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
+                    د. {doctor.user.profile.firstName} {doctor.user.profile.lastName}
+                  </h3>
+                  
+                  {/* التقييم */}
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="flex items-center bg-yellow-50 px-3 py-1.5 rounded-full shadow-sm">
+                      {[...Array(5)].map((_, i) => (
+                        <StarIcon
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < Math.floor(4.5)
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="text-sm font-semibold text-gray-700 mr-2">
+                        4.5
+                      </span>
                     </div>
-                  )}
-                  <div className="flex items-center justify-center">
-                    <ClockIcon className="w-4 h-4 ml-2 text-secondary-500" />
-                    <span>{doctor.experience} سنة خبرة</span>
                   </div>
-                  {doctor.consultationFee > 0 && (
-                    <div className="flex items-center justify-center">
-                      <PhoneIcon className="w-4 h-4 ml-2 text-success-500" />
-                      <span className="font-semibold text-primary-600">{doctor.consultationFee} ريال</span>
+                  
+                  {/* معلومات إضافية */}
+                  <div className="space-y-2 text-sm text-gray-600 mb-6">
+                    {doctor.clinic?.name && (
+                      <div className="flex items-center justify-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+                        <MapPinIcon className="w-4 h-4 text-primary-500" />
+                        <span className="font-medium">{doctor.clinic.name}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+                      <ClockIcon className="w-4 h-4 text-secondary-500" />
+                      <span className="font-medium">{doctor.experience} سنة خبرة</span>
                     </div>
-                  )}
-                </div>
-                
-                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1 border-2 border-primary-500 text-primary-600 hover:bg-primary-50"
-                    disabled={!doctor.isAvailable}
-                    onClick={() => {
-                      if (doctor.isAvailable) {
-                        router.push(`/appointments/new?doctorId=${doctor.id}`);
-                      }
-                    }}
-                  >
-                    {doctor.isAvailable ? 'احجز موعد' : 'غير متاح'}
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    className="flex-1 gradient-medical text-white hover:opacity-90"
-                    onClick={() => router.push(`/doctors/${doctor.id}`)}
-                  >
-                    الملف الشخصي
-                  </Button>
+                  </div>
+                  
+                  {/* الأزرار */}
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 hover:border-primary-600 transition-all"
+                      disabled={!doctor.isAvailable}
+                      onClick={() => {
+                        if (doctor.isAvailable) {
+                          router.push(`/appointments/new?doctorId=${doctor.id}`);
+                        }
+                      }}
+                    >
+                      {doctor.isAvailable ? 'احجز موعد' : 'غير متاح'}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      className="flex-1 gradient-medical text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all"
+                      onClick={() => router.push(`/doctors/${doctor.id}`)}
+                    >
+                      الملف الشخصي
+                    </Button>
+                  </div>
                 </div>
               </div>
             </AnimatedCard>

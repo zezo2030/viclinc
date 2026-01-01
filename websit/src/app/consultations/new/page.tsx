@@ -15,7 +15,7 @@ function NewConsultationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
-  const [selectedAppointment, setSelectedAppointment] = useState<number | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<number | string | null>(null);
   const [consultationType, setConsultationType] = useState<'VIDEO' | 'CHAT'>('VIDEO');
   const [notes, setNotes] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -73,7 +73,7 @@ function NewConsultationContent() {
       setIsCreating(true);
       
       await consultationService.createConsultation({
-        appointmentId: selectedAppointment,
+        appointmentId: selectedAppointment as number | string,
         type: consultationType,
         notes: notes.trim() || undefined,
       });
@@ -172,13 +172,21 @@ function NewConsultationContent() {
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />
                           <span>
-                            {new Date(appointment.appointmentDate).toLocaleDateString('ar-SA')}
+                            {appointment.appointmentDate 
+                              ? new Date(appointment.appointmentDate).toLocaleDateString('ar-SA')
+                              : appointment.startAt 
+                                ? new Date(appointment.startAt).toLocaleDateString('ar-SA')
+                                : 'غير محدد'}
                           </span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                           <Clock className="w-4 h-4" />
                           <span>
-                            {new Date(appointment.appointmentTime).toLocaleTimeString('ar-SA')}
+                            {appointment.appointmentTime 
+                              ? new Date(appointment.appointmentTime).toLocaleTimeString('ar-SA')
+                              : appointment.startAt 
+                                ? new Date(appointment.startAt).toLocaleTimeString('ar-SA')
+                                : 'غير محدد'}
                           </span>
                         </div>
                       </div>

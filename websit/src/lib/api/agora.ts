@@ -44,11 +44,15 @@ export const agoraService = {
   },
 
   // الحصول على Agora token للجلسة
-  async getToken(appointmentId: string, role: 'doctor' | 'patient'): Promise<VideoTokenResponse> {
+  async getToken(appointmentId: string, role: 'doctor' | 'patient', testMode: boolean = false): Promise<VideoTokenResponse> {
+    const headers: Record<string, string> = {};
+    if (testMode) {
+      headers['x-test-mode'] = 'true';
+    }
     return apiClient.post('/sessions/video/token', {
       appointmentId,
       role,
-    });
+    }, { headers });
   },
 
   // إنشاء قناة جديدة

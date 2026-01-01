@@ -5,6 +5,7 @@ import { User } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Bell, Settings, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { resolveMediaUrl } from '@/lib/utils/image';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -24,6 +25,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return 'مساء الخير';
   };
 
+  const avatarUrl = resolveMediaUrl(user?.avatar);
+  const initial = user?.name?.charAt(0) || user?.email?.charAt(0) || 'U';
+
   return (
     <div className={cn(
       'bg-gradient-to-r from-blue-600 to-purple-600 text-white',
@@ -33,11 +37,17 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* صورة المستخدم */}
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold">
-                {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-              </span>
-            </div>
+            {avatarUrl ? (
+              <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white/40 shadow-md">
+                <img src={avatarUrl} alt={user?.name || user?.email || 'صورة المستخدم'} className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl font-bold">
+                  {initial}
+                </span>
+              </div>
+            )}
             
             {/* معلومات المستخدم */}
             <div>

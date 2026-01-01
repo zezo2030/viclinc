@@ -5,9 +5,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '../users/users.module';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { DoctorProfile, DoctorProfileSchema } from '../doctors/schemas/doctor-profile.schema';
+import { Otp, OtpSchema } from './otp.schema';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { AdminInitializerService } from './admin-initializer.service';
+import { EmailService } from './email.service';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { AdminInitializerService } from './admin-initializer.service';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: DoctorProfile.name, schema: DoctorProfileSchema },
+      { name: Otp.name, schema: OtpSchema },
     ]),
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -26,7 +29,7 @@ import { AdminInitializerService } from './admin-initializer.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AdminInitializerService],
+  providers: [AuthService, AdminInitializerService, EmailService],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

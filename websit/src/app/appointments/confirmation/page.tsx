@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -20,19 +20,162 @@ import {
   AlertCircleIcon,
 } from 'lucide-react';
 import { appointmentsService } from '@/lib/api/appointments';
+import { paymentsService } from '@/lib/api/payments';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Loading } from '@/components/ui/Loading';
+import { useAuth } from '@/lib/contexts/auth-context';
 
 function ConfirmationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const appointmentId = searchParams.get('id');
+  const hasRedirectedRef = useRef(false);
+  
+  // #region agent log
+  useEffect(() => {
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : 'N/A';
+    const searchParamsStr = typeof window !== 'undefined' ? window.location.search : 'N/A';
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : 'N/A';
+    fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:31',message:'Confirmation page mounted',data:{appointmentId,hasUser:!!user,userRole:user?.role,userId:user?.id,currentUrl,searchParams:searchParamsStr,pathname,allSearchParams:Object.fromEntries(searchParams.entries())},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+  }, [appointmentId, user, searchParams]);
+  // #endregion
 
-  const { data: appointment, isLoading, error } = useQuery({
-    queryKey: ['appointment', appointmentId],
-    queryFn: () => appointmentId ? appointmentsService.getAppointment(parseInt(appointmentId)) : null,
+  const { data: appointment, isLoading, error, refetch } = useQuery({
+    queryKey: ['appointment', appointmentId, user?.role],
+    queryFn: async () => {
+      // #region agent log
+      fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:40',message:'Query function called - fetching appointment',data:{appointmentId,userRole:user?.role,userId:user?.id,hasUser:!!user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+      // #endregion
+      if (!appointmentId) {
+        // #region agent log
+        fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:43',message:'No appointmentId - returning null',data:{appointmentId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+        // #endregion
+        return null;
+      }
+      try {
+        const result = await appointmentsService.getAppointment(appointmentId, user?.role as 'PATIENT' | 'DOCTOR' | undefined);
+        // #region agent log
+        fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:48',message:'Appointment fetched successfully',data:{appointmentId,hasAppointment:!!result,appointmentStatus:result?.status,paymentStatus:result?.paymentStatus,requiresPayment:result?.requiresPayment,appointmentIdFromData:result?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+        // #endregion
+        return result;
+      } catch (err: any) {
+        // #region agent log
+        fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:53',message:'Error fetching appointment',data:{appointmentId,error:err?.message,errorStack:err?.stack,statusCode:err?.response?.status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+        // #endregion
+        throw err;
+      }
+    },
     enabled: !!appointmentId,
+    retry: 2, // إعادة المحاولة مرتين
+    retryDelay: 1000, // انتظار ثانية بين المحاولات
   });
+
+  // #region agent log
+  useEffect(() => {
+    fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:42',message:'Query state changed',data:{appointmentId,isLoading,hasAppointment:!!appointment,appointmentIdFromData:appointment?.id,error:error?.message,userRole:user?.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
+  }, [appointment, isLoading, error, appointmentId, user?.role]);
+  // #endregion
+
+  // جلب حالة الدفع الفعلية
+  const { data: payment, refetch: refetchPayment } = useQuery({
+    queryKey: ['payment', appointmentId],
+    queryFn: async () => {
+      if (!appointmentId) return null;
+      try {
+        return await paymentsService.getPaymentByAppointment(appointmentId);
+      } catch (error) {
+        return null;
+      }
+    },
+    enabled: !!appointmentId && !!appointment && appointment.requiresPayment,
+    refetchInterval: false, // لا نريد refetch تلقائي مستمر
+  });
+
+  // حالة التحقق من الدفع
+  const [isVerifyingPayment, setIsVerifyingPayment] = React.useState(false);
+
+  // ✅ التحقق من الدفع مع إعادة المحاولة الذكية
+  useEffect(() => {
+    // منع إعادة التوجيه المتكررة
+    if (hasRedirectedRef.current) {
+      return;
+    }
+
+    // #region agent log
+    fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:60',message:'Payment check effect triggered',data:{hasAppointment:!!appointment,requiresPayment:appointment?.requiresPayment,paymentStatus:appointment?.paymentStatus,actualPaymentStatus:payment?.status,appointmentId,appointmentStatus:appointment?.status,hasRedirected:hasRedirectedRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+    // #endregion
+    
+    // التحقق من حالة الدفع الفعلية أولاً
+    const actualPaymentStatus = payment?.status || appointment?.paymentStatus;
+    
+    // إذا كان الدفع مكتمل، لا نعيد التوجيه
+    if (actualPaymentStatus === 'COMPLETED') {
+      setIsVerifyingPayment(false);
+      return;
+    }
+    
+    // إذا كان الدفع معلق، نحاول إعادة التحقق مرة واحدة قبل إعادة التوجيه
+    if (appointment && appointment.requiresPayment && actualPaymentStatus === 'PENDING' && !hasRedirectedRef.current) {
+      setIsVerifyingPayment(true);
+      
+      // إعادة محاولة التحقق من الدفع بعد ثانيتين (يعطي الباك-إند وقت لتحديث البيانات)
+      let finalTimeoutId: NodeJS.Timeout | null = null;
+      
+      const verifyTimeout = setTimeout(async () => {
+        try {
+          // إعادة جلب بيانات الدفع والموعد
+          const [paymentResult, appointmentResult] = await Promise.all([
+            refetchPayment(),
+            refetch()
+          ]);
+          
+          // التحقق من النتائج بعد إعادة الجلب
+          const updatedPayment = paymentResult.data;
+          const updatedAppointment = appointmentResult.data;
+          const updatedStatus = updatedPayment?.status || updatedAppointment?.paymentStatus;
+          
+          if (updatedStatus === 'COMPLETED') {
+            // الدفع مكتمل، لا حاجة لإعادة التوجيه
+            setIsVerifyingPayment(false);
+            return;
+          }
+          
+          // إذا كانت لا تزال PENDING بعد إعادة الجلب، انتظر قليلاً ثم أعد التوجيه
+          if (updatedStatus === 'PENDING' && !hasRedirectedRef.current) {
+            finalTimeoutId = setTimeout(() => {
+              if (!hasRedirectedRef.current) {
+                // #region agent log
+                fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/confirmation/page.tsx:64',message:'Redirecting back to payment page after verification timeout',data:{appointmentId,appointmentIdFromData:appointment.id,requiresPayment:appointment.requiresPayment,paymentStatus:updatedStatus,redirectUrl:`/appointments/${typeof appointment.id === 'string' ? appointment.id : String(appointment.id)}/payment`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+                // #endregion
+                hasRedirectedRef.current = true;
+                setIsVerifyingPayment(false);
+                const id = typeof appointment.id === 'string' ? appointment.id : String(appointment.id);
+                router.push(`/appointments/${id}/payment`);
+              }
+            }, 2000); // انتظار ثانيتين إضافيتين بعد إعادة الجلب
+          } else {
+            setIsVerifyingPayment(false);
+          }
+        } catch (error) {
+          setIsVerifyingPayment(false);
+          // في حالة الخطأ، أعد التوجيه لصفحة الدفع
+          if (!hasRedirectedRef.current) {
+            hasRedirectedRef.current = true;
+            const id = typeof appointment.id === 'string' ? appointment.id : String(appointment.id);
+            router.push(`/appointments/${id}/payment`);
+          }
+        }
+      }, 2000); // انتظار ثانيتين قبل إعادة المحاولة
+      
+      return () => {
+        clearTimeout(verifyTimeout);
+        if (finalTimeoutId) {
+          clearTimeout(finalTimeoutId);
+        }
+      };
+    }
+  }, [appointment, payment, router, appointmentId, refetch, refetchPayment]);
 
   if (!appointmentId) {
     return (
@@ -59,25 +202,67 @@ function ConfirmationContent() {
     );
   }
 
-  if (error || !appointment) {
+  if (error || (!isLoading && !appointment)) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <AlertCircleIcon className="w-16 h-16 text-error-600 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">حدث خطأ</h1>
-          <p className="text-gray-600 mb-6">لم نتمكن من تحميل تفاصيل الموعد</p>
-          <Link href="/appointments">
-            <Button className="gradient-medical text-white hover:opacity-90">
-              العودة للمواعيد
+          <p className="text-gray-600 mb-4">
+            {error ? 'لم نتمكن من تحميل تفاصيل الموعد. قد يكون الموعد قيد المعالجة.' : 'الموعد غير موجود'}
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button 
+              onClick={() => refetch()} 
+              variant="outline"
+              className="border-2 border-primary-500 text-primary-600 hover:bg-primary-50"
+            >
+              إعادة المحاولة
             </Button>
-          </Link>
+            <Link href="/appointments">
+              <Button className="gradient-medical text-white hover:opacity-90">
+                العودة للمواعيد
+              </Button>
+            </Link>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  // التأكد من وجود appointment قبل الاستخدام
+  if (!appointment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <Loading text="جاري تحميل تفاصيل الموعد..." />
       </div>
     );
   }
 
   const isConfirmed = appointment.status === 'CONFIRMED';
   const appointmentType = (appointment as any).type || 'IN_PERSON';
+  const actualPaymentStatus = payment?.status || appointment?.paymentStatus;
+  const isPaymentPending = appointment?.requiresPayment && actualPaymentStatus === 'PENDING';
+
+  // عرض حالة التحقق من الدفع
+  if (isVerifyingPayment || (isPaymentPending && !hasRedirectedRef.current)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 mx-auto mb-6 bg-primary-100 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+            <ClockIcon className="w-10 h-10 text-primary-600 animate-spin" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">جاري التحقق من الدفع...</h1>
+          <p className="text-gray-600 mb-6">
+            يرجى الانتظار قليلاً بينما نتحقق من حالة الدفع
+          </p>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="bg-primary-600 h-2.5 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12">

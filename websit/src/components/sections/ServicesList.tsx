@@ -79,12 +79,6 @@ export const ServicesList: React.FC = () => {
                     ))}
                   </ul>
                   
-                  <div className="mb-6">
-                    <span className="text-2xl font-bold text-primary-600">
-                      {service.price === 0 ? 'مجاني' : `من ${service.price} ريال`}
-                    </span>
-                  </div>
-                  
                   <Button className="w-full">
                     تعرف على المزيد
                     <ArrowRightIcon className="w-4 h-4 ml-2" />

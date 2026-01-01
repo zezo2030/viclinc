@@ -76,7 +76,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" 
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4" 
       dir="rtl"
       onClick={handleClose}
       style={{ 
@@ -86,7 +86,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
         left: 0, 
         right: 0, 
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -94,7 +94,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
       }}
     >
       <div 
-        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-xl shadow-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-[#e2e8f0]"
         onClick={(e) => e.stopPropagation()}
         style={{ 
           backgroundColor: 'white',
@@ -107,15 +107,15 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-primary-50">
-          <h3 className="text-xl font-bold text-gray-900">تعديل المستخدم</h3>
+        <div className="flex items-center justify-between p-6 border-b border-[#e2e8f0] bg-[#f8fafc]">
+          <h3 className="text-xl font-semibold text-[#0f172a]">تعديل المستخدم</h3>
           <button
             onClick={handleClose}
-            className="p-1 hover:bg-primary-100 rounded-lg transition-colors"
+            className="p-1 hover:bg-[#6366f1]/10 rounded-lg transition-colors duration-150 ease-out"
             type="button"
             disabled={isSubmitting}
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-[#64748b]" />
           </button>
         </div>
 
@@ -124,20 +124,20 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
           <div className="p-6 space-y-5">
             {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                الاسم الكامل <span className="text-red-500">*</span>
+                <label htmlFor="name" className="block text-sm font-medium text-[#0f172a] mb-2">
+                الاسم الكامل <span className="text-[#ef4444]">*</span>
               </label>
               <input
                 id="name"
                 type="text"
                 {...register('name')}
-                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
-                  errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                className={`w-full px-4 py-2.5 border rounded-lg text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                  errors.name ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
                 }`}
                 placeholder="أدخل الاسم الكامل"
               />
               {errors.name && (
-                <p className="mt-1.5 text-sm text-red-600">{errors.name.message}</p>
+                <p className="mt-1.5 text-sm text-[#ef4444]">{errors.name.message}</p>
               )}
             </div>
 
@@ -227,18 +227,18 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit }: EditU
           </div>
 
           {/* Footer Actions */}
-          <div className="flex gap-3 p-6 bg-gray-50 border-t border-gray-200">
+          <div className="flex gap-3 p-6 bg-[#f8fafc] border-t border-[#e2e8f0]">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors font-medium"
+              className="flex-1 px-4 py-2.5 border border-[#e2e8f0] text-[#64748b] bg-white rounded-lg hover:bg-[#f8fafc] transition-colors duration-150 ease-out font-medium"
               disabled={isSubmitting}
             >
               إلغاء
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-[#6366f1] text-white rounded-lg hover:bg-[#4f46e5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 ease-out font-medium flex items-center justify-center gap-2 shadow-sm"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

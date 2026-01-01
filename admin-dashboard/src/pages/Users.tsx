@@ -182,13 +182,13 @@ export default function UsersPage() {
       <Breadcrumbs />
 
       {/* Page Header with Gradient */}
-      <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-500 p-8 shadow-2xl">
+      <div className="mb-8 relative overflow-hidden rounded-2xl bg-[#D62828] p-8 shadow-2xl">
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-4xl font-black text-white drop-shadow-lg">
               إدارة المستخدمين
             </h1>
-            <p className="mt-2 text-lg font-medium text-blue-100">
+            <p className="mt-2 text-lg font-medium text-white/90">
               عرض وإدارة جميع المستخدمين في النظام
             </p>
             <div className="mt-4 flex items-center gap-4 text-white/90">
@@ -200,7 +200,7 @@ export default function UsersPage() {
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="group px-6 py-3 bg-white text-blue-600 rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl flex items-center gap-2"
+            className="group px-6 py-3 bg-white text-[#D62828] rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl flex items-center gap-2"
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             <span>إضافة مستخدم</span>

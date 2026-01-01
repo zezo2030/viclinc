@@ -18,6 +18,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isAuthenticated, isLoading, user } = useAuth();
   const [showAuthModal, setShowAuthModal] = React.useState(false);
 
+  // #region agent log
+  React.useEffect(() => {
+    fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/auth/ProtectedRoute.tsx:19',message:'ProtectedRoute auth check',data:{isAuthenticated,isLoading,hasUser:!!user,userRole:user?.role,requiredRole,currentPath:typeof window !== 'undefined' ? window.location.pathname : 'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+    if (!isAuthenticated && !isLoading) {
+      fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/auth/ProtectedRoute.tsx:22',message:'User not authenticated - showing auth modal',data:{requiredRole,currentPath:typeof window !== 'undefined' ? window.location.pathname : 'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+    }
+  }, [isAuthenticated, isLoading, user, requiredRole]);
+  // #endregion
+
   // إظهار loading state
   if (isLoading) {
     return (

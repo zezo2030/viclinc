@@ -114,14 +114,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: RegisterRequest): Promise<void> => {
     try {
       setIsLoading(true);
-      // إضافة role='PATIENT' تلقائياً
-      const response = await authApi.register({ 
-        name: `${userData.firstName} ${userData.lastName}`,
+      const payload = {
+        name: `${userData.firstName} ${userData.lastName}`.trim(),
         email: userData.email,
         password: userData.password,
         phone: userData.phone || '',
-        role: 'PATIENT'
-      });
+        role: 'PATIENT' as const,
+      };
+
+      if (userData.avatarFile) {
+        const formData = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, value as string);
+          }
+        });
+        formData.append('avatar', userData.avatarFile);
+        await authApi.register(formData);
+      } else {
+        await authApi.register(payload);
+      }
+
       // بعد التسجيل الناجح، قم بتسجيل الدخول التلقائي
       await login({ email: userData.email, password: userData.password });
     } catch (error) {

@@ -10,9 +10,9 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 160 84% 39%;
+    --primary: 0 71% 40%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 91% 60%;
+    --secondary: 218 47% 20%;
     --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -30,9 +30,9 @@
     --radius: 0.75rem;
     
     /* Medical Theme Variables */
-    --medical-gradient-start: #10b981;
-    --medical-gradient-end: #3b82f6;
-    --medical-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1), 0 10px 10px -5px rgba(16, 185, 129, 0.04);
+    --medical-gradient-start: #b01e1e;
+    --medical-gradient-end: #1a2b49;
+    --medical-shadow: 0 10px 25px -5px rgba(176, 30, 30, 0.1), 0 10px 10px -5px rgba(176, 30, 30, 0.04);
   }
 
   .dark {
@@ -72,7 +72,7 @@
   }
   
   .gradient-medical-light {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(176, 30, 30, 0.1) 0%, rgba(26, 43, 73, 0.1) 100%);
   }
   
   /* Medical shadow */
@@ -143,14 +143,14 @@ html {
 /* Medical theme utilities */
 @layer utilities {
   .text-gradient-medical {
-    background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #b01e1e 0%, #1a2b49 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .border-gradient-medical {
-    border-image: linear-gradient(135deg, #10b981 0%, #3b82f6 100%) 1;
+    border-image: linear-gradient(135deg, #b01e1e 0%, #1a2b49 100%) 1;
   }
   
   .animation-delay-2000 {

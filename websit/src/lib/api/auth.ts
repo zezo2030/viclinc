@@ -5,7 +5,7 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface RegisterRequest {
+export interface RegisterPayload {
   name: string;
   email: string;
   password: string;
@@ -21,6 +21,7 @@ export interface AuthResponse {
     name?: string;
     phone?: string;
     role: string;
+    avatar?: string;
   };
 }
 
@@ -32,6 +33,7 @@ export interface User {
   lastName?: string;
   role: string;
   phone?: string;
+  avatar?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -43,7 +45,7 @@ export const authApi = {
   },
 
   // تسجيل مستخدم جديد
-  register: async (userData: RegisterRequest): Promise<User> => {
+  register: async (userData: RegisterPayload | FormData): Promise<User> => {
     return apiClient.post<User>('/auth/register/patient', userData);
   },
 

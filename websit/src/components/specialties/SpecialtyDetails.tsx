@@ -232,11 +232,6 @@ export const SpecialtyDetails: React.FC<SpecialtyDetailsProps> = ({ specialtyId 
                       {serviceDescription && (
                         <p className="text-sm text-gray-600 mb-2">{serviceDescription}</p>
                       )}
-                      {servicePrice !== null && servicePrice !== undefined && (
-                        <p className="text-sm font-semibold text-primary-600">
-                          {servicePrice === 0 ? 'مجاني' : `${servicePrice} ريال`}
-                        </p>
-                      )}
                     </div>
                   );
                 })}

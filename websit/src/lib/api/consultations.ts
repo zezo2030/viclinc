@@ -61,7 +61,7 @@ export interface Message {
 }
 
 export interface CreateConsultationDto {
-  appointmentId: number;
+  appointmentId: number | string;
   type: 'VIDEO' | 'CHAT';
   notes?: string;
 }
@@ -77,18 +77,40 @@ export interface EndConsultationDto {
 export const consultationService = {
   // الحصول على جميع الاستشارات
   async getConsultations(patientId?: number, doctorId?: number): Promise<Consultation[]> {
-    const params = new URLSearchParams();
-    if (patientId) params.append('patientId', patientId.toString());
-    if (doctorId) params.append('doctorId', doctorId.toString());
-    
-    const response = await apiClient.get(`/consultations?${params.toString()}`);
-    return (response as any).data;
+    try {
+      const params = new URLSearchParams();
+      if (patientId) params.append('patientId', patientId.toString());
+      if (doctorId) params.append('doctorId', doctorId.toString());
+      
+      const queryString = params.toString();
+      const endpoint = queryString ? `/consultations?${queryString}` : '/consultations';
+      
+      const response = await apiClient.get(endpoint);
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      }
+      return (response as any)?.data || (response as any)?.consultations || [];
+    } catch (error: any) {
+      // إذا كان الخطأ 500 أو 404، نعيد مصفوفة فارغة بدلاً من رمي الخطأ
+      console.warn('Error fetching consultations:', error);
+      return [];
+    }
   },
 
   // الحصول على استشارة محددة
-  async getConsultation(id: number): Promise<Consultation> {
-    const response = await apiClient.get(`/consultations/${id}`);
-    return (response as any).data;
+  async getConsultation(id: number | string): Promise<Consultation> {
+    try {
+      const response = await apiClient.get(`/consultations/${id}`);
+      // Handle different response formats
+      if ((response as any)?.data) {
+        return (response as any).data;
+      }
+      return response as Consultation;
+    } catch (error: any) {
+      console.error('Error fetching consultation:', error);
+      throw error;
+    }
   },
 
   // إنشاء استشارة جديدة
@@ -98,32 +120,41 @@ export const consultationService = {
   },
 
   // بدء الاستشارة
-  async startConsultation(id: number, data: StartConsultationDto): Promise<Consultation> {
+  async startConsultation(id: number | string, data: StartConsultationDto): Promise<Consultation> {
     const response = await apiClient.put(`/consultations/${id}/start`, data);
-    return (response as any).data;
+    return (response as any)?.data || response;
   },
 
   // إنهاء الاستشارة
-  async endConsultation(id: number, data: EndConsultationDto): Promise<Consultation> {
+  async endConsultation(id: number | string, data: EndConsultationDto): Promise<Consultation> {
     const response = await apiClient.put(`/consultations/${id}/end`, data);
-    return (response as any).data;
+    return (response as any)?.data || response;
   },
 
   // إلغاء الاستشارة
-  async cancelConsultation(id: number): Promise<Consultation> {
+  async cancelConsultation(id: number | string): Promise<Consultation> {
     const response = await apiClient.put(`/consultations/${id}/cancel`, {});
-    return (response as any).data;
+    return (response as any)?.data || response;
   },
 
   // الحصول على رسائل الاستشارة
-  async getConsultationMessages(id: number): Promise<Message[]> {
-    const response = await apiClient.get(`/consultations/${id}/messages`);
-    return (response as any).data;
+  async getConsultationMessages(id: number | string): Promise<Message[]> {
+    try {
+      const response = await apiClient.get(`/consultations/${id}/messages`);
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      }
+      return (response as any)?.data || [];
+    } catch (error: any) {
+      console.error('Error fetching consultation messages:', error);
+      return [];
+    }
   },
 
   // إرسال رسالة
   async sendMessage(
-    consultationId: number, 
+    consultationId: number | string, 
     message: string, 
     messageType: 'TEXT' | 'IMAGE' | 'FILE' = 'TEXT',
     fileUrl?: string
@@ -133,6 +164,6 @@ export const consultationService = {
       messageType,
       fileUrl,
     });
-    return (response as any).data;
+    return (response as any)?.data || response;
   },
 };

@@ -81,23 +81,29 @@ function ConsultationContent() {
 
   const { data: consultation, isLoading, error } = useQuery({
     queryKey: ['consultation', consultationId],
-    queryFn: () => consultationService.getConsultation(parseInt(consultationId)),
+    queryFn: () => {
+      return consultationService.getConsultation(consultationId);
+    },
     enabled: !!consultationId,
+    retry: 1,
   });
 
   const { data: messages } = useQuery({
     queryKey: ['consultation-messages', consultationId],
-    queryFn: () => consultationService.getConsultationMessages(parseInt(consultationId)),
+    queryFn: () => {
+      return consultationService.getConsultationMessages(consultationId);
+    },
     enabled: !!consultationId && consultationType === 'chat',
+    retry: 1,
   });
 
   // Convert API messages to ChatInterface format
   const chatMessages = messages && user?.id && consultation
     ? convertMessages(
         messages,
-        parseInt(user.id),
+        typeof user.id === 'string' ? parseInt(user.id) || 0 : user.id,
         typeof consultation.appointment?.doctorId === 'string'
-          ? parseInt(consultation.appointment.doctorId)
+          ? parseInt(consultation.appointment.doctorId) || 0
           : consultation.appointment?.doctorId
       )
     : [];
@@ -181,8 +187,9 @@ function ConsultationContent() {
                 className="bg-black rounded-2xl overflow-hidden shadow-xl min-h-96"
               >
                 <VideoCall
-                  consultationId={parseInt(consultationId)}
-                  userId={parseInt(user?.id || '0')}
+                  consultationId={consultationId}
+                  userId={user?.id || '0'}
+                  userRole={user?.role as 'PATIENT' | 'DOCTOR' | undefined}
                   onCallEnd={() => setIsCallActive(false)}
                 />
               </motion.div>

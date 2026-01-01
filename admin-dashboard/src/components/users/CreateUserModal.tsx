@@ -47,26 +47,26 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUse
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" dir="rtl">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" dir="rtl">
+      <div className="bg-white rounded-xl shadow-sm max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-[#e2e8f0]">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-primary-50">
+        <div className="flex items-center justify-between p-6 border-b border-[#e2e8f0] bg-[#f8fafc]">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary-100 rounded-full">
-              <UserPlus className="w-6 h-6 text-primary-600" />
+            <div className="p-2 bg-[#6366f1]/10 rounded-lg">
+              <UserPlus className="w-6 h-6 text-[#6366f1]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">إضافة مستخدم جديد</h2>
-              <p className="text-sm text-gray-600 mt-1">املأ البيانات أدناه لإضافة مستخدم جديد</p>
+              <h2 className="text-xl font-semibold text-[#0f172a]">إضافة مستخدم جديد</h2>
+              <p className="text-sm text-[#64748b] mt-1">املأ البيانات أدناه لإضافة مستخدم جديد</p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-1 hover:bg-primary-100 rounded-lg transition-colors"
+            className="p-1 hover:bg-[#6366f1]/10 rounded-lg transition-colors duration-150 ease-out"
             type="button"
             disabled={isSubmitting}
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-[#64748b]" />
           </button>
         </div>
 
@@ -75,99 +75,99 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUse
           <div className="p-6 space-y-5">
             {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                الاسم الكامل <span className="text-red-500">*</span>
+              <label htmlFor="name" className="block text-sm font-medium text-[#0f172a] mb-2">
+                الاسم الكامل <span className="text-[#ef4444]">*</span>
               </label>
               <input
                 id="name"
                 type="text"
                 {...register('name')}
-                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
-                  errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                className={`w-full px-4 py-2.5 border rounded-lg text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                  errors.name ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
                 }`}
                 placeholder="أدخل الاسم الكامل"
               />
               {errors.name && (
-                <p className="mt-1.5 text-sm text-red-600">{errors.name.message}</p>
+                <p className="mt-1.5 text-sm text-[#ef4444]">{errors.name.message}</p>
               )}
             </div>
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                البريد الإلكتروني <span className="text-red-500">*</span>
+              <label htmlFor="email" className="block text-sm font-medium text-[#0f172a] mb-2">
+                البريد الإلكتروني <span className="text-[#ef4444]">*</span>
               </label>
               <input
                 id="email"
                 type="email"
                 {...register('email')}
-                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
-                  errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                className={`w-full px-4 py-2.5 border rounded-lg text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                  errors.email ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
                 }`}
                 placeholder="example@email.com"
               />
               {errors.email && (
-                <p className="mt-1.5 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1.5 text-sm text-[#ef4444]">{errors.email.message}</p>
               )}
             </div>
 
             {/* Phone Field */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                رقم الهاتف <span className="text-red-500">*</span>
+              <label htmlFor="phone" className="block text-sm font-medium text-[#0f172a] mb-2">
+                رقم الهاتف <span className="text-[#ef4444]">*</span>
               </label>
               <input
                 id="phone"
                 type="tel"
                 {...register('phone')}
-                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
-                  errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                className={`w-full px-4 py-2.5 border rounded-lg text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                  errors.phone ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
                 }`}
                 placeholder="05xxxxxxxx"
               />
               {errors.phone && (
-                <p className="mt-1.5 text-sm text-red-600">{errors.phone.message}</p>
+                <p className="mt-1.5 text-sm text-[#ef4444]">{errors.phone.message}</p>
               )}
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                كلمة المرور <span className="text-red-500">*</span>
+              <label htmlFor="password" className="block text-sm font-medium text-[#0f172a] mb-2">
+                كلمة المرور <span className="text-[#ef4444]">*</span>
               </label>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
-                  className={`w-full px-4 py-2.5 pr-10 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
-                    errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white'
+                  className={`w-full px-4 py-2.5 pr-10 border rounded-lg text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                    errors.password ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
                   }`}
                   placeholder="أدخل كلمة المرور (8 أحرف على الأقل)"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#64748b] hover:text-[#0f172a] transition-colors duration-150 p-1"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1.5 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1.5 text-sm text-[#ef4444]">{errors.password.message}</p>
               )}
             </div>
 
             {/* Role Field */}
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                الدور <span className="text-red-500">*</span>
+              <label htmlFor="role" className="block text-sm font-medium text-[#0f172a] mb-2">
+                الدور <span className="text-[#ef4444]">*</span>
               </label>
               <select
                 id="role"
                 {...register('role')}
-                className={`w-full px-4 py-2.5 border rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all appearance-none ${
-                  errors.role ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                className={`w-full px-4 py-2.5 border rounded-lg text-[#0f172a] bg-white focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out appearance-none ${
+                  errors.role ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0]'
                 }`}
               >
                 <option value="">اختر الدور</option>
@@ -176,24 +176,24 @@ export default function CreateUserModal({ isOpen, onClose, onSubmit }: CreateUse
                 <option value={UserRole.PATIENT}>{roleLabels[UserRole.PATIENT]}</option>
               </select>
               {errors.role && (
-                <p className="mt-1.5 text-sm text-red-600">{errors.role.message}</p>
+                <p className="mt-1.5 text-sm text-[#ef4444]">{errors.role.message}</p>
               )}
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="flex gap-3 p-6 bg-gray-50 border-t border-gray-200">
+          <div className="flex gap-3 p-6 bg-[#f8fafc] border-t border-[#e2e8f0]">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors font-medium"
+              className="flex-1 px-4 py-2.5 border border-[#e2e8f0] text-[#64748b] bg-white rounded-lg hover:bg-[#f8fafc] transition-colors duration-150 ease-out font-medium"
               disabled={isSubmitting}
             >
               إلغاء
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-[#6366f1] text-white rounded-lg hover:bg-[#4f46e5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 ease-out font-medium flex items-center justify-center gap-2 shadow-sm"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

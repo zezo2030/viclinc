@@ -72,6 +72,13 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ className }) => {
       onClick: () => router.push('/consultations'),
     },
     {
+      id: 'test-video',
+      label: 'اختبار مكالمة الفيديو',
+      icon: Video,
+      color: 'orange',
+      onClick: () => router.push('/test/video'),
+    },
+    {
       id: 'profile',
       label: 'الملف الشخصي',
       icon: User,

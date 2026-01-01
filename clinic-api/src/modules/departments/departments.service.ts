@@ -47,12 +47,18 @@ export class DepartmentsService {
     try {
       const departmentData: any = { ...dto };
       
+      console.log('Creating department with data:', JSON.stringify(departmentData, null, 2)); // للتشخيص
+      console.log('WorkingHours in departmentData:', departmentData.workingHours); // للتشخيص
+      
       if (file) {
         departmentData.logoPath = this.buildLogoPath(file.filename);
       }
 
       const created = await this.deptModel.create(departmentData);
       const result: any = created.toObject();
+      
+      console.log('Created department:', JSON.stringify(result, null, 2)); // للتشخيص
+      console.log('WorkingHours in result:', result.workingHours); // للتشخيص
       
       // إضافة logoUrl و icon للاستجابة
       if (result.logoPath) {
@@ -149,6 +155,8 @@ export class DepartmentsService {
       if (!existingDept) throw new NotFoundException('Department not found');
 
       const updateData: any = { ...dto };
+      console.log('Updating department with data:', JSON.stringify(updateData, null, 2)); // للتشخيص
+      console.log('WorkingHours in updateData:', updateData.workingHours); // للتشخيص
       const oldLogoPath = existingDept.logoPath;
 
       // إذا تم رفع ملف جديد، احفظ المسار الجديد واحذف القديم

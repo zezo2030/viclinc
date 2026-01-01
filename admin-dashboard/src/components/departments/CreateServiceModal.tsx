@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { X, Plus as PlusIcon, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { servicesApi } from '@/api/services'
 import type { CreateServiceRequest } from '@/types/service.types'
@@ -68,135 +69,106 @@ export default function CreateServiceModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Header with Gradient */}
-        <div className="relative px-8 py-6 bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 flex items-center justify-between overflow-hidden">
-          <div className="relative z-10 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4" dir="rtl">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 bg-[#6366f1] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+              <PlusIcon className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-2xl font-black text-white drop-shadow-lg">إضافة خدمة جديدة</h3>
+            <h3 className="text-xl font-semibold text-white">إضافة خدمة جديدة</h3>
           </div>
           <button 
             onClick={handleClose} 
-            className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white shadow-lg"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors duration-150"
           >
-            <span className="text-2xl font-bold">×</span>
+            <X className="w-5 h-5" />
           </button>
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full translate-y-20 -translate-x-20 blur-3xl"></div>
         </div>
 
-        <form onSubmit={handleSubmit(submit)} className="p-8 space-y-6 bg-gradient-to-br from-white to-purple-50/30">
+        <form onSubmit={handleSubmit(submit)} className="p-6 space-y-5 bg-white">
           {/* Service Name */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <span className="text-purple-600">📝</span>
-              <span>اسم الخدمة</span>
-              <span className="text-red-500 text-lg">*</span>
+            <label className="block text-sm font-medium text-[#0f172a] mb-2">
+              اسم الخدمة <span className="text-[#ef4444]">*</span>
             </label>
             <input
-              className={`w-full border-2 rounded-xl px-4 py-3 transition-all duration-300 bg-white/70 backdrop-blur-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 hover:border-gray-300 ${
-                errors.name ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+              className={`w-full border rounded-lg px-4 py-3 text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                errors.name ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
               }`}
               {...register('name')}
               placeholder="مثال: استشارة عامة"
             />
             {errors.name && (
-              <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                <span>⚠️</span>
-                <span>{errors.name.message as string}</span>
-              </p>
+              <p className="text-[#ef4444] text-sm mt-1">{errors.name.message as string}</p>
             )}
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <span className="text-purple-600">📄</span>
-              <span>الوصف (اختياري)</span>
-            </label>
+            <label className="block text-sm font-medium text-[#0f172a] mb-2">الوصف (اختياري)</label>
             <textarea
               rows={4}
-              className={`w-full border-2 rounded-xl px-4 py-3 transition-all duration-300 bg-white/70 backdrop-blur-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 hover:border-gray-300 resize-none ${
-                errors.description ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+              className={`w-full border rounded-lg px-4 py-3 text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent resize-none transition-all duration-150 ease-out ${
+                errors.description ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
               }`}
               {...register('description')}
               placeholder="وصف الخدمة..."
             />
             {errors.description && (
-              <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                <span>⚠️</span>
-                <span>{errors.description.message as string}</span>
-              </p>
+              <p className="text-[#ef4444] text-sm mt-1">{errors.description.message as string}</p>
             )}
           </div>
 
           {/* Price and Duration Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="text-green-600">💵</span>
-                <span>السعر الافتراضي (ر.س)</span>
-              </label>
+              <label className="block text-sm font-medium text-[#0f172a] mb-2">السعر الافتراضي (ر.س)</label>
               <div className="relative">
                 <input
                   type="number"
                   step="0.01"
                   min="0"
-                  className={`w-full border-2 rounded-xl px-4 py-3 pr-12 transition-all duration-300 bg-white/70 backdrop-blur-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 hover:border-gray-300 ${
-                    errors.defaultPrice ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+                  className={`w-full border rounded-lg px-4 py-3 pr-12 text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                    errors.defaultPrice ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
                   }`}
                   {...register('defaultPrice', { valueAsNumber: true })}
                   placeholder="0.00"
                 />
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">ر.س</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748b] font-medium">ر.س</span>
               </div>
               {errors.defaultPrice && (
-                <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                  <span>⚠️</span>
-                  <span>{errors.defaultPrice.message as string}</span>
-                </p>
+                <p className="text-[#ef4444] text-sm mt-1">{errors.defaultPrice.message as string}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="text-blue-600">⏱️</span>
-                <span>المدة الافتراضية (دقيقة)</span>
-              </label>
+              <label className="block text-sm font-medium text-[#0f172a] mb-2">المدة الافتراضية (دقيقة)</label>
               <div className="relative">
                 <input
                   type="number"
                   step="1"
                   min="1"
                   max="480"
-                  className={`w-full border-2 rounded-xl px-4 py-3 pr-12 transition-all duration-300 bg-white/70 backdrop-blur-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 hover:border-gray-300 ${
-                    errors.defaultDurationMin ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+                  className={`w-full border rounded-lg px-4 py-3 pr-12 text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                    errors.defaultDurationMin ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
                   }`}
                   {...register('defaultDurationMin', { valueAsNumber: true })}
                   placeholder="30"
                 />
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">دقيقة</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748b] font-medium">دقيقة</span>
               </div>
               {errors.defaultDurationMin && (
-                <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                  <span>⚠️</span>
-                  <span>{errors.defaultDurationMin.message as string}</span>
-                </p>
+                <p className="text-[#ef4444] text-sm mt-1">{errors.defaultDurationMin.message as string}</p>
               )}
             </div>
           </div>
 
           {/* Active Status */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-white to-purple-50 border border-purple-200">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-[#f8fafc] border border-[#e2e8f0]">
             <label htmlFor="isActive" className="flex items-center gap-3 cursor-pointer">
-              <span className="text-lg">✅</span>
-              <span className="text-sm font-bold text-gray-900">تفعيل الخدمة</span>
+              <span className="text-sm font-medium text-[#0f172a]">تفعيل الخدمة</span>
             </label>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -206,37 +178,31 @@ export default function CreateServiceModal({
                 className="sr-only peer"
                 {...register('isActive')} 
               />
-              <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500"></div>
+              <div className="w-11 h-6 bg-[#e2e8f0] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#6366f1]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#e2e8f0] after:border after:rounded-full after:h-5 after:w-5 after:transition-all duration-150 ease-out peer-checked:bg-[#6366f1]"></div>
             </label>
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 flex items-center justify-end gap-3">
+          <div className="pt-2 flex items-center justify-end gap-3">
             <button 
               type="button" 
               onClick={handleClose} 
-              className="px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-3 rounded-lg border border-[#e2e8f0] text-[#64748b] font-medium hover:bg-[#f8fafc] transition-colors duration-150 ease-out"
             >
               إلغاء
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-3 rounded-lg bg-[#6366f1] text-white font-medium shadow-sm hover:bg-[#4f46e5] transition-colors duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                  <Loader2 className="animate-spin h-5 w-5" />
                   <span>جاري الحفظ...</span>
                 </>
               ) : (
-                <>
-                  <span>✨</span>
-                  <span>إضافة الخدمة</span>
-                </>
+                <span>إضافة الخدمة</span>
               )}
             </button>
           </div>

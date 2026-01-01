@@ -68,12 +68,12 @@ export default function AppointmentsPage() {
       <Breadcrumbs />
       
       {/* Page Header with Gradient */}
-      <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-500 via-pink-600 to-fuchsia-500 p-8 shadow-2xl">
+      <div className="mb-8 relative overflow-hidden rounded-2xl bg-[#D62828] p-8 shadow-2xl">
         <div className="relative z-10">
           <h1 className="text-4xl font-black text-white drop-shadow-lg">
             إدارة المواعيد
           </h1>
-          <p className="mt-2 text-lg font-medium text-pink-100">
+          <p className="mt-2 text-lg font-medium text-white/90">
             عرض وإدارة المواعيد والفلاتر والحالات
           </p>
           <div className="mt-4 flex items-center gap-4 text-white/90">

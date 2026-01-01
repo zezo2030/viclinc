@@ -42,18 +42,18 @@ export default function AppointmentFilters({ value, onChange, onReset }: Appoint
   const hasActiveFilters = value.status !== 'ALL' || value.type !== 'ALL' || value.search || value.startDate || value.endDate
 
   return (
-    <div className="mb-6 rounded-xl bg-gradient-to-br from-white to-gray-50 p-6 shadow-lg border border-gray-100">
+    <div className="mb-6 rounded-xl bg-white p-6 shadow-lg border border-gray-200">
       <div className="flex items-center gap-3 mb-4">
-        <div className="h-1 w-1 rounded-full bg-gradient-to-r from-rose-500 to-pink-600"></div>
-        <h3 className="text-lg font-bold text-gray-900">البحث والتصفية</h3>
-        <div className="h-0.5 flex-1 bg-gradient-to-r from-pink-600 to-fuchsia-600 opacity-20"></div>
+        <div className="h-1 w-1 rounded-full bg-[#D62828]"></div>
+        <h3 className="text-lg font-bold text-[#213F6A]">البحث والتصفية</h3>
+        <div className="h-0.5 flex-1 bg-[#D62828] opacity-20"></div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {/* Search */}
         <div className="relative md:col-span-2 lg:col-span-1">
           <input
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300"
             placeholder="بحث بالمريض/الطبيب..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -66,7 +66,7 @@ export default function AppointmentFilters({ value, onChange, onReset }: Appoint
         {/* Status Filter */}
         <div>
           <select
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
             value={value.status || 'ALL'}
             onChange={(e) => onChange({ ...value, status: e.target.value as any })}
           >
@@ -83,7 +83,7 @@ export default function AppointmentFilters({ value, onChange, onReset }: Appoint
         {/* Type Filter */}
         <div>
           <select
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
             value={value.type || 'ALL'}
             onChange={(e) => onChange({ ...value, type: e.target.value as any })}
           >
@@ -99,7 +99,7 @@ export default function AppointmentFilters({ value, onChange, onReset }: Appoint
           <label className="block text-xs font-semibold text-gray-600 mb-1">من تاريخ</label>
           <input
             type="date"
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
             value={value.startDate || ''}
             onChange={(e) => onChange({ ...value, startDate: e.target.value })}
           />
@@ -110,7 +110,7 @@ export default function AppointmentFilters({ value, onChange, onReset }: Appoint
           <label className="block text-xs font-semibold text-gray-600 mb-1">إلى تاريخ</label>
           <input
             type="date"
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
             value={value.endDate || ''}
             onChange={(e) => onChange({ ...value, endDate: e.target.value })}
           />
@@ -124,7 +124,7 @@ export default function AppointmentFilters({ value, onChange, onReset }: Appoint
                 setSearchTerm('')
                 onReset()
               }} 
-              className="w-full px-5 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              className="w-full px-5 py-3 bg-[#213F6A] text-white rounded-xl font-semibold hover:bg-[#1e3a8a] hover:scale-105 transition-all duration-300 shadow-lg shadow-[#213F6A]/30 hover:shadow-xl flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

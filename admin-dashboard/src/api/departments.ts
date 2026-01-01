@@ -16,6 +16,7 @@ export const departmentsApi = {
       description: d.description,
       logoPath: d.logoUrl || d.logoPath,
       isActive: Boolean(d.isActive),
+      workingHours: d.workingHours,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt,
     }))
@@ -31,6 +32,7 @@ export const departmentsApi = {
       description: d.description,
       logoPath: d.logoUrl || d.logoPath,
       isActive: Boolean(d.isActive),
+      workingHours: d.workingHours,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt,
     }
@@ -42,6 +44,11 @@ export const departmentsApi = {
     formData.append('name', data.name)
     if (data.description) formData.append('description', data.description)
     if (data.logo) formData.append('logo', data.logo)
+    // إرسال workingHours دائماً إذا كان موجوداً
+    if (data.workingHours && data.workingHours.startTime && data.workingHours.endTime) {
+      console.log('Appending workingHours to FormData:', data.workingHours) // للتشخيص
+      formData.append('workingHours', JSON.stringify(data.workingHours))
+    }
 
     const response = await apiClient.post('/admin/departments', formData, {
       headers: {
@@ -55,6 +62,7 @@ export const departmentsApi = {
       description: d.description,
       logoPath: d.logoUrl || d.logoPath,
       isActive: Boolean(d.isActive),
+      workingHours: d.workingHours,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt,
     }
@@ -67,6 +75,11 @@ export const departmentsApi = {
     if (data.description) formData.append('description', data.description)
     if (data.logo) formData.append('logo', data.logo)
     if (data.isActive !== undefined) formData.append('isActive', String(data.isActive))
+    // إرسال workingHours دائماً إذا كان موجوداً
+    if (data.workingHours && data.workingHours.startTime && data.workingHours.endTime) {
+      console.log('Appending workingHours to FormData:', data.workingHours) // للتشخيص
+      formData.append('workingHours', JSON.stringify(data.workingHours))
+    }
 
     const response = await apiClient.patch(`/admin/departments/${id}`, formData, {
       headers: {
@@ -80,6 +93,7 @@ export const departmentsApi = {
       description: d.description,
       logoPath: d.logoUrl || d.logoPath,
       isActive: Boolean(d.isActive),
+      workingHours: d.workingHours,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt,
     }

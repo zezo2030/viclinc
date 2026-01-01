@@ -26,6 +26,28 @@ class RegisterPatientDto {
   password: string;
 }
 
+class ForgotPasswordDto {
+  @ApiProperty({ description: 'User email address', example: 'ahmed@example.com' })
+  @IsEmail()
+  email: string;
+}
+
+class VerifyOtpAndResetPasswordDto {
+  @ApiProperty({ description: 'User email address', example: 'ahmed@example.com' })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ description: 'OTP code received via email', example: '123456' })
+  @IsString()
+  @Matches(/^\d{6}$/)
+  otpCode: string;
+
+  @ApiProperty({ description: 'New password', example: 'newpassword123', minLength: 6 })
+  @IsString()
+  @MinLength(6)
+  newPassword: string;
+}
+
 class LoginDto {
   @ApiProperty({
     description: 'User email address (works for Admin, Doctor, and Patient)',
@@ -76,7 +98,7 @@ export class AuthController {
   ) {
     // إذا تم رفع ملف، أضف مساره إلى DTO
     if (file) {
-      const avatarPath = `/static/uploads/avatars/${file.filename}`;
+      const avatarPath = `/static/avatars/${file.filename}`;
       return this.auth.registerPatient({ ...dto, avatar: avatarPath });
     }
     return this.auth.registerPatient(dto);
@@ -258,10 +280,33 @@ export class AuthController {
     const updates: any = { ...body };
 
     if (file) {
-      updates.avatar = `/static/uploads/avatars/${file.filename}`;
+      updates.avatar = `/static/avatars/${file.filename}`;
     }
 
     return this.auth.updateProfile(userId, updates);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({
+    summary: 'Request password reset OTP',
+    description: 'Send OTP to user email for password reset'
+  })
+  @ApiResponse({ status: 200, description: 'OTP sent successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.auth.forgotPassword(dto.email);
+  }
+
+  @Post('verify-otp-reset-password')
+  @ApiOperation({
+    summary: 'Verify OTP and reset password',
+    description: 'Verify OTP code and reset user password'
+  })
+  @ApiResponse({ status: 200, description: 'Password reset successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async verifyOtpAndResetPassword(@Body() dto: VerifyOtpAndResetPasswordDto) {
+    return this.auth.verifyOtpAndResetPassword(dto.email, dto.otpCode, dto.newPassword);
   }
 }
 

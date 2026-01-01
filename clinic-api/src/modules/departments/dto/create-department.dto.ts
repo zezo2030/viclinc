@@ -1,6 +1,6 @@
-import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MinLength, ValidateNested, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CreateDepartmentDto {
   @ApiProperty({ description: 'Department name', example: 'Cardiology', minLength: 2 })
@@ -22,6 +22,44 @@ export class CreateDepartmentDto {
   })
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({ 
+    description: 'Department working hours', 
+    example: { startTime: '08:00', endTime: '17:00' }, 
+    required: false 
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    // Handle undefined/null
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    // Handle both JSON string (from FormData) and object (from JSON)
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        // Validate parsed object has required fields
+        if (parsed && typeof parsed === 'object' && parsed.startTime && parsed.endTime) {
+          return parsed;
+        }
+        return undefined;
+      } catch {
+        return undefined;
+      }
+    }
+    // If already an object, validate it has required fields
+    if (typeof value === 'object' && value.startTime && value.endTime) {
+      return value;
+    }
+    return undefined;
+  })
+  @IsObject()
+  @ValidateNested()
+  @Type(() => Object)
+  workingHours?: {
+    startTime: string;
+    endTime: string;
+  };
 }
 
 

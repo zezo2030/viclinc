@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,6 +36,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   className
 }) => {
   const [error, setError] = useState<string>('');
+  const [avatarError, setAvatarError] = useState<string>('');
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const { register: registerUser, isLoading } = useAuth();
 
   const {
@@ -46,20 +49,70 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     resolver: zodResolver(registerSchema),
   });
 
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setAvatarError('');
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarError('صيغة الصورة غير مدعومة. يرجى اختيار JPG أو PNG أو WebP.');
+      event.target.value = '';
+      return;
+    }
+
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSizeInBytes) {
+      setAvatarError('حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت.');
+      event.target.value = '';
+      return;
+    }
+
+    setAvatarPreview((prev) => {
+      if (prev) {
+        URL.revokeObjectURL(prev);
+      }
+      return URL.createObjectURL(file);
+    });
+    setAvatarFile(file);
+
+    // السماح باختيار نفس الملف مجدداً
+    event.target.value = '';
+  };
+
+  const clearAvatarSelection = () => {
+    setAvatarError('');
+    setAvatarFile(null);
+    setAvatarPreview((prev) => {
+      if (prev) {
+        URL.revokeObjectURL(prev);
+      }
+      return null;
+    });
+  };
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setError('');
+      setAvatarError('');
       const { confirmPassword, firstName, lastName, ...restData } = data;
-      
-      // دمج الاسم الأول والأخير
-      const name = `${firstName} ${lastName}`;
       
       await registerUser({ 
         firstName,
         lastName,
         email: restData.email,
         password: restData.password,
-        phone: restData.phone
+        phone: restData.phone,
+        avatarFile,
       });
       onSuccess?.();
     } catch (error: any) {
@@ -112,6 +165,49 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             {...register('phone')}
             error={errors.phone?.message}
           />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              الصورة الشخصية (اختياري)
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="معاينة الصورة" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl" role="img" aria-label="Avatar placeholder">
+                    🧑
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
+                  اختر صورة
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                </label>
+                {avatarFile && (
+                  <button
+                    type="button"
+                    onClick={clearAvatarSelection}
+                    className="block text-xs text-red-600 hover:underline"
+                  >
+                    إزالة الصورة
+                  </button>
+                )}
+                <p className="text-xs text-gray-500">
+                  يدعم JPG, PNG, WebP بحد أقصى 5 ميجابايت
+                </p>
+              </div>
+            </div>
+            {avatarError && (
+              <p className="text-xs text-red-600 mt-2">{avatarError}</p>
+            )}
+          </div>
 
 
           <Input

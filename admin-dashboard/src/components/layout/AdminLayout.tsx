@@ -11,13 +11,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className="min-h-screen bg-[#f8fafc]" dir="rtl">
       {/* Sidebar */}
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
       <div
-        className={`transition-all duration-300 ${
+        className={`transition-all duration-150 ease-out ${
           sidebarOpen ? 'mr-64' : 'mr-0'
         }`}
       >

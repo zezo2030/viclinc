@@ -14,11 +14,11 @@ export default function MetricsOverview() {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-100 bg-gradient-to-br from-red-50 to-red-100/50 p-6 text-center shadow-lg">
-        <p className="text-lg font-semibold text-red-600">حدث خطأ في تحميل المؤشرات</p>
+      <div className="rounded-xl border border-[#ef4444]/20 bg-[#ef4444]/5 p-6 text-center shadow-sm">
+        <p className="text-base font-medium text-[#ef4444]">حدث خطأ في تحميل المؤشرات</p>
         <button 
           onClick={() => window.location.reload()}
-          className="mt-3 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg text-sm font-medium shadow-lg shadow-red-500/30 transition-all hover:scale-105"
+          className="mt-3 px-4 py-2 bg-[#ef4444] text-white rounded-lg text-sm font-medium shadow-sm transition-all duration-150 ease-out hover:scale-[1.02]"
         >
           إعادة المحاولة
         </button>
@@ -30,9 +30,9 @@ export default function MetricsOverview() {
     <div className="space-y-4">
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="h-1 w-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
-        <h2 className="text-xl font-bold text-gray-900">المؤشرات الرئيسية</h2>
-        <div className="h-0.5 flex-1 bg-gradient-to-r from-purple-600 to-pink-600 opacity-20"></div>
+        <div className="h-1 w-1 rounded-full bg-[#6366f1]"></div>
+        <h2 className="text-xl font-semibold text-[#0f172a]">المؤشرات الرئيسية</h2>
+        <div className="h-0.5 flex-1 bg-[#6366f1] opacity-20"></div>
       </div>
 
       {/* Metrics Grid with Animation */}

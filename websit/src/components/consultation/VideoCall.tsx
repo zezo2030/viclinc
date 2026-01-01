@@ -8,15 +8,19 @@ import { agoraService } from '@/lib/api/agora';
 import { socketClient } from '@/lib/socket/socket-client';
 
 interface VideoCallProps {
-  consultationId: number;
-  userId: number;
+  consultationId: string | number;
+  userId: string | number;
+  userRole?: 'PATIENT' | 'DOCTOR';
   onCallEnd?: () => void;
+  testMode?: boolean;
 }
 
 export const VideoCall: React.FC<VideoCallProps> = ({
   consultationId,
   userId,
+  userRole = 'PATIENT',
   onCallEnd,
+  testMode = false,
 }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isJoined, setIsJoined] = useState(false);
@@ -71,7 +75,9 @@ export const VideoCall: React.FC<VideoCallProps> = ({
 
       // الحصول على token من API
       // Note: consultationId هنا هو appointmentId
-      const tokenData = await agoraService.getToken(consultationId.toString(), 'patient');
+      // تحديد الدور بناءً على دور المستخدم الحالي
+      const role = userRole === 'DOCTOR' ? 'doctor' : 'patient';
+      const tokenData = await agoraService.getToken(consultationId.toString(), role, testMode);
       
       // الانضمام للقناة
       await clientRef.current.join(
@@ -96,11 +102,25 @@ export const VideoCall: React.FC<VideoCallProps> = ({
       setIsCallActive(true);
 
       // إشعار الآخرين ببدء المكالمة
-      socketClient.startConsultation(consultationId, userId);
+      socketClient.startConsultation(
+        typeof consultationId === 'string' ? parseInt(consultationId) || 0 : consultationId,
+        typeof userId === 'string' ? parseInt(userId) || 0 : userId
+      );
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining call:', error);
-      setError('فشل في الانضمام للمكالمة');
+      // عرض رسالة خطأ أكثر وضوحاً
+      const errorMessage = error?.response?.data?.message || error?.message || 'فشل في الانضمام للمكالمة';
+      setError(errorMessage);
+      
+      // إذا كان الخطأ متعلقاً بحالة الموعد، عرض رسالة واضحة
+      if (errorMessage.includes('confirmed') || errorMessage.includes('CONFIRMED')) {
+        setError('يجب تأكيد الموعد أولاً قبل بدء جلسة الفيديو');
+      } else if (errorMessage.includes('role') || errorMessage.includes('Role')) {
+        setError('دور المستخدم غير صحيح. يرجى تحديث الصفحة والمحاولة مرة أخرى');
+      } else if (errorMessage.includes('not available yet') || errorMessage.includes('wait')) {
+        setError(errorMessage);
+      }
     }
   };
 
@@ -118,7 +138,10 @@ export const VideoCall: React.FC<VideoCallProps> = ({
         setIsCallActive(false);
 
         // إشعار الآخرين بإنهاء المكالمة
-        socketClient.endConsultation(consultationId, userId);
+        socketClient.endConsultation(
+          typeof consultationId === 'string' ? parseInt(consultationId) || 0 : consultationId,
+          typeof userId === 'string' ? parseInt(userId) || 0 : userId
+        );
 
         onCallEnd?.();
       }

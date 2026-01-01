@@ -40,18 +40,6 @@ export const PricingSection: React.FC = () => {
                   {tier.name}
                 </h3>
                 
-                <div className="mb-6">
-                  <span className="text-5xl font-bold text-gradient-medical">
-                    {tier.price === 0 ? 'مجاني' : `${tier.price}`}
-                  </span>
-                  {tier.price > 0 && (
-                    <span className="text-2xl text-gray-600 mr-2">ريال</span>
-                  )}
-                  <div className="text-gray-600 mt-2">
-                    {tier.period}
-                  </div>
-                </div>
-                
                 <p className="text-gray-600 mb-8 leading-relaxed">
                   {tier.description}
                 </p>

@@ -47,6 +47,8 @@ export class DepartmentsController {
     // OptionalFileInterceptor سيضيف file إلى request إذا كان multipart/form-data
     // إذا كان JSON عادي، file سيكون undefined
     const file = (req as any).file;
+    console.log('Received DTO:', JSON.stringify(dto, null, 2)); // للتشخيص
+    console.log('WorkingHours:', dto.workingHours); // للتشخيص
     return this.service.create(dto, file);
   }
 
@@ -182,6 +184,8 @@ export class DepartmentsController {
     // OptionalFileInterceptor سيضيف file إلى request إذا كان multipart/form-data
     // إذا كان JSON عادي، file سيكون undefined
     const file = (req as any).file;
+    console.log('Update DTO:', JSON.stringify(dto, null, 2)); // للتشخيص
+    console.log('WorkingHours:', dto.workingHours); // للتشخيص
     return this.service.update(id, dto, file);
   }
 

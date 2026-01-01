@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
+import { Search, Plus } from 'lucide-react'
 import AdminLayout from '@/components/layout/AdminLayout'
 import Breadcrumbs from '@/components/layout/Breadcrumbs'
 import DepartmentsGrid from '@/components/departments/DepartmentsGrid'
@@ -86,42 +87,39 @@ export default function DepartmentsPage() {
     <AdminLayout>
       <Breadcrumbs />
       
-      {/* Page Header with Gradient */}
-      <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 p-8 shadow-2xl">
+      {/* Page Header */}
+      <div className="mb-8 relative overflow-hidden rounded-xl bg-[#6366f1] p-8 shadow-sm">
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-black text-white drop-shadow-lg">
+            <h1 className="text-3xl font-semibold text-white">
               إدارة الأقسام
             </h1>
-            <p className="mt-2 text-lg font-medium text-blue-100">
+            <p className="mt-2 text-base font-medium text-white/90">
               عرض وإدارة أقسام العيادة والخدمات المتاحة
             </p>
             <div className="mt-4 flex items-center gap-4 text-white/90">
-              <span className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                <span className="text-2xl font-bold">{filtered.length}</span>
+              <span className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-lg">
+                <span className="text-xl font-semibold">{filtered.length}</span>
                 <span className="text-sm">قسم</span>
               </span>
             </div>
           </div>
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="group px-6 py-3 bg-white text-purple-600 rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl flex items-center gap-2"
+            className="group px-6 py-3 bg-white text-[#6366f1] rounded-lg hover:scale-[1.02] transition-all duration-150 ease-out font-medium shadow-sm flex items-center gap-2"
           >
-            <span className="text-2xl group-hover:rotate-90 transition-transform duration-300">+</span>
+            <Plus className="w-5 h-5" />
             <span>إضافة قسم</span>
           </button>
         </div>
-        {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-32 -translate-y-32 blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full translate-x-32 translate-y-32 blur-3xl"></div>
       </div>
 
       {/* Search and Filters */}
-      <div className="mb-6 rounded-xl bg-gradient-to-br from-white to-gray-50 p-6 shadow-lg border border-gray-100">
+      <div className="mb-6 rounded-xl bg-white p-6 shadow-sm border border-[#e2e8f0]">
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-1 w-1 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600"></div>
-          <h3 className="text-lg font-bold text-gray-900">البحث والتصفية</h3>
-          <div className="h-0.5 flex-1 bg-gradient-to-r from-purple-600 to-pink-600 opacity-20"></div>
+          <div className="h-1 w-1 rounded-full bg-[#6366f1]"></div>
+          <h3 className="text-lg font-semibold text-[#0f172a]">البحث والتصفية</h3>
+          <div className="h-0.5 flex-1 bg-[#6366f1] opacity-20"></div>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -130,26 +128,24 @@ export default function DepartmentsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="بحث باسم القسم أو الوصف..."
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300"
+              className="w-full border border-[#e2e8f0] rounded-lg px-4 py-3 pr-12 focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20 transition-all duration-150 ease-out bg-white hover:border-[#6366f1]/50"
             />
-            <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#64748b]" />
           </div>
           
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as any)}
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
+            className="w-full border border-[#e2e8f0] rounded-lg px-4 py-3 focus:border-[#6366f1] focus:ring-2 focus:ring-[#6366f1]/20 transition-all duration-150 ease-out bg-white hover:border-[#6366f1]/50 font-medium"
           >
-            <option value="ALL">🔵 كل الحالات</option>
-            <option value="ACTIVE">✅ نشط فقط</option>
-            <option value="INACTIVE">⭕ غير نشط فقط</option>
+            <option value="ALL">كل الحالات</option>
+            <option value="ACTIVE">نشط فقط</option>
+            <option value="INACTIVE">غير نشط فقط</option>
           </select>
 
-          <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-            <span className="text-sm font-semibold text-gray-600">النتائج:</span>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <div className="flex items-center gap-3 px-4 py-3 bg-[#f8fafc] rounded-lg border border-[#e2e8f0]">
+            <span className="text-sm font-medium text-[#64748b]">النتائج:</span>
+            <span className="text-xl font-semibold text-[#6366f1]">
               {filtered.length}
             </span>
           </div>

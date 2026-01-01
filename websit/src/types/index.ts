@@ -118,6 +118,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone?: string;
+  avatarFile?: File | null;
   // role سيتم إضافته تلقائياً في AuthContext
 }
 
@@ -127,7 +128,9 @@ export interface AuthResponse {
     id: string;
     email: string;
     name?: string;
+    phone?: string;
     role: string;
+    avatar?: string;
   };
 }
 
@@ -139,6 +142,7 @@ export interface User {
   lastName?: string;
   role: string;
   phone?: string;
+  avatar?: string;
   createdAt?: string;
   updatedAt?: string;
 }

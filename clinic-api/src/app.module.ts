@@ -16,7 +16,7 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { SettingsModule } from './modules/settings/settings.module';
-import { MedicalRecordsModule } from './modules/medical-records/medical-records.module';
+// import { MedicalRecordsModule } from './modules/medical-records/medical-records.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { MongooseModule as Feature } from '@nestjs/mongoose';
@@ -27,6 +27,7 @@ import { PublicServicesController } from './modules/services/public-services.con
 import { RedisModule } from './modules/shared/redis/redis.module';
 import { GuardsModule } from './modules/shared/guards/guards.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { SupportTicketsModule } from './modules/support-tickets/support-tickets.module';
 
 const isProd = process.env.NODE_ENV === 'production';
 const i18nPath = isProd
@@ -69,10 +70,11 @@ const i18nPath = isProd
     PaymentsModule,
     SessionsModule,
     SettingsModule,
-    MedicalRecordsModule,
+    // MedicalRecordsModule,
     AdminModule,
     DepartmentsModule,
     NotificationsModule,
+    SupportTicketsModule,
     Feature.forFeature([
       { name: Svc.name, schema: ServiceSchema },
     ]),
@@ -80,4 +82,4 @@ const i18nPath = isProd
   controllers: [AppController, HealthController, ServicesController, PublicServicesController],
   providers: [AppService, ServicesService],
 })
-export class AppModule {}
+export class AppModule { }

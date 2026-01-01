@@ -33,6 +33,25 @@ const getApiOrigin = (): string => {
   }
 };
 
+const resolveImagePath = (path?: string | null): string | undefined => {
+  if (!path) return undefined;
+
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  if (path.startsWith('/static/')) {
+    const apiOrigin = getApiOrigin();
+    return `${apiOrigin}${path}`;
+  }
+
+  if (path.startsWith('/')) {
+    return path;
+  }
+
+  return `/${path}`;
+};
+
 /**
  * Helper function to get the correct image URL
  * Handles different image URL formats:
@@ -42,27 +61,11 @@ const getApiOrigin = (): string => {
  * - Other paths: assume local public file
  */
 export const getImageUrl = (icon?: string | null, fallback: string = '/service.jpg'): string => {
-  if (!icon) return fallback;
-  
-  // If it's already a full URL (http/https), use it as is
-  if (icon.startsWith('http://') || icon.startsWith('https://')) {
-    return icon;
-  }
-  
-  // If it starts with /static, it's from the API - prepend API origin (same as admin dashboard)
-  if (icon.startsWith('/static/')) {
-    const apiOrigin = getApiOrigin();
-    // Use origin + path (same logic as admin dashboard's resolveLogoUrl)
-    return `${apiOrigin}${icon}`;
-  }
-  
-  // If it starts with /, it's a local public file
-  if (icon.startsWith('/')) {
-    return icon;
-  }
-  
-  // Otherwise, assume it's a local public file
-  return `/${icon}`;
+  return resolveImagePath(icon) || fallback;
+};
+
+export const resolveMediaUrl = (path?: string | null): string | undefined => {
+  return resolveImagePath(path);
 };
 
 /**

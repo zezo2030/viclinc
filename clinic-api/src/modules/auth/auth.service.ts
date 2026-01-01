@@ -1,17 +1,21 @@
-import { Injectable, ConflictException, UnauthorizedException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, ForbiddenException, NotFoundException, BadRequestException, HttpException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument, Role, UserStatus } from '../users/schemas/user.schema';
 import { DoctorProfile, DoctorStatus } from '../doctors/schemas/doctor-profile.schema';
+import { Otp, OtpDocument } from './otp.schema';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(DoctorProfile.name) private readonly doctorProfileModel: Model<any>,
+    @InjectModel(Otp.name) private readonly otpModel: Model<OtpDocument>,
     private readonly jwt: JwtService,
+    private readonly emailService: EmailService,
   ) { }
 
   async registerPatient(input: { name: string; email: string; phone: string; password: string; avatar?: string }) {
@@ -176,6 +180,86 @@ export class AuthService {
       role: user.role,
       avatar: user.avatar
     };
+  }
+
+  /**
+   * Forgot password - send OTP to user's email
+   */
+  async forgotPassword(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    try {
+      // Check if user exists
+      const user = await this.userModel.findOne({ email: normalizedEmail });
+      if (!user) {
+        throw new NotFoundException('البريد الإلكتروني غير مسجل');
+      }
+
+      // Generate 6-digit OTP
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Save OTP to database
+      await this.otpModel.create({
+        email: normalizedEmail,
+        otpCode,
+        purpose: 'FORGOT_PASSWORD',
+      });
+
+      // Send OTP email
+      await this.emailService.sendOtpEmail(normalizedEmail, otpCode);
+
+      return { message: 'OTP sent to email successfully' };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      console.error(`❌ Forgot password failed for ${email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify OTP and reset password
+   */
+  async verifyOtpAndResetPassword(email: string, otpCode: string, newPassword: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if OTP has expired (10 minutes = 600,000 ms)
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const otp = await this.otpModel.findOne({
+      email: normalizedEmail,
+      otpCode,
+      purpose: 'FORGOT_PASSWORD',
+      isUsed: false,
+      createdAt: { $gt: tenMinutesAgo },
+    });
+
+    if (!otp) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    // Check if user exists
+    const user = await this.userModel.findOne({ email: normalizedEmail });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    // Update user password
+    await this.userModel.findByIdAndUpdate(user._id, {
+      passwordHash,
+    });
+
+    // Mark OTP as used
+    await this.otpModel.findByIdAndUpdate(otp._id, {
+      isUsed: true,
+    });
+
+    // Send confirmation email
+    await this.emailService.sendPasswordResetConfirmation(normalizedEmail);
+
+    return { message: 'Password reset successfully' };
   }
 }
 

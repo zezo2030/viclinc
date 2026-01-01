@@ -1,22 +1,29 @@
 import { apiClient } from './client';
 
 export interface Appointment {
-  id: number;
-  patientId: number;
-  doctorId: number;
-  clinicId: number;
-  specialtyId: number;
-  departmentId: number;
-  appointmentDate: string;
-  appointmentTime: string;
+  id: number | string; // دعم MongoDB ObjectId (string) و SQL ID (number)
+  patientId: number | string;
+  doctorId: number | string;
+  clinicId?: number | string;
+  specialtyId?: number | string;
+  departmentId?: number | string;
+  appointmentDate?: string;
+  appointmentTime?: string;
+  startAt?: string; // ISO string للـ API الجديد
+  endAt?: string; // ISO string للـ API الجديد
   status: 'PENDING_CONFIRM' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW' | 'REJECTED';
+  type?: 'IN_PERSON' | 'VIDEO' | 'CHAT';
   reason?: string;
   notes?: string;
-  isEmergency: boolean;
+  isEmergency?: boolean;
+  price?: number;
+  duration?: number;
+  requiresPayment?: boolean;
+  paymentStatus?: 'NONE' | 'PENDING' | 'COMPLETED';
   createdAt: string;
   updatedAt: string;
   patient?: {
-    id: number;
+    id: number | string;
     profile: {
       firstName: string;
       lastName: string;
@@ -24,26 +31,31 @@ export interface Appointment {
     };
   };
   doctor?: {
-    id: number;
-    user: {
+    id: number | string;
+    name?: string;
+    user?: {
       profile: {
         firstName: string;
         lastName: string;
       };
     };
-    specialization: string;
+    specialization?: string;
+  };
+  service?: {
+    id: number | string;
+    name: string;
   };
   clinic?: {
-    id: number;
+    id: number | string;
     name: string;
     address: string;
   };
   specialty?: {
-    id: number;
+    id: number | string;
     name: string;
   };
   department?: {
-    id: number;
+    id: number | string;
     name: string;
   };
 }
@@ -99,6 +111,7 @@ export interface PaginatedAppointments {
 
 export const appointmentsService = {
   // جلب جميع المواعيد
+  // استخدام /patient/appointments بدلاً من /appointments لأن /appointments يتطلب ID
   getAppointments: (query: AppointmentsQuery = {}): Promise<Appointment[]> => {
     const params = new URLSearchParams();
     if (query.page) params.append('page', query.page.toString());
@@ -111,7 +124,8 @@ export const appointmentsService = {
     if (query.startDate) params.append('startDate', query.startDate);
     if (query.endDate) params.append('endDate', query.endDate);
 
-    return apiClient.get(`/appointments?${params.toString()}`);
+    const queryString = params.toString();
+    return apiClient.get(`/patient/appointments${queryString ? `?${queryString}` : ''}`);
   },
 
   // جلب مواعيد المريض
@@ -145,7 +159,7 @@ export const appointmentsService = {
   },
 
   // جلب موعد واحد
-  getAppointment: (id: number): Promise<Appointment> => {
+  getAppointment: async (id: number | string, role?: 'PATIENT' | 'DOCTOR'): Promise<Appointment> => {
     return apiClient.get(`/appointments/${id}`);
   },
 

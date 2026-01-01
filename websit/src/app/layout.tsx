@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   description: 'احجز موعدك بسهولة، احصل على استشارات طبية افتراضية، وأدار صحتك بطريقة ذكية',
   keywords: ['عيادة', 'طبيب', 'حجز موعد', 'رعاية صحية', 'استشارة طبية'],
   authors: [{ name: 'MedFlow' }],
+  icons: {
+    icon: '/logotajal.png',
+    shortcut: '/logotajal.png',
+    apple: '/logotajal.png',
+  },
   openGraph: {
     title: 'Med Flow',
     description: 'احجز موعدك بسهولة، احصل على استشارات طبية افتراضية، وأدار صحتك بطريقة ذكية',

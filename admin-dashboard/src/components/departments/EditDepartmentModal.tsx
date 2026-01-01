@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { X, Edit, Image as ImageIcon, Loader2 } from 'lucide-react'
 import type { Department, UpdateDepartmentRequest } from '@/types/department.types'
 import { API_URL } from '@/utils/constants'
 
@@ -9,6 +10,10 @@ const schema = z.object({
   name: z.string().min(2, 'الاسم مطلوب').optional(),
   description: z.string().max(1000).optional().or(z.literal('')),
   isActive: z.boolean().optional(),
+  workingHours: z.object({
+    startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'تنسيق الوقت غير صحيح (HH:mm)'),
+    endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'تنسيق الوقت غير صحيح (HH:mm)'),
+  }).optional(),
 })
 
 interface EditDepartmentModalProps {
@@ -26,24 +31,41 @@ export default function EditDepartmentModal({ isOpen, onClose, department, onSub
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    getValues,
+    watch,
   } = useForm<UpdateDepartmentRequest>({
     resolver: zodResolver(schema as any),
     defaultValues: {
       name: department?.name,
       description: department?.description,
       isActive: department?.isActive,
+      workingHours: department?.workingHours || { startTime: '08:00', endTime: '17:00' },
     },
     values: {
       name: department?.name,
       description: department?.description,
       isActive: department?.isActive,
+      workingHours: department?.workingHours || { startTime: '08:00', endTime: '17:00' },
     },
   })
+
+  // مراقبة قيم workingHours للتأكد من تحديثها
+  const watchedWorkingHours = watch('workingHours')
 
   if (!isOpen) return null
 
   const submit = async (values: UpdateDepartmentRequest) => {
-    await onSubmit({ ...values, logo })
+    // الحصول على workingHours من النموذج - استخدام watch أو getValues أو values
+    let workingHours = watchedWorkingHours || getValues('workingHours') || values.workingHours || department?.workingHours
+    
+    // إذا لم يكن موجوداً، بناء من القيم الفردية
+    if (!workingHours || !workingHours.startTime || !workingHours.endTime) {
+      const startTime = getValues('workingHours.startTime') || department?.workingHours?.startTime || '08:00'
+      const endTime = getValues('workingHours.endTime') || department?.workingHours?.endTime || '17:00'
+      workingHours = { startTime, endTime }
+    }
+    
+    await onSubmit({ ...values, workingHours, logo })
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPreviewUrl(undefined)
     onClose()
@@ -68,79 +90,92 @@ export default function EditDepartmentModal({ isOpen, onClose, department, onSub
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="w-full max-w-2xl bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-200 overflow-hidden animate-slide-in-right">
-        {/* Header with Gradient */}
-        <div className="relative px-8 py-6 bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 flex items-center justify-between overflow-hidden">
-          <div className="relative z-10 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" dir="rtl">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 bg-[#6366f1] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+              <Edit className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-2xl font-black text-white drop-shadow-lg">تعديل قسم</h3>
+            <h3 className="text-xl font-semibold text-white">تعديل قسم</h3>
           </div>
           <button 
             onClick={handleClose} 
-            className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white transition-all duration-300 hover:scale-110 hover:rotate-90 shadow-lg"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors duration-150"
           >
-            <span className="text-2xl font-bold">×</span>
+            <X className="w-5 h-5" />
           </button>
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full translate-y-20 -translate-x-20 blur-3xl"></div>
         </div>
 
-        <form onSubmit={handleSubmit(submit)} className="p-8 space-y-6 bg-gradient-to-br from-white to-purple-50/30">
+        <form onSubmit={handleSubmit(submit)} className="p-6 space-y-5 bg-white">
           {/* Name Field */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <span className="text-purple-600">📝</span>
-              <span>اسم القسم</span>
-            </label>
+            <label className="block text-sm font-medium text-[#0f172a] mb-2">اسم القسم</label>
             <input 
-              className={`w-full border-2 rounded-xl px-4 py-3 transition-all duration-300 bg-white/70 backdrop-blur-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 hover:border-gray-300 ${
-                errors.name ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+              className={`w-full border rounded-lg px-4 py-3 text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                errors.name ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
               }`}
               placeholder="أدخل اسم القسم..."
               {...register('name')} 
             />
             {errors.name && (
-              <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                <span>⚠️</span>
-                <span>{errors.name.message as string}</span>
-              </p>
+              <p className="text-[#ef4444] text-sm mt-1">{errors.name.message as string}</p>
             )}
           </div>
 
           {/* Description Field */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <span className="text-purple-600">📄</span>
-              <span>الوصف</span>
-            </label>
+            <label className="block text-sm font-medium text-[#0f172a] mb-2">الوصف</label>
             <textarea 
               rows={4} 
-              className={`w-full border-2 rounded-xl px-4 py-3 transition-all duration-300 bg-white/70 backdrop-blur-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200 hover:border-gray-300 resize-none ${
-                errors.description ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+              className={`w-full border rounded-lg px-4 py-3 text-[#0f172a] placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent resize-none transition-all duration-150 ease-out ${
+                errors.description ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
               }`}
               placeholder="أدخل وصف القسم..."
               {...register('description')} 
             />
             {errors.description && (
-              <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                <span>⚠️</span>
-                <span>{errors.description.message as string}</span>
-              </p>
+              <p className="text-[#ef4444] text-sm mt-1">{errors.description.message as string}</p>
             )}
+          </div>
+
+          {/* Working Hours Field */}
+          <div>
+            <label className="block text-sm font-medium text-[#0f172a] mb-2">ساعات العمل (اختياري)</label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-[#64748b] mb-1">وقت البدء</label>
+                <input 
+                  type="time" 
+                  className={`w-full border rounded-lg px-4 py-3 text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                    errors.workingHours?.startTime ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
+                  }`}
+                  {...register('workingHours.startTime')}
+                />
+                {errors.workingHours?.startTime && (
+                  <p className="text-[#ef4444] text-sm mt-1">{errors.workingHours.startTime.message as string}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs text-[#64748b] mb-1">وقت الانتهاء</label>
+                <input 
+                  type="time" 
+                  className={`w-full border rounded-lg px-4 py-3 text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out ${
+                    errors.workingHours?.endTime ? 'border-[#ef4444] bg-[#ef4444]/5' : 'border-[#e2e8f0] bg-white'
+                  }`}
+                  {...register('workingHours.endTime')}
+                />
+                {errors.workingHours?.endTime && (
+                  <p className="text-[#ef4444] text-sm mt-1">{errors.workingHours.endTime.message as string}</p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Logo Upload */}
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-              <span className="text-purple-600">🖼️</span>
-              <span>شعار القسم (اختياري)</span>
-            </label>
+            <label className="block text-sm font-medium text-[#0f172a] mb-2">شعار القسم (اختياري)</label>
             <div className="relative">
               <input
                 type="file"
@@ -175,34 +210,27 @@ export default function EditDepartmentModal({ isOpen, onClose, department, onSub
               />
               <label
                 htmlFor="logo-upload"
-                className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-xl px-4 py-6 cursor-pointer transition-all duration-300 hover:border-purple-400 hover:bg-purple-50/50 bg-white/50"
+                className="flex items-center justify-center gap-2 w-full border border-dashed border-[#e2e8f0] rounded-lg px-4 py-6 cursor-pointer transition-all duration-150 ease-out hover:border-[#6366f1] hover:bg-[#6366f1]/5 bg-[#f8fafc]"
               >
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-sm font-medium text-gray-600">اضغط لاختيار صورة</span>
+                <ImageIcon className="w-5 h-5 text-[#64748b]" />
+                <span className="text-sm font-medium text-[#64748b]">اضغط لاختيار صورة</span>
               </label>
             </div>
             {logoError && (
-              <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                <span>⚠️</span>
-                <span>{logoError}</span>
-              </p>
+              <p className="text-[#ef4444] text-sm mt-1">{logoError}</p>
             )}
             
             {/* Logo Preview */}
             <div className="mt-4">
               <div className="relative inline-block">
-                <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-white shadow-xl ring-4 ring-purple-100 bg-gradient-to-br from-purple-100 to-pink-100">
+                <div className="w-28 h-28 rounded-lg overflow-hidden border border-[#e2e8f0] bg-[#f8fafc]">
                   {previewUrl ? (
                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                   ) : department.logoPath ? (
                     <img src={resolveLogoUrl(department.logoPath)} alt={department.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                    <div className="w-full h-full flex items-center justify-center text-[#64748b]">
+                      <ImageIcon className="w-10 h-10" />
                     </div>
                   )}
                 </div>
@@ -214,9 +242,9 @@ export default function EditDepartmentModal({ isOpen, onClose, department, onSub
                       if (previewUrl) URL.revokeObjectURL(previewUrl)
                       setPreviewUrl(undefined)
                     }}
-                    className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 hover:scale-110 transition-all duration-300"
+                    className="absolute -top-2 -right-2 w-7 h-7 bg-[#ef4444] text-white rounded-full flex items-center justify-center shadow-sm hover:bg-[#dc2626] transition-colors duration-150"
                   >
-                    <span className="text-lg">×</span>
+                    <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -224,10 +252,9 @@ export default function EditDepartmentModal({ isOpen, onClose, department, onSub
           </div>
 
           {/* Active Status */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-white to-purple-50 border border-purple-200">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-[#f8fafc] border border-[#e2e8f0]">
             <label htmlFor="isActive" className="flex items-center gap-3 cursor-pointer">
-              <span className="text-lg">✅</span>
-              <span className="text-sm font-bold text-gray-900">تفعيل القسم</span>
+              <span className="text-sm font-medium text-[#0f172a]">تفعيل القسم</span>
             </label>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -236,37 +263,31 @@ export default function EditDepartmentModal({ isOpen, onClose, department, onSub
                 className="sr-only peer"
                 {...register('isActive')} 
               />
-              <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500"></div>
+              <div className="w-11 h-6 bg-[#e2e8f0] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#6366f1]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#e2e8f0] after:border after:rounded-full after:h-5 after:w-5 after:transition-all duration-150 ease-out peer-checked:bg-[#6366f1]"></div>
             </label>
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 flex items-center justify-end gap-3">
+          <div className="pt-2 flex items-center justify-end gap-3">
             <button 
               type="button" 
               onClick={handleClose} 
-              className="px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 hover:scale-105"
+              className="px-6 py-3 rounded-lg border border-[#e2e8f0] text-[#64748b] font-medium hover:bg-[#f8fafc] transition-colors duration-150 ease-out"
             >
               إلغاء
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-lg shadow-purple-500/30 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+              className="px-6 py-3 rounded-lg bg-[#6366f1] text-white font-medium shadow-sm hover:bg-[#4f46e5] transition-colors duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                  <Loader2 className="animate-spin h-5 w-5" />
                   <span>جاري الحفظ...</span>
                 </>
               ) : (
-                <>
-                  <span>💾</span>
-                  <span>حفظ التغييرات</span>
-                </>
+                <span>حفظ التغييرات</span>
               )}
             </button>
           </div>

@@ -128,9 +128,65 @@ export const updateGeneralSettingsSchema = generalSettingsSchema.partial()
 
 export const updateAppointmentSettingsSchema = appointmentSettingsSchema.partial()
 
-export const updatePaymentSettingsSchema = paymentSettingsSchema.partial()
+export const updatePaymentSettingsSchema = z
+  .object({
+    defaultCurrency: z
+      .enum(['SAR', 'USD', 'EUR', 'GBP', 'AED'], {
+        errorMap: () => ({ message: 'العملة غير مدعومة' }),
+      })
+      .optional(),
+    provider: z
+      .enum(['stripe', 'paypal', 'tap', 'manual'], {
+        errorMap: () => ({ message: 'مزود الدفع غير مدعوم' }),
+      })
+      .optional(),
+    providerConfig: z.record(z.string()).optional(),
+    processingFeePercent: z
+      .number()
+      .min(0, 'نسبة الرسوم لا يمكن أن تكون سالبة')
+      .max(100, 'نسبة الرسوم لا يمكن أن تتجاوز 100%')
+      .optional(),
+    enableRefunds: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    // فقط عندما يكون المزود معروفاً وليس manual نتحقق من مفاتيح الـ API
+    if (data.provider && data.provider !== 'manual') {
+      if (!data.providerConfig || Object.keys(data.providerConfig).length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'يجب إضافة مفاتيح API للمزود المختار',
+          path: ['providerConfig'],
+        })
+      }
+    }
+  })
 
-export const updateNotificationSettingsSchema = notificationSettingsSchema.partial()
+export const updateNotificationSettingsSchema = z
+  .object({
+    channels: z
+      .object({
+        email: z.boolean().optional(),
+        sms: z.boolean().optional(),
+        push: z.boolean().optional(),
+        inApp: z.boolean().optional(),
+      })
+      .optional(),
+    templates: z.array(notificationTemplateSchema).max(20, 'أقصى عدد من القوالب هو 20').optional(),
+    defaultSenderEmail: z.string().email('البريد الإلكتروني غير صحيح').optional(),
+    defaultSenderName: z.string().optional(),
+    smsProvider: z.enum(['twilio', 'vonage', 'other']).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.channels?.email) {
+      if (!data.defaultSenderEmail || data.defaultSenderEmail.trim().length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'البريد الافتراضي للمرسل مطلوب عند تفعيل قناة البريد',
+          path: ['defaultSenderEmail'],
+        })
+      }
+    }
+  })
 
 export const updateSettingsSchema = z.object({
   general: updateGeneralSettingsSchema.optional(),

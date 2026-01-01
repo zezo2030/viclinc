@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { NAVIGATION_LINKS, SITE_CONFIG, CONTACT_INFO } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { resolveMediaUrl } from '@/lib/utils/image';
 import { useAuth } from '@/lib/contexts/auth-context';
 import { AuthModal } from '@/components/auth';
 
@@ -29,6 +30,7 @@ export const Header: React.FC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const { user, logout, isAuthenticated } = useAuth();
+  const userAvatarUrl = isAuthenticated ? resolveMediaUrl(user?.avatar) : null;
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50 border-b border-gray-100">
@@ -37,10 +39,10 @@ export const Header: React.FC = () => {
           {/* الشعار */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <div className="w-24 h-24 relative">
+              <div className="w-16 h-16 relative">
                 <Image
-                  src="/medflow.png"
-                  alt="MedFlow Logo"
+                  src="/logotajal.png"
+                  alt="Tajal Logo"
                   fill
                   className="object-contain"
                 />
@@ -71,9 +73,19 @@ export const Header: React.FC = () => {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 space-x-reverse text-gray-700 hover:text-primary-600"
                 >
-                  <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
+                  {userAvatarUrl ? (
+                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary-100">
+                      <img
+                        src={userAvatarUrl}
+                        alt={getDisplayName(user)}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                   <span className="text-sm font-medium">{getDisplayName(user)}</span>
                 </button>
 
@@ -96,6 +108,13 @@ export const Header: React.FC = () => {
                       onClick={() => setShowUserMenu(false)}
                     >
                       الملف الشخصي
+                    </Link>
+                    <Link
+                      href="/test/video"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      اختبار مكالمة الفيديو
                     </Link>
                     <button
                       onClick={() => {
@@ -183,6 +202,13 @@ export const Header: React.FC = () => {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       الملف الشخصي
+                    </Link>
+                    <Link
+                      href="/test/video"
+                      className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-md"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      اختبار مكالمة الفيديو
                     </Link>
                     <button
                       onClick={() => {

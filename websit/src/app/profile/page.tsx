@@ -6,9 +6,12 @@ import { useAuth } from '@/lib/contexts/auth-context';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { resolveMediaUrl } from '@/lib/utils/image';
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const avatarUrl = resolveMediaUrl(user?.avatar);
+  const initials = user?.name?.charAt(0) || user?.email?.charAt(0) || 'U';
 
   return (
     <ProtectedRoute>
@@ -21,6 +24,18 @@ export default function ProfilePage() {
             <p className="text-gray-600">
               إدارة معلومات حسابك الشخصية وإعداداتك
             </p>
+          </div>
+
+          <div className="flex flex-col items-center text-center mb-12">
+            <div className="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={user?.name || 'الصورة الشخصية'} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-3xl font-semibold text-primary-700">{initials}</span>
+              )}
+            </div>
+            <h2 className="mt-4 text-2xl font-semibold text-gray-900">{user?.name || 'مستخدم'}</h2>
+            <p className="text-gray-500">{user?.email}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

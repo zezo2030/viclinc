@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Appointment, AppointmentDocument, AppointmentStatus, AppointmentType, PaymentStatus } from '../schemas/appointment.schema';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
+import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { CancelAppointmentDto } from '../dto/cancel-appointment.dto';
 import { RescheduleAppointmentDto } from '../dto/reschedule-appointment.dto';
 import { AppointmentQueryDto } from '../dto/appointment-query.dto';
@@ -13,6 +14,7 @@ import { AvailabilityService } from './availability.service';
 import { DoctorService, DoctorServiceDocument } from '../../doctors/schemas/doctor-service.schema';
 import { Service, ServiceDocument } from '../../services/schemas/service.schema';
 import { DoctorProfile, DoctorProfileDocument } from '../../doctors/schemas/doctor-profile.schema';
+import { User, UserDocument } from '../../users/schemas/user.schema';
 import { NotificationsService } from '../../notifications/notifications.service';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -46,6 +48,14 @@ export interface AppointmentResponse {
     id: string;
     name: string;
     licenseNumber?: string;
+    avatar?: string;
+  };
+  patient?: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    avatar?: string;
   };
   service?: {
     id: string;
@@ -75,13 +85,189 @@ export class AppointmentService {
     private readonly serviceModel: Model<ServiceDocument>,
     @InjectModel(DoctorProfile.name)
     private readonly doctorProfileModel: Model<DoctorProfileDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly redisService: RedisService,
     private readonly availabilityService: AvailabilityService,
     private readonly notificationsService: NotificationsService,
   ) {}
 
   /**
+   * إنشاء حجز مؤقت (Reservation) في Redis فقط
+   * يتم استخدامه للمواعيد التي تتطلب دفعاً قبل إنشاء الحجز الفعلي
+   */
+  async createReservation(
+    createDto: CreateReservationDto,
+    patientId: string,
+    idempotencyKey?: string,
+  ): Promise<{ reservationId: string; price: number; duration: number; endAt: Date }> {
+    const doctorId = new Types.ObjectId(createDto.doctorId);
+    const serviceId = new Types.ObjectId(createDto.serviceId);
+    const startAt = dayjs(createDto.startAt).utc().toDate();
+
+    // التحقق من وجود الطبيب والخدمة
+    await this.validateDoctorAndService(doctorId, serviceId);
+
+    // التحقق من توفر الفتحة
+    await this.validateAvailability(doctorId, serviceId, startAt);
+
+    // حساب المدة والسعر
+    const { duration, price } = await this.calculateDurationAndPrice(doctorId, serviceId);
+    const endAt = dayjs(startAt).add(duration, 'minute').toDate();
+
+    // قفل Redis لمنع التداخل
+    const lockKey = `appointment:lock:${doctorId}:${startAt.getTime()}`;
+    const lockAcquired = await this.redisService.acquireLock(lockKey, 30);
+
+    if (!lockAcquired) {
+      throw new ConflictException('This time slot is currently being booked by another user');
+    }
+
+    try {
+      // التحقق من عدم التداخل مرة أخرى
+      await this.checkForConflicts(doctorId, startAt, endAt);
+
+      // إنشاء reservation ID فريد
+      const reservationId = idempotencyKey || `reservation:${Date.now()}:${patientId}:${doctorId}`;
+      const reservationKey = `reservation:${reservationId}`;
+
+      console.log(`📦 Creating reservation with ID: ${reservationId}`);
+      console.log(`📦 Reservation Redis key: ${reservationKey}`);
+
+      // حفظ بيانات الحجز المؤقت في Redis لمدة 30 دقيقة
+      const reservationData = {
+        doctorId: doctorId.toString(),
+        patientId,
+        serviceId: serviceId.toString(),
+        startAt: startAt.toISOString(),
+        endAt: endAt.toISOString(),
+        type: createDto.type,
+        price,
+        duration,
+        metadata: createDto.metadata || {},
+        createdAt: new Date().toISOString(),
+      };
+
+      console.log(`📦 Reservation data: ${JSON.stringify(reservationData)}`);
+
+      // حفظ في Redis لمدة 30 دقيقة (1800 ثانية)
+      await this.redisService.setIdempotencyKey(
+        reservationKey,
+        JSON.stringify(reservationData),
+        1800 // 30 دقيقة
+      );
+
+      // التحقق من أن الحفظ تم بنجاح
+      const savedData = await this.redisService.getIdempotencyKey(reservationKey);
+      console.log(`📦 Verification - Saved reservation data: ${savedData ? 'SUCCESS' : 'FAILED'}`);
+      if (savedData) {
+        console.log(`📦 Verification - Data length: ${savedData.length}`);
+      }
+
+      // حفظ Idempotency Key إذا كان موجوداً
+      if (idempotencyKey) {
+        await this.redisService.setIdempotencyKey(
+          `idempotency:${idempotencyKey}`,
+          reservationId,
+          1800 // 30 دقيقة
+        );
+      }
+
+      return {
+        reservationId,
+        price,
+        duration,
+        endAt,
+      };
+    } finally {
+      // تحرير القفل
+      await this.redisService.releaseLock(lockKey);
+    }
+  }
+
+  /**
+   * إنشاء حجز فعلي من reservation بعد إتمام الدفع
+   */
+  async createAppointmentFromReservation(
+    reservationId: string,
+    paymentId: string,
+  ): Promise<AppointmentResponse> {
+    // جلب بيانات الحجز المؤقت من Redis
+    const reservationDataStr = await this.redisService.getIdempotencyKey(`reservation:${reservationId}`);
+    
+    if (!reservationDataStr) {
+      throw new NotFoundException('Reservation not found or expired');
+    }
+
+    const reservationData = JSON.parse(reservationDataStr);
+    const doctorId = new Types.ObjectId(reservationData.doctorId);
+    const serviceId = new Types.ObjectId(reservationData.serviceId);
+    const patientId = new Types.ObjectId(reservationData.patientId);
+    const startAt = new Date(reservationData.startAt);
+    const endAt = new Date(reservationData.endAt);
+
+    // التحقق مرة أخرى من عدم التداخل
+    await this.checkForConflicts(doctorId, startAt, endAt);
+
+    // إنشاء الحجز الفعلي
+    const appointment = new this.appointmentModel({
+      doctorId,
+      patientId,
+      serviceId,
+      startAt,
+      endAt,
+      status: AppointmentStatus.PENDING_CONFIRM,
+      type: reservationData.type,
+      price: reservationData.price,
+      duration: reservationData.duration,
+      metadata: reservationData.metadata,
+      requiresPayment: true,
+      paymentStatus: PaymentStatus.COMPLETED,
+      paymentId: new Types.ObjectId(paymentId),
+    });
+
+    const savedAppointment = await appointment.save();
+
+    // حذف reservation من Redis بعد إنشاء الحجز
+    await this.redisService.deleteIdempotencyKey(`reservation:${reservationId}`);
+
+    // إرسال إشعار للطبيب بوجود حجز جديد
+    try {
+      await this.appointmentModel.populate(savedAppointment, [
+        { path: 'patientId', select: 'name' },
+        { path: 'serviceId', select: 'name' },
+      ]);
+
+      const patientName = (savedAppointment.patientId as any)?.name || 'مريض';
+      const serviceName = (savedAppointment.serviceId as any)?.name || '';
+      const appointmentDate = dayjs(savedAppointment.startAt).format('YYYY-MM-DD');
+      const appointmentTime = dayjs(savedAppointment.startAt).format('HH:mm');
+
+      const title = 'حجز موعد جديد';
+      const body = `${patientName} حجز موعد${serviceName ? ` لخدمة ${serviceName}` : ''} في ${appointmentDate} الساعة ${appointmentTime}`;
+
+      await this.notificationsService.sendNotificationToUser(
+        savedAppointment.doctorId.toString(),
+        title,
+        body,
+        {
+          type: 'new_appointment',
+          appointmentId: String(
+            (savedAppointment as AppointmentDocument)._id || (savedAppointment as any).id,
+          ),
+        },
+      );
+    } catch (error) {
+      console.error('Failed to send notification for new appointment:', error);
+    }
+
+    return this.mapToResponse(savedAppointment);
+  }
+
+  /**
    * إنشاء حجز جديد
+   * إذا كان يتطلب دفعاً، يتم إنشاء reservation فقط
+   * إذا لم يتطلب دفعاً، يتم إنشاء الحجز مباشرة
    */
   async createAppointment(
     createDto: CreateAppointmentDto,
@@ -92,9 +278,21 @@ export class AppointmentService {
     if (idempotencyKey) {
       const existingKey = await this.redisService.getIdempotencyKey(`idempotency:${idempotencyKey}`);
       if (existingKey) {
-        const existingAppointment = await this.appointmentModel.findById(existingKey);
-        if (existingAppointment) {
-          return this.mapToResponse(existingAppointment);
+        // التحقق إذا كان reservation
+        if (existingKey.startsWith('reservation:')) {
+          const reservationId = existingKey.replace('reservation:', '');
+          const reservationDataStr = await this.redisService.getIdempotencyKey(`reservation:${reservationId}`);
+          if (reservationDataStr) {
+            const reservationData = JSON.parse(reservationDataStr);
+            // إرجاع بيانات reservation (سيتم استخدامها لإنشاء payment intent)
+            throw new BadRequestException('RESERVATION_EXISTS'); // سيتم التعامل معها في Controller
+          }
+        } else {
+          // التحقق إذا كان appointment موجود
+          const existingAppointment = await this.appointmentModel.findById(existingKey);
+          if (existingAppointment) {
+            return this.mapToResponse(existingAppointment);
+          }
         }
       }
     }
@@ -113,9 +311,42 @@ export class AppointmentService {
     const { duration, price } = await this.calculateDurationAndPrice(doctorId, serviceId);
 
     const endAt = dayjs(startAt).add(duration, 'minute').toDate();
-    // إزالة holdExpiresAt لمنع الحذف التلقائي من MongoDB TTL index
-    // const holdExpiresAt = dayjs().add(this.HOLD_TTL_MINUTES, 'minute').toDate();
 
+    // تحديد ما إذا كان الموعد يتطلب دفعاً
+    const requiresPayment = price > 0;
+
+    // إذا كان يتطلب دفعاً، إنشاء reservation فقط
+    if (requiresPayment) {
+      const reservationDto: CreateReservationDto = {
+        doctorId: createDto.doctorId,
+        serviceId: createDto.serviceId,
+        startAt: createDto.startAt,
+        type: createDto.type,
+        metadata: createDto.metadata,
+      };
+      
+      const reservation = await this.createReservation(reservationDto, patientId, idempotencyKey);
+      
+      // إرجاع response خاص يشير إلى أن الحجز مؤقت ويحتاج دفع
+      return {
+        id: reservation.reservationId,
+        doctorId: createDto.doctorId,
+        patientId,
+        serviceId: createDto.serviceId,
+        startAt: createDto.startAt,
+        endAt: reservation.endAt.toISOString(),
+        status: AppointmentStatus.PENDING_CONFIRM,
+        type: createDto.type,
+        price: reservation.price,
+        duration: reservation.duration,
+        requiresPayment: true,
+        paymentStatus: PaymentStatus.PENDING,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as AppointmentResponse;
+    }
+
+    // إذا لم يتطلب دفعاً، إنشاء الحجز مباشرة (كما كان من قبل)
     // قفل Redis لمنع التداخل
     const lockKey = `appointment:lock:${doctorId}:${startAt.getTime()}`;
     const lockAcquired = await this.redisService.acquireLock(lockKey, 30);
@@ -128,9 +359,6 @@ export class AppointmentService {
       // التحقق من عدم التداخل مرة أخرى
       await this.checkForConflicts(doctorId, startAt, endAt);
 
-      // تحديد ما إذا كان الموعد يتطلب دفعاً
-      const requiresPayment = createDto.type === AppointmentType.VIDEO || createDto.type === AppointmentType.CHAT;
-
       // إنشاء الحجز
       const appointment = new this.appointmentModel({
         doctorId,
@@ -140,13 +368,12 @@ export class AppointmentService {
         endAt,
         status: AppointmentStatus.PENDING_CONFIRM,
         type: createDto.type,
-        // holdExpiresAt: undefined, // تم إزالة holdExpiresAt لمنع الحذف التلقائي
         idempotencyKey,
         price,
         duration,
         metadata: createDto.metadata,
-        requiresPayment,
-        paymentStatus: requiresPayment ? PaymentStatus.PENDING : PaymentStatus.NONE,
+        requiresPayment: false,
+        paymentStatus: PaymentStatus.NONE,
       });
 
       const savedAppointment = await appointment.save();
@@ -399,7 +626,14 @@ export class AppointmentService {
       const [appointments, total] = await Promise.all([
         this.appointmentModel
           .find(filter)
-          .populate('doctorId', 'name licenseNumber')
+          .populate({
+            path: 'doctorId',
+            select: 'name licenseNumber userId',
+            populate: {
+              path: 'userId',
+              select: 'avatar',
+            },
+          })
           .populate('serviceId', 'name')
           .sort({ startAt: -1 })
           .skip(skip)
@@ -451,7 +685,7 @@ export class AppointmentService {
     const [appointments, total] = await Promise.all([
       this.appointmentModel
         .find(filter)
-        .populate('patientId', 'email phone')
+        .populate('patientId', 'name email phone avatar')
         .populate('serviceId', 'name')
         .sort({ startAt: -1 })
         .skip(skip)
@@ -467,6 +701,65 @@ export class AppointmentService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  /**
+   * الحصول على موعد واحد بالمعرف
+   */
+  async getAppointmentById(
+    appointmentId: string,
+    userId: string,
+    userRole: string,
+  ): Promise<AppointmentResponse> {
+    const appointment = await this.appointmentModel
+      .findById(appointmentId)
+      .populate({
+        path: 'doctorId',
+        select: 'name licenseNumber userId',
+        populate: {
+          path: 'userId',
+          select: 'avatar',
+        },
+      })
+      .populate('serviceId', 'name')
+      .populate('patientId', 'name email phone avatar')
+      .exec();
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    // التحقق من الصلاحية: المريض أو الطبيب أو الأدمن فقط يمكنهم الوصول
+    // patientId يشير مباشرة إلى User._id
+    const patientId = (appointment.patientId as any)._id?.toString() || appointment.patientId.toString();
+    const isPatient = patientId === userId;
+    
+    // doctorId يشير إلى DoctorProfile._id، لذا نحتاج للتحقق من DoctorProfile.userId
+    let isDoctor = false;
+    if (!isPatient) {
+      // إذا كان doctorId معبأ (populated)، يمكن أن يكون object
+      const doctorIdValue = appointment.doctorId;
+      const doctorId = (doctorIdValue as any)._id?.toString() || doctorIdValue.toString();
+
+      if (doctorIdValue && typeof doctorIdValue === 'object' && (doctorIdValue as any).userId) {
+        // إذا كان معبأ، استخدم userId مباشرة
+        isDoctor = (doctorIdValue as any).userId.toString() === userId;
+      } else {
+        // إذا لم يكن معبأ أو لا يحتوي على userId، نحتاج لجلب DoctorProfile
+        const doctorProfile = await this.doctorProfileModel.findById(doctorId);
+        if (doctorProfile && doctorProfile.userId.toString() === userId) {
+          isDoctor = true;
+        }
+      }
+    }
+    
+    const isAdmin = userRole === 'ADMIN';
+
+    if (!isPatient && !isDoctor && !isAdmin) {
+      throw new ForbiddenException('You do not have access to this appointment');
+    }
+
+    return this.mapToResponse(appointment);
   }
 
   /**
@@ -839,11 +1132,37 @@ export class AppointmentService {
 
     // Check if doctorId is populated (has name property)
     const doctorId = appointment.doctorId;
+    let doctorAvatar: string | undefined;
+    
+    // الحصول على avatar من User إذا كان موجوداً
+    if (doctorId && typeof doctorId === 'object' && doctorId.userId) {
+      const userId = doctorId.userId;
+      if (userId && typeof userId === 'object' && userId.avatar) {
+        doctorAvatar = userId.avatar;
+      } else if (doctorId.avatar) {
+        // إذا لم يكن userId populated، جرب avatar من DoctorProfile
+        doctorAvatar = doctorId.avatar;
+      }
+    }
+    
     const doctor = doctorId && typeof doctorId === 'object' && doctorId.name
       ? {
           id: getObjectIdString(doctorId),
           name: doctorId.name || '',
           licenseNumber: doctorId.licenseNumber,
+          avatar: doctorAvatar,
+        }
+      : undefined;
+
+    // Check if patientId is populated (has name property)
+    const patientId = appointment.patientId;
+    const patient = patientId && typeof patientId === 'object' && (patientId.name || patientId.email)
+      ? {
+          id: getObjectIdString(patientId),
+          name: patientId.name || '',
+          email: patientId.email,
+          phone: patientId.phone,
+          avatar: patientId.avatar,
         }
       : undefined;
 
@@ -877,6 +1196,7 @@ export class AppointmentService {
       createdAt: (appointment as any).createdAt.toISOString(),
       updatedAt: (appointment as any).updatedAt.toISOString(),
       doctor,
+      patient,
       service,
     };
   }

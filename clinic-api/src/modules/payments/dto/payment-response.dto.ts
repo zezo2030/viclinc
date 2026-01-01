@@ -37,6 +37,9 @@ export class PaymentResponseDto {
 
   @ApiProperty({ description: 'Payment last update timestamp', example: '2024-01-15T10:30:00.000Z' })
   updatedAt: Date;
+
+  @ApiProperty({ description: 'Payment metadata', example: { paylinkInvoiceUrl: 'https://paylink.sa/pay/123' }, required: false })
+  metadata?: Record<string, any>;
 }
 
 export class PaymentIntentResponseDto {

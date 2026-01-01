@@ -51,10 +51,27 @@ class ApiClient {
     const token = getAuthToken();
 
     // إعداد headers مع إضافة JWT token إذا كان موجوداً
+    const providedHeaders =
+      options.headers instanceof Headers
+        ? Object.fromEntries(options.headers.entries())
+        : ((options.headers as Record<string, string>) || {});
+
+    const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string>),
+      ...providedHeaders,
     };
+
+    const contentTypeKey = Object.keys(headers).find((key) => key.toLowerCase() === 'content-type');
+
+    if (isFormDataBody) {
+      // اترك المتصفح يحدد Content-Type عندما نرسل FormData
+      if (contentTypeKey) {
+        delete headers[contentTypeKey];
+      }
+    } else if (!contentTypeKey) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     // إضافة Authorization header إذا كان التوكن موجوداً
     if (token) {
@@ -62,9 +79,9 @@ class ApiClient {
     }
 
     const config: RequestInit = {
-      headers,
       credentials: 'include', // مهم لإرسال واستقبال cookies
       ...options,
+      headers,
     };
 
     try {
@@ -99,24 +116,31 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  async post<T>(endpoint: string, data: any): Promise<T> {
+  async post<T>(endpoint: string, data?: any, options?: { headers?: Record<string, string> }): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    const body = isFormData ? data : data !== undefined ? JSON.stringify(data) : undefined;
     return this.request<T>(endpoint, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body,
+      headers: options?.headers,
     });
   }
 
-  async put<T>(endpoint: string, data: any): Promise<T> {
+  async put<T>(endpoint: string, data?: any): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    const body = isFormData ? data : data !== undefined ? JSON.stringify(data) : undefined;
     return this.request<T>(endpoint, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body,
     });
   }
 
-  async patch<T>(endpoint: string, data: any): Promise<T> {
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    const body = isFormData ? data : data !== undefined ? JSON.stringify(data) : undefined;
     return this.request<T>(endpoint, {
       method: 'PATCH',
-      body: JSON.stringify(data),
+      body,
     });
   }
 

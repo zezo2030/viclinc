@@ -74,7 +74,9 @@ export class VideoSessionService {
     // التحقق من الدور المطلوب
     const expectedRole = isDoctor ? 'doctor' : 'patient';
     if (requestDto.role !== expectedRole) {
-      throw new BadRequestException(`Invalid role. Expected: ${expectedRole}`);
+      throw new BadRequestException(
+        `Invalid role. You are a ${isDoctor ? 'doctor' : 'patient'}, but requested role is ${requestDto.role}. Expected: ${expectedRole}`
+      );
     }
 
     // فحص غرفة الانتظار (T-10m)
@@ -97,8 +99,24 @@ export class VideoSessionService {
     }
 
     // التحقق من انتهاء الموعد
-    if (now.isAfter(appointmentStart.add(appointment.duration, 'minute'))) {
-      throw new BadRequestException('Appointment time has ended');
+    // يمكن تعطيل هذا التحقق في وضع الاختبار/التطوير
+    const disableEndTimeCheck = isTestMode ||
+                               process.env.DISABLE_VIDEO_TIME_CHECK === 'true' ||
+                               process.env.NODE_ENV === 'development' ||
+                               process.env.NODE_ENV === 'test';
+    
+    if (!disableEndTimeCheck) {
+      const appointmentEnd = appointmentStart.add(appointment.duration, 'minute');
+      // السماح ببدء الجلسة حتى 30 دقيقة بعد انتهاء الموعد (للمرونة)
+      const gracePeriodMinutes = parseInt(process.env.VIDEO_SESSION_GRACE_PERIOD_MINUTES || '30', 10);
+      const allowedEndTime = appointmentEnd.add(gracePeriodMinutes, 'minute');
+      
+      if (now.isAfter(allowedEndTime)) {
+        const minutesPastEnd = now.diff(appointmentEnd, 'minute');
+        throw new BadRequestException(
+          `Appointment time has ended ${minutesPastEnd} minute(s) ago. The appointment ended at ${appointmentEnd.format('YYYY-MM-DD HH:mm')}. Please contact support if you need to access this session.`
+        );
+      }
     }
 
     // البحث عن جلسة موجودة أو إنشاء جديدة

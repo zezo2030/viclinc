@@ -21,6 +21,17 @@ export class Department {
   @ApiProperty({ description: 'Whether the department is active', example: true })
   @Prop({ default: true })
   isActive: boolean;
+
+  @ApiProperty({ 
+    description: 'Department working hours', 
+    example: { startTime: '08:00', endTime: '17:00' }, 
+    required: false 
+  })
+  @Prop({ type: Object, required: false })
+  workingHours?: {
+    startTime: string;
+    endTime: string;
+  };
 }
 
 export const DepartmentSchema = SchemaFactory.createForClass(Department);

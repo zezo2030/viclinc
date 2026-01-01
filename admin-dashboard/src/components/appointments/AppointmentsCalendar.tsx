@@ -76,10 +76,10 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
     const colors: Record<string, string> = {
       PENDING_CONFIRM: 'bg-gradient-to-r from-amber-400 to-orange-500 border-amber-300',
       CONFIRMED: 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-300',
-      CANCELLED: 'bg-gradient-to-r from-red-500 to-rose-600 border-red-300',
-      COMPLETED: 'bg-gradient-to-r from-blue-500 to-cyan-500 border-blue-300',
+      CANCELLED: 'bg-[#D62828] border-[#D62828]',
+      COMPLETED: 'bg-[#213F6A] border-[#213F6A]',
       NO_SHOW: 'bg-gradient-to-r from-gray-500 to-gray-600 border-gray-300',
-      REJECTED: 'bg-gradient-to-r from-red-600 to-red-700 border-red-400',
+      REJECTED: 'bg-[#D62828] border-[#D62828]',
     }
     return colors[status] || 'bg-gradient-to-r from-gray-400 to-gray-500 border-gray-300'
   }
@@ -103,14 +103,14 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
 
     return (
       <div className="space-y-4">
-        <div className={`p-6 rounded-2xl border-2 ${isToday ? 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300' : 'bg-white border-gray-200'}`}>
+        <div className={`p-6 rounded-2xl border-2 ${isToday ? 'bg-[#E8E8E8] border-[#D62828]' : 'bg-white border-gray-200'}`}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-[#213F6A]">
                 {currentDate.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </h3>
               {isToday && (
-                <span className="inline-flex items-center gap-1 mt-1 px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">
+                <span className="inline-flex items-center gap-1 mt-1 px-3 py-1 bg-[#D62828] text-white text-xs font-semibold rounded-full">
                   اليوم
                 </span>
               )}
@@ -180,7 +180,7 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
                 key={index}
                 className={`rounded-xl border-2 p-3 min-h-[200px] ${
                   isToday
-                    ? 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-400 shadow-lg'
+                    ? 'bg-[#E8E8E8] border-[#D62828] shadow-lg'
                     : isWeekend
                     ? 'bg-gray-50 border-gray-200'
                     : 'bg-white border-gray-200'
@@ -192,10 +192,10 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
                       {day.toLocaleDateString('ar-SA', { weekday: 'short' })}
                     </span>
                     {isToday && (
-                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      <span className="w-2 h-2 bg-[#D62828] rounded-full"></span>
                     )}
                   </div>
-                  <span className={`text-lg font-bold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                  <span className={`text-lg font-bold ${isToday ? 'text-[#D62828]' : 'text-[#213F6A]'}`}>
                     {day.getDate()}
                   </span>
                 </div>
@@ -300,7 +300,7 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
                   !isCurrentMonth
                     ? 'bg-gray-50 border-gray-100 opacity-50'
                     : isToday
-                    ? 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-400 shadow-lg'
+                    ? 'bg-[#E8E8E8] border-[#D62828] shadow-lg'
                     : isWeekend
                     ? 'bg-gray-50 border-gray-200'
                     : 'bg-white border-gray-200'
@@ -309,13 +309,13 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
                 <div className="mb-1">
                   <span
                     className={`text-sm font-bold ${
-                      isToday ? 'text-blue-600' : !isCurrentMonth ? 'text-gray-400' : 'text-gray-900'
+                      isToday ? 'text-[#D62828]' : !isCurrentMonth ? 'text-gray-400' : 'text-[#213F6A]'
                     }`}
                   >
                     {day.getDate()}
                   </span>
                   {isToday && (
-                    <span className="mr-1 w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
+                    <span className="mr-1 w-1.5 h-1.5 bg-[#D62828] rounded-full inline-block"></span>
                   )}
                 </div>
                 <div className="space-y-1 max-h-[80px] overflow-y-auto">
@@ -360,9 +360,9 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
   }
 
   return (
-    <div className="mb-8 rounded-2xl bg-gradient-to-br from-white to-gray-50 border border-gray-200 overflow-hidden shadow-lg">
+    <div className="mb-8 rounded-2xl bg-white border border-gray-200 overflow-hidden shadow-lg">
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-pink-50 to-rose-50 border-b border-gray-200">
+      <div className="px-6 py-4 bg-[#E8E8E8] border-b border-gray-200">
         <div className="flex items-center justify-between flex-wrap gap-4">
           {/* Navigation */}
           <div className="flex items-center gap-3">
@@ -374,7 +374,7 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
             </button>
             <button
               onClick={goToToday}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-semibold hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/30"
+              className="px-4 py-2 rounded-xl bg-[#D62828] text-white text-sm font-semibold hover:bg-[#b91c1c] hover:scale-105 transition-all duration-300 shadow-lg shadow-[#D62828]/30"
             >
               اليوم
             </button>
@@ -385,7 +385,7 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
               <ChevronRight className="w-5 h-5 text-gray-700" />
             </button>
             <div className="mr-4">
-              <h2 className="text-xl font-bold text-gray-900">{getViewTitle()}</h2>
+              <h2 className="text-xl font-bold text-[#213F6A]">{getViewTitle()}</h2>
             </div>
           </div>
 
@@ -395,8 +395,8 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
               onClick={() => onViewChange?.('day')}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 view === 'day'
-                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/30'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/30'
+                  : 'text-[#213F6A] hover:bg-[#E8E8E8]'
               }`}
             >
               يوم
@@ -405,8 +405,8 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
               onClick={() => onViewChange?.('week')}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 view === 'week'
-                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/30'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/30'
+                  : 'text-[#213F6A] hover:bg-[#E8E8E8]'
               }`}
             >
               أسبوع
@@ -415,8 +415,8 @@ export default function AppointmentsCalendar({ view, onViewChange, appointments 
               onClick={() => onViewChange?.('month')}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 view === 'month'
-                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/30'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/30'
+                  : 'text-[#213F6A] hover:bg-[#E8E8E8]'
               }`}
             >
               شهر

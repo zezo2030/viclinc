@@ -34,20 +34,20 @@ export interface DoctorListItem {
 @Injectable()
 export class PatientsService {
   constructor(
-    @InjectModel(DoctorProfile.name) 
+    @InjectModel(DoctorProfile.name)
     private readonly doctorProfileModel: Model<DoctorProfileDocument>,
-    @InjectModel(DoctorService.name) 
+    @InjectModel(DoctorService.name)
     private readonly doctorServiceModel: Model<DoctorServiceDocument>,
-    @InjectModel(Department.name) 
+    @InjectModel(Department.name)
     private readonly departmentModel: Model<DepartmentDocument>,
-    @InjectModel(Service.name) 
+    @InjectModel(Service.name)
     private readonly serviceModel: Model<ServiceDocument>,
     private readonly availabilityService: AvailabilityService,
-  ) {}
+  ) { }
 
   async getDoctors(filters: DoctorListFilters = {}): Promise<DoctorListItem[]> {
     const query: any = {};
-    
+
     if (filters.status) {
       query.status = filters.status;
     } else {
@@ -61,6 +61,7 @@ export class PatientsService {
 
     const doctors = await this.doctorProfileModel
       .find(query)
+      .populate('userId', 'avatar')
       .populate('departmentId', 'name')
       .lean()
       .sort({ name: 1 });
@@ -69,13 +70,13 @@ export class PatientsService {
     let filteredDoctors = doctors;
     if (filters.serviceId) {
       const doctorIds = await this.doctorServiceModel
-        .find({ 
+        .find({
           serviceId: new Types.ObjectId(filters.serviceId),
-          isActive: true 
+          isActive: true
         })
         .distinct('doctorId');
-      
-      filteredDoctors = doctors.filter(doctor => 
+
+      filteredDoctors = doctors.filter(doctor =>
         doctorIds.some(id => id.toString() === doctor._id.toString())
       );
     }
@@ -104,7 +105,7 @@ export class PatientsService {
           departmentName: doctor.departmentId?.name || '',
           status: doctor.status,
           bio: doctor.bio,
-          avatar: doctor.avatar || null,
+          avatar: doctor.avatar || doctor.userId?.avatar || null,
           services,
         };
       })
@@ -116,6 +117,7 @@ export class PatientsService {
   async getDoctorById(doctorId: string): Promise<DoctorListItem> {
     const doctor: any = await this.doctorProfileModel
       .findById(doctorId)
+      .populate('userId', 'avatar')
       .populate('departmentId', 'name')
       .lean();
 
@@ -144,7 +146,7 @@ export class PatientsService {
       departmentName: doctor.departmentId?.name || '',
       status: doctor.status,
       bio: doctor.bio,
-      avatar: doctor.avatar || null,
+      avatar: doctor.avatar || doctor.userId?.avatar || null,
       services,
     };
   }

@@ -19,7 +19,7 @@ export class DoctorsService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Department.name) private readonly departmentModel: Model<DepartmentDocument>,
     @InjectModel(Service.name) private readonly serviceModel: Model<ServiceDocument>,
-  ) {}
+  ) { }
 
   // إنشاء طبيب جديد (للأدمن)
   async createDoctor(createDoctorDto: CreateDoctorDto) {
@@ -70,7 +70,7 @@ export class DoctorsService {
 
     return this.doctorProfileModel
       .find(filter)
-      .populate('userId', 'email phone')
+      .populate('userId', 'email phone avatar')
       .populate('departmentId', 'name')
       .sort({ createdAt: -1 });
   }
@@ -79,13 +79,13 @@ export class DoctorsService {
   async findDoctorById(id: string) {
     const doctor = await this.doctorProfileModel
       .findById(id)
-      .populate('userId', 'email phone')
+      .populate('userId', 'email phone avatar')
       .populate('departmentId', 'name');
-    
+
     if (!doctor) {
       throw new NotFoundException('Doctor not found');
     }
-    
+
     return doctor;
   }
 
@@ -105,11 +105,11 @@ export class DoctorsService {
     const doctor = await this.doctorProfileModel
       .findOne({ userId: new Types.ObjectId(userId) })
       .populate('departmentId', 'name');
-    
+
     if (!doctor) {
       throw new NotFoundException('Doctor profile not found');
     }
-    
+
     return doctor;
   }
 
@@ -122,7 +122,7 @@ export class DoctorsService {
 
     // التحقق من عدم تكرار رقم الترخيص إذا تم تحديثه
     if (updateProfileDto.licenseNumber && updateProfileDto.licenseNumber !== doctor.licenseNumber) {
-      const existingLicense = await this.doctorProfileModel.findOne({ 
+      const existingLicense = await this.doctorProfileModel.findOne({
         licenseNumber: updateProfileDto.licenseNumber,
         _id: { $ne: doctor._id }
       });
@@ -144,7 +144,7 @@ export class DoctorsService {
 
     // التحقق من عدم تكرار رقم الترخيص إذا تم تحديثه
     if (updateProfileDto.licenseNumber && updateProfileDto.licenseNumber !== doctor.licenseNumber) {
-      const existingLicense = await this.doctorProfileModel.findOne({ 
+      const existingLicense = await this.doctorProfileModel.findOne({
         licenseNumber: updateProfileDto.licenseNumber,
         _id: { $ne: doctor._id }
       });
@@ -170,11 +170,11 @@ export class DoctorsService {
     if (updateProfileDto.bio !== undefined) doctor.bio = updateProfileDto.bio;
 
     await doctor.save();
-    
+
     // إرجاع البيانات مع populate
     return this.doctorProfileModel
       .findById(id)
-      .populate('userId', 'email phone')
+      .populate('userId', 'email phone avatar')
       .populate('departmentId', 'name');
   }
 
@@ -266,6 +266,7 @@ export class DoctorsService {
 
     const doctors = await this.doctorProfileModel
       .find(query)
+      .populate('userId', 'avatar')
       .populate('departmentId', 'name')
       .lean()
       .sort({ name: 1 });
@@ -274,13 +275,13 @@ export class DoctorsService {
     let filteredDoctors = doctors;
     if (filters.serviceId) {
       const doctorIds = await this.doctorServiceModel
-        .find({ 
+        .find({
           serviceId: new Types.ObjectId(filters.serviceId),
-          isActive: true 
+          isActive: true
         })
         .distinct('doctorId');
-      
-      filteredDoctors = doctors.filter((doctor: any) => 
+
+      filteredDoctors = doctors.filter((doctor: any) =>
         doctorIds.some(id => id.toString() === doctor._id.toString())
       );
     }
@@ -309,7 +310,7 @@ export class DoctorsService {
           departmentName: doctor.departmentId?.name || '',
           status: doctor.status,
           bio: doctor.bio,
-          avatar: doctor.avatar || null,
+          avatar: doctor.avatar || doctor.userId?.avatar || null,
           services,
         };
       })
@@ -322,6 +323,7 @@ export class DoctorsService {
   async findApprovedDoctorById(id: string) {
     const doctor: any = await this.doctorProfileModel
       .findOne({ _id: id, status: DoctorStatus.APPROVED })
+      .populate('userId', 'avatar')
       .populate('departmentId', 'name')
       .lean();
 
@@ -350,7 +352,7 @@ export class DoctorsService {
       departmentName: doctor.departmentId?.name || '',
       status: doctor.status,
       bio: doctor.bio,
-      avatar: doctor.avatar || null,
+      avatar: doctor.avatar || doctor.userId?.avatar || null,
       services,
     };
   }

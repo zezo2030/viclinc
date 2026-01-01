@@ -24,6 +24,27 @@ services:
         reservations:
           memory: 512M
 
+  # Redis for reservations and caching
+  redis:
+    image: redis:7-alpine
+    container_name: virclinc-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - clinic-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
   # Clinic API (NestJS)
   api:
     build:
@@ -49,12 +70,25 @@ services:
       # Use either a mounted service account file or a base64-encoded key
       FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH:-./config/firebase-service-account.json}
       # FIREBASE_SERVICE_ACCOUNT_KEY: ${FIREBASE_SERVICE_ACCOUNT_KEY}
+      CALLBACK_BASE_URL: ${CALLBACK_BASE_URL:-${NEXT_PUBLIC_API_URL}}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      FRONTEND_URL: ${NEXT_PUBLIC_SITE_URL}
+      REDIS_URL: redis://redis:6379
+      # Email Configuration
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL:-admin@clinic.com}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-password123}
     volumes:
       - api_uploads:/app/uploads
       # Mount Firebase service account config directory (contains firebase-service-account.json)
       - ./clinic-api/config:/app/config:ro
     depends_on:
       mongo:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - clinic-network
@@ -133,31 +167,6 @@ services:
         reservations:
           memory: 256M
 
-  # WhyUs landing page (React + Vite)
-  whyus:
-    build:
-      context: ./whyUs
-      dockerfile: Dockerfile
-      args:
-        VITE_BASE: ${WHYUS_BASE:-/why-us/}
-    container_name: virclinc-whyus
-    restart: unless-stopped
-    environment:
-      VITE_BASE: ${WHYUS_BASE:-/why-us/}
-    networks:
-      - clinic-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 256M
 
   # Nginx Reverse Proxy
   nginx:
@@ -178,7 +187,7 @@ services:
       - api
       - website
       - admin
-      - whyus
+
     networks:
       - clinic-network
     healthcheck:
@@ -197,6 +206,8 @@ volumes:
   mongo_data:
     driver: local
   api_uploads:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

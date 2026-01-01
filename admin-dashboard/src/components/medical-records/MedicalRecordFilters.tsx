@@ -35,7 +35,12 @@ export default function MedicalRecordFilters({
   const hasActiveFilters = filters.patientId || filters.doctorId || filters.dateFrom || filters.dateTo
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-lg">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="h-1 w-1 rounded-full bg-[#D62828]"></div>
+        <h3 className="text-lg font-bold text-[#213F6A]">البحث والتصفية</h3>
+        <div className="h-0.5 flex-1 bg-[#D62828] opacity-20"></div>
+      </div>
       <div className="flex flex-col gap-4">
         {/* First Row: Dropdowns */}
         <div className="flex flex-col md:flex-row gap-4">
@@ -44,7 +49,7 @@ export default function MedicalRecordFilters({
             <select
               value={filters.patientId || 'ALL'}
               onChange={(e) => handlePatientChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white hover:border-gray-300 font-medium"
             >
               <option value="ALL">جميع المرضى</option>
               {patients.map((patient) => (
@@ -60,7 +65,7 @@ export default function MedicalRecordFilters({
             <select
               value={filters.doctorId || 'ALL'}
               onChange={(e) => handleDoctorChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white hover:border-gray-300 font-medium"
             >
               <option value="ALL">جميع الأطباء</option>
               {doctors.map((doctor) => (
@@ -75,7 +80,7 @@ export default function MedicalRecordFilters({
           {hasActiveFilters && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-5 py-3 bg-[#213F6A] text-white rounded-xl font-semibold hover:bg-[#1e3a8a] hover:scale-105 transition-all duration-300 shadow-lg shadow-[#213F6A]/30"
             >
               <X className="w-4 h-4" />
               <span>إعادة التعيين</span>
@@ -86,6 +91,7 @@ export default function MedicalRecordFilters({
         {/* Second Row: Date Range */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full md:w-48">
+            <label className="block text-xs font-semibold text-[#333333] mb-1">من تاريخ</label>
             <input
               type="date"
               value={dateFrom}
@@ -93,10 +99,11 @@ export default function MedicalRecordFilters({
                 setDateFrom(e.target.value)
                 onFiltersChange({ ...filters, dateFrom: e.target.value || undefined })
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white hover:border-gray-300 font-medium"
             />
           </div>
           <div className="w-full md:w-48">
+            <label className="block text-xs font-semibold text-[#333333] mb-1">إلى تاريخ</label>
             <input
               type="date"
               value={dateTo}
@@ -104,7 +111,7 @@ export default function MedicalRecordFilters({
                 setDateTo(e.target.value)
                 onFiltersChange({ ...filters, dateTo: e.target.value || undefined })
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white hover:border-gray-300 font-medium"
             />
           </div>
         </div>

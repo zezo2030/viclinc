@@ -21,6 +21,9 @@ export default function ConsultationsPage() {
   const { data: consultationsData, isLoading, error } = useQuery({
     queryKey: ['consultations', user?.id, user?.role],
     queryFn: () => {
+      if (!user?.id) {
+        return Promise.resolve([]);
+      }
       if (user?.role === 'PATIENT') {
         return consultationService.getConsultations(parseInt(user.id));
       } else if (user?.role === 'DOCTOR') {
@@ -28,6 +31,8 @@ export default function ConsultationsPage() {
       }
       return consultationService.getConsultations();
     },
+    enabled: !!user?.id, // لا تجلب الاستشارات إذا لم يكن هناك user
+    retry: 1, // إعادة المحاولة مرة واحدة فقط
   });
 
   // Handle both array and paginated/object response

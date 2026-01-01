@@ -141,13 +141,13 @@ export default function DoctorsPage() {
       <Breadcrumbs />
 
       {/* Page Header with Gradient */}
-      <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-500 p-8 shadow-2xl">
+      <div className="mb-8 relative overflow-hidden rounded-2xl bg-[#D62828] p-8 shadow-2xl">
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-4xl font-black text-white drop-shadow-lg">
               إدارة الأطباء
             </h1>
-            <p className="mt-2 text-lg font-medium text-teal-100">
+            <p className="mt-2 text-lg font-medium text-white/90">
               عرض وإدارة الأطباء في النظام
             </p>
             <div className="mt-4 flex items-center gap-4 text-white/90">
@@ -159,7 +159,7 @@ export default function DoctorsPage() {
           </div>
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="group px-6 py-3 bg-white text-teal-600 rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl flex items-center gap-2"
+            className="group px-6 py-3 bg-white text-[#D62828] rounded-xl hover:scale-105 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl flex items-center gap-2"
           >
             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             <span>إضافة طبيب</span>
@@ -173,9 +173,9 @@ export default function DoctorsPage() {
       {/* Filters */}
       <div className="mb-6 rounded-xl bg-gradient-to-br from-white to-gray-50 p-6 shadow-lg border border-gray-100">
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-1 w-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600"></div>
-          <h3 className="text-lg font-bold text-gray-900">البحث والتصفية</h3>
-          <div className="h-0.5 flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 opacity-20"></div>
+          <div className="h-1 w-1 rounded-full bg-[#D62828]"></div>
+          <h3 className="text-lg font-bold text-[#213F6A]">البحث والتصفية</h3>
+          <div className="h-0.5 flex-1 bg-[#D62828] opacity-20"></div>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -187,7 +187,7 @@ export default function DoctorsPage() {
                 setPage(1)
               }}
               placeholder="بحث بالاسم أو البريد..."
-              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300"
+              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 pr-12 focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300"
             />
             <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -200,7 +200,7 @@ export default function DoctorsPage() {
               setStatus(e.target.value as any)
               setPage(1)
             }}
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-[#D62828] focus:ring-2 focus:ring-[#D62828]/20 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300 font-medium"
           >
             <option value="ALL">🔵 كل الحالات</option>
             <option value="PENDING">⏳ قيد المراجعة</option>
@@ -212,8 +212,8 @@ export default function DoctorsPage() {
             onClick={() => handleSort('name')}
             className={`px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
               sortBy === 'name'
-                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 scale-105'
-                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-teal-300 hover:scale-105'
+                ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/30 scale-105'
+                : 'bg-white text-[#213F6A] border-2 border-gray-200 hover:border-[#D62828] hover:scale-105'
             }`}
           >
             📝 ترتيب بالاسم ({sortOrder === 'asc' ? '↑' : '↓'})
@@ -223,8 +223,8 @@ export default function DoctorsPage() {
             onClick={() => handleSort('yearsOfExperience')}
             className={`px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
               sortBy === 'yearsOfExperience'
-                ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 scale-105'
-                : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-teal-300 hover:scale-105'
+                ? 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/30 scale-105'
+                : 'bg-white text-[#213F6A] border-2 border-gray-200 hover:border-[#D62828] hover:scale-105'
             }`}
           >
             ⭐ ترتيب بالخبرة ({sortOrder === 'asc' ? '↑' : '↓'})

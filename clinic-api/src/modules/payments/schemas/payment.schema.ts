@@ -20,9 +20,9 @@ export enum PaymentMethod {
 
 @Schema({ timestamps: true, collection: 'payments' })
 export class Payment {
-  @ApiProperty({ description: 'Appointment ID', example: '64f1a2b3c4d5e6f7g8h9i0j1' })
-  @Prop({ required: true, type: Types.ObjectId, ref: 'Appointment', unique: true })
-  appointmentId: Types.ObjectId;
+  @ApiProperty({ description: 'Appointment ID', example: '64f1a2b3c4d5e6f7g8h9i0j1', required: false })
+  @Prop({ required: false, type: Types.ObjectId, ref: 'Appointment' })
+  appointmentId?: Types.ObjectId;
 
   @ApiProperty({ description: 'Payment amount', example: 150.00, minimum: 0 })
   @Prop({ required: true, min: 0 })
@@ -64,7 +64,8 @@ export class Payment {
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
 // فهارس أساسية
-PaymentSchema.index({ appointmentId: 1 }, { unique: true });
+// استخدام sparse: true للسماح بعدة payments بدون appointmentId (للـ reservations)
+PaymentSchema.index({ appointmentId: 1 }, { unique: true, sparse: true });
 PaymentSchema.index({ status: 1, createdAt: 1 });
 PaymentSchema.index({ createdAt: -1 });
 PaymentSchema.index({ paymentMethod: 1, createdAt: -1 });

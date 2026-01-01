@@ -40,6 +40,13 @@ services:
       AGORA_TOKEN_EXPIRATION_TIME: ${AGORA_TOKEN_EXPIRATION_TIME:-3600}
       AGORA_ENABLED: ${AGORA_ENABLED:-true}
       FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH:-./config/firebase-service-account.json}
+      CALLBACK_BASE_URL: ${CALLBACK_BASE_URL:-http://localhost/api}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
+      FRONTEND_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost}
     volumes:
       - api_uploads:/app/uploads
       - ./clinic-api/config:/app/config:ro
@@ -103,25 +110,6 @@ services:
     networks:
       - clinic-network
 
-  # WhyUs landing page (React + Vite)
-  whyus:
-    build:
-      context: ./whyUs
-      dockerfile: Dockerfile
-      args:
-        VITE_BASE: ${WHYUS_BASE:-/why-us/}
-    container_name: virclinc-whyus
-    restart: unless-stopped
-    environment:
-      VITE_BASE: ${WHYUS_BASE:-/why-us/}
-    networks:
-      - clinic-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
 
   # Nginx Reverse Proxy
   nginx:
@@ -137,7 +125,7 @@ services:
       - api
       - website
       - admin
-      - whyus
+
     networks:
       - clinic-network
     healthcheck:

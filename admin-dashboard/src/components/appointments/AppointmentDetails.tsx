@@ -13,10 +13,10 @@ export default function AppointmentDetails({ appointment, onClose, onChangeStatu
     const statusConfig: Record<string, { label: string; class: string }> = {
       PENDING_CONFIRM: { label: 'قيد التأكيد', class: 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-400/30' },
       CONFIRMED: { label: 'مؤكد', class: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30' },
-      CANCELLED: { label: 'ملغى', class: 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30' },
-      COMPLETED: { label: 'مكتمل', class: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30' },
+      CANCELLED: { label: 'ملغى', class: 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/30' },
+      COMPLETED: { label: 'مكتمل', class: 'bg-[#213F6A] text-white shadow-lg shadow-[#213F6A]/30' },
       NO_SHOW: { label: 'عدم حضور', class: 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/30' },
-      REJECTED: { label: 'مرفوض', class: 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-600/30' },
+      REJECTED: { label: 'مرفوض', class: 'bg-[#D62828] text-white shadow-lg shadow-[#D62828]/30' },
     }
     return statusConfig[status] || { label: status, class: 'bg-gradient-to-r from-gray-400 to-gray-500 text-white' }
   }
@@ -37,7 +37,7 @@ export default function AppointmentDetails({ appointment, onClose, onChangeStatu
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-sm p-4 animate-fade-in">
       <div className="w-full sm:max-w-2xl bg-gradient-to-br from-white to-gray-50 rounded-3xl sm:rounded-3xl shadow-2xl border border-gray-200 overflow-hidden animate-slide-in-up">
         {/* Header with Gradient */}
-        <div className="relative px-8 py-6 bg-gradient-to-r from-pink-500 via-rose-600 to-fuchsia-500 flex items-center justify-between overflow-hidden">
+        <div className="relative px-8 py-6 bg-[#D62828] flex items-center justify-between overflow-hidden">
           <div className="relative z-10 flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +58,7 @@ export default function AppointmentDetails({ appointment, onClose, onChangeStatu
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-6 bg-gradient-to-br from-white to-pink-50/30">
+        <div className="p-8 space-y-6 bg-white">
           {/* Date & Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-gradient-to-br from-white to-pink-50 border border-pink-100">

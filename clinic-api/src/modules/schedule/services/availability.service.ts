@@ -50,16 +50,24 @@ export class AvailabilityService {
     serviceId: string, 
     weekStart?: string
   ): Promise<AvailabilityResponse> {
+    // التحقق من صحة ObjectId
+    if (!Types.ObjectId.isValid(doctorId)) {
+      throw new BadRequestException(`Invalid doctorId format: ${doctorId}`);
+    }
+    if (!Types.ObjectId.isValid(serviceId)) {
+      throw new BadRequestException(`Invalid serviceId format: ${serviceId}`);
+    }
+
     // التحقق من وجود الطبيب
     const doctor = await this.doctorProfileModel.findById(doctorId);
     if (!doctor) {
-      throw new NotFoundException('Doctor not found');
+      throw new NotFoundException(`Doctor not found with ID: ${doctorId}`);
     }
 
     // التحقق من وجود الخدمة
     const service = await this.serviceModel.findById(serviceId);
     if (!service) {
-      throw new NotFoundException('Service not found');
+      throw new NotFoundException(`Service not found with ID: ${serviceId}`);
     }
 
     // التحقق من أن الطبيب يقدم هذه الخدمة
@@ -70,7 +78,7 @@ export class AvailabilityService {
     });
 
     if (!doctorService) {
-      throw new BadRequestException('Doctor does not provide this service');
+      throw new BadRequestException(`Doctor ${doctorId} does not provide service ${serviceId}`);
     }
 
     // الحصول على جدول الطبيب
@@ -79,7 +87,7 @@ export class AvailabilityService {
     });
 
     if (!schedule) {
-      throw new NotFoundException('Doctor schedule not found');
+      throw new NotFoundException(`Doctor schedule not found for doctor ID: ${doctorId}`);
     }
 
     // تحديد تاريخ بداية الأسبوع (استخدام UTC)

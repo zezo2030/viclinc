@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { X, Building2, AlertCircle, Wrench, Users, Plus, Edit, Trash2, Mail, Clock, DollarSign, Loader2 } from 'lucide-react'
 import { departmentsDetailsApi } from '@/api/services'
 import { Spinner } from '@/components/common/Spinner'
 import { API_URL } from '@/utils/constants'
@@ -69,12 +70,12 @@ export default function DepartmentDetailsModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-black/60 to-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-5xl max-h-[90vh] bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-        {/* Header with Gradient */}
-        <div className="relative px-8 py-6 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 flex items-center justify-between overflow-hidden">
-          <div className="relative z-10 flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm overflow-hidden flex items-center justify-center shadow-xl ring-4 ring-white/30">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" dir="rtl">
+      <div className="w-full max-w-5xl max-h-[90vh] bg-white rounded-xl shadow-sm border border-[#e2e8f0] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 bg-[#6366f1] flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-lg bg-white/20 overflow-hidden flex items-center justify-center border border-white/30">
               {(data?.logoUrl || data?.logoPath) && !imageError ? (
                 <img
                   src={resolveLogoUrl(data.logoPath || data.logoUrl)}
@@ -83,57 +84,50 @@ export default function DepartmentDetailsModal({
                   onError={() => setImageError(true)}
                 />
               ) : (
-                <svg className="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+                <Building2 className="w-7 h-7 text-white/80" />
               )}
             </div>
             <div>
-              <h3 className="text-2xl font-black text-white drop-shadow-lg">{data?.name || 'تفاصيل القسم'}</h3>
-              {data?.description && <p className="text-sm text-white/90 mt-1 font-medium">{data.description}</p>}
+              <h3 className="text-xl font-semibold text-white">{data?.name || 'تفاصيل القسم'}</h3>
+              {data?.description && <p className="text-sm text-white/90 mt-1">{data.description}</p>}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white shadow-lg"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors duration-150"
           >
-            <span className="text-2xl font-bold">×</span>
+            <X className="w-5 h-5" />
           </button>
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/10 rounded-full translate-y-20 -translate-x-20 blur-3xl"></div>
         </div>
 
         {/* Tabs */}
-        <div className="px-8 border-b border-gray-200 bg-white/50 backdrop-blur-sm flex gap-2">
+        <div className="px-6 border-b border-[#e2e8f0] bg-[#f8fafc] flex gap-2">
           <button
             onClick={() => setActiveTab('services')}
-            className={`py-4 px-6 border-b-4 font-bold relative ${
+            className={`py-3 px-4 border-b-2 font-medium relative transition-colors duration-150 ${
               activeTab === 'services'
-                ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-[#6366f1] text-[#6366f1]'
+                : 'border-transparent text-[#64748b] hover:text-[#0f172a]'
             }`}
           >
             <span className="flex items-center gap-2">
-              <span>🛠️</span>
               <span>الخدمات</span>
-              <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-purple-100 text-purple-600 rounded-full">
+              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-[#6366f1]/10 text-[#6366f1] rounded-full">
                 {data?.services?.length || 0}
               </span>
             </span>
           </button>
           <button
             onClick={() => setActiveTab('doctors')}
-            className={`py-4 px-6 border-b-4 font-bold relative ${
+            className={`py-3 px-4 border-b-2 font-medium relative transition-colors duration-150 ${
               activeTab === 'doctors'
-                ? 'border-purple-600 text-purple-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-[#6366f1] text-[#6366f1]'
+                : 'border-transparent text-[#64748b] hover:text-[#0f172a]'
             }`}
           >
             <span className="flex items-center gap-2">
-              <span>👨‍⚕️</span>
               <span>الأطباء</span>
-              <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-purple-100 text-purple-600 rounded-full">
+              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-[#6366f1]/10 text-[#6366f1] rounded-full">
                 {data?.doctors?.length || 0}
               </span>
             </span>
@@ -141,30 +135,23 @@ export default function DepartmentDetailsModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-8 bg-gradient-to-br from-white to-purple-50/30">
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
-                <div className="relative inline-block">
-                  <Spinner size="lg" />
-                  <div className="absolute inset-0 animate-ping opacity-20">
-                    <Spinner size="lg" />
-                  </div>
-                </div>
-                <p className="mt-4 text-lg font-bold text-gray-900">جاري التحميل...</p>
+                <Spinner size="lg" />
+                <p className="mt-4 text-base font-semibold text-[#0f172a]">جاري التحميل...</p>
               </div>
             </div>
           ) : error ? (
             <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-[#ef4444]/10 mb-4">
+                <AlertCircle className="w-7 h-7 text-[#ef4444]" />
               </div>
-              <p className="text-xl font-bold text-red-600 mb-4">حدث خطأ في تحميل البيانات</p>
+              <p className="text-lg font-semibold text-[#ef4444] mb-4">حدث خطأ في تحميل البيانات</p>
               <button
                 onClick={() => refetch()}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/30"
+                className="px-6 py-3 bg-[#6366f1] text-white rounded-lg font-medium shadow-sm hover:bg-[#4f46e5] transition-colors duration-150"
               >
                 إعادة المحاولة
               </button>
@@ -198,30 +185,29 @@ function ServicesTab({ services, departmentId, onAction }: ServicesTabProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h4 className="text-xl font-bold text-gray-900">خدمات القسم</h4>
+        <h4 className="text-lg font-semibold text-[#0f172a]">خدمات القسم</h4>
         <button
           onClick={() => setIsCreateOpen(true)}
-          className="group px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold shadow-lg shadow-purple-500/30 flex items-center gap-2"
+          className="px-4 py-2 bg-[#6366f1] text-white rounded-lg font-medium shadow-sm hover:bg-[#4f46e5] transition-colors duration-150 flex items-center gap-2"
         >
-          <span className="text-xl">+</span>
+          <span className="text-lg">+</span>
           <span>إضافة خدمة</span>
         </button>
       </div>
 
       {services.length === 0 ? (
-        <div className="text-center py-16 rounded-2xl bg-gradient-to-br from-white to-purple-50 border border-purple-100">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 mb-4">
-            <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
+        <div className="text-center py-16 rounded-xl bg-[#f8fafc] border border-[#e2e8f0]">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-[#6366f1]/10 mb-4">
+            <Wrench className="w-8 h-8 text-[#6366f1]" />
           </div>
-          <p className="text-xl font-bold text-gray-900 mb-2">لا توجد خدمات</p>
-          <p className="text-gray-600 mb-6">ابدأ بإضافة خدمات لهذا القسم</p>
+          <p className="text-lg font-semibold text-[#0f172a] mb-2">لا توجد خدمات</p>
+          <p className="text-[#64748b] mb-6">ابدأ بإضافة خدمات لهذا القسم</p>
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/30"
+            className="px-6 py-3 bg-[#6366f1] text-white rounded-lg font-medium shadow-sm hover:bg-[#4f46e5] transition-colors duration-150"
           >
-            + إضافة خدمة جديدة
+            <Plus className="w-4 h-4 inline ml-1" />
+            إضافة خدمة جديدة
           </button>
         </div>
       ) : (
@@ -294,49 +280,49 @@ function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps) {
   }
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-blue-50/30 p-5 shadow-md">
+    <div className="group relative overflow-hidden rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm hover:shadow-sm transition-all duration-150">
       {/* Status Badge */}
       <div className="absolute top-3 left-3">
         <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
             service.isActive
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-green-500/30'
-              : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-gray-400/30'
+              ? 'bg-[#10b981] text-white'
+              : 'bg-[#64748b] text-white'
           }`}
         >
-          <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-white"></span>
           {service.isActive ? 'نشط' : 'غير نشط'}
         </span>
       </div>
 
       <div className="pt-8">
         {/* Service Name */}
-        <h5 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+        <h5 className="text-lg font-semibold text-[#0f172a] mb-2 group-hover:text-[#6366f1] transition-colors duration-150">
           {service.name}
         </h5>
 
         {/* Description */}
         {service.description && (
-          <p className="text-sm text-gray-600 mb-4 line-clamp-2">{service.description}</p>
+          <p className="text-sm text-[#64748b] mb-4 line-clamp-2">{service.description}</p>
         )}
 
         {/* Price and Duration */}
         <div className="flex items-center gap-3 mb-4">
           {service.basePrice !== undefined && service.basePrice !== null && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-              <span className="text-xl">💵</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20">
+              <DollarSign className="w-4 h-4 text-[#10b981]" />
               <div className="text-right">
-                <p className="text-xs text-gray-600 font-medium">السعر</p>
-                <p className="text-sm font-bold text-green-600">{service.basePrice} ر.س</p>
+                <p className="text-xs text-[#64748b] font-medium">السعر</p>
+                <p className="text-sm font-semibold text-[#10b981]">{service.basePrice} ر.س</p>
               </div>
             </div>
           )}
           {service.baseDuration !== undefined && service.baseDuration !== null && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
-              <span className="text-xl">⏱️</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#6366f1]/10 border border-[#6366f1]/20">
+              <Clock className="w-4 h-4 text-[#6366f1]" />
               <div className="text-right">
-                <p className="text-xs text-gray-600 font-medium">المدة</p>
-                <p className="text-sm font-bold text-blue-600">{service.baseDuration} د</p>
+                <p className="text-xs text-[#64748b] font-medium">المدة</p>
+                <p className="text-sm font-semibold text-[#6366f1]">{service.baseDuration} د</p>
               </div>
             </div>
           )}
@@ -346,23 +332,19 @@ function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps) {
         <div className="flex gap-2">
           <button
             onClick={onEdit}
-            className="flex-1 px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl shadow-lg shadow-blue-500/30"
+            className="flex-1 px-4 py-2.5 text-sm font-medium bg-[#6366f1] text-white rounded-lg shadow-sm hover:bg-[#4f46e5] transition-colors duration-150 flex items-center justify-center gap-1"
           >
-            ✏️ تعديل
+            <Edit className="w-4 h-4" />
+            <span>تعديل</span>
           </button>
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl shadow-lg shadow-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 text-sm font-medium bg-[#ef4444] text-white rounded-lg shadow-sm hover:bg-[#dc2626] transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            {isDeleting ? '⏳' : '🗑️'}
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
           </button>
         </div>
-      </div>
-
-      {/* Decorative Element */}
-      <div className="absolute inset-0 opacity-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-2xl"></div>
       </div>
     </div>
   )
@@ -376,66 +358,55 @@ interface DoctorsTabProps {
 function DoctorsTab({ doctors }: DoctorsTabProps) {
   if (doctors.length === 0) {
     return (
-      <div className="text-center py-16 rounded-2xl bg-gradient-to-br from-white to-cyan-50 border border-cyan-100">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-100 to-blue-100 mb-4">
-          <svg className="w-10 h-10 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
+      <div className="text-center py-16 rounded-xl bg-[#f8fafc] border border-[#e2e8f0]">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-[#6366f1]/10 mb-4">
+          <Users className="w-8 h-8 text-[#6366f1]" />
         </div>
-        <p className="text-xl font-bold text-gray-900 mb-2">لا يوجد أطباء</p>
-        <p className="text-gray-600">لم يتم تعيين أطباء لهذا القسم بعد</p>
+        <p className="text-lg font-semibold text-[#0f172a] mb-2">لا يوجد أطباء</p>
+        <p className="text-[#64748b]">لم يتم تعيين أطباء لهذا القسم بعد</p>
       </div>
     )
   }
 
   return (
     <div>
-      <h4 className="text-xl font-bold text-gray-900 mb-6">أطباء القسم</h4>
+      <h4 className="text-lg font-semibold text-[#0f172a] mb-6">أطباء القسم</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {doctors.map((doctor, index) => (
+        {doctors.map((doctor) => (
           <div
             key={doctor._id || doctor.id}
-            className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-cyan-50/30 p-5 shadow-md"
+            className="group relative overflow-hidden rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-sm hover:shadow-sm transition-all duration-150"
           >
             {/* Status Badge */}
             <div className="absolute top-3 left-3">
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${
                   doctor.status === 'APPROVED'
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-green-500/30'
-                    : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-amber-400/30'
+                    ? 'bg-[#10b981] text-white'
+                    : 'bg-[#f59e0b] text-white'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-white"></span>
                 {doctor.status === 'APPROVED' ? 'معتمد' : doctor.status || 'قيد المراجعة'}
               </span>
             </div>
 
             {/* Doctor Info */}
             <div className="pt-8 flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center shadow-lg ring-4 ring-white">
-                <svg className="w-7 h-7 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+              <div className="w-12 h-12 rounded-lg bg-[#6366f1]/10 flex items-center justify-center border border-[#6366f1]/20">
+                <Users className="w-6 h-6 text-[#6366f1]" />
               </div>
               <div className="flex-1">
-                <h5 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-cyan-600 transition-colors">
+                <h5 className="text-base font-semibold text-[#0f172a] mb-1 group-hover:text-[#6366f1] transition-colors duration-150">
                   د. {doctor.name || doctor.userId?.name || 'غير محدد'}
                 </h5>
                 {doctor.userId?.email && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                  <div className="flex items-center gap-2 text-sm text-[#64748b]">
+                    <Mail className="w-4 h-4" />
                     <span className="truncate">{doctor.userId.email}</span>
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Decorative Element */}
-            <div className="absolute inset-0 opacity-0 pointer-events-none">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full blur-2xl"></div>
             </div>
           </div>
         ))}

@@ -33,25 +33,25 @@ export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderPro
   };
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-md bg-white/80 border-b border-gray-200/50 shadow-sm">
+    <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-[#e2e8f0] shadow-sm">
       <div className="flex items-center justify-between px-6 py-4">
         {/* Right Side */}
         <div className="flex items-center gap-4">
           {/* Menu Button */}
           <button
             onClick={onMenuClick}
-            className="group p-2.5 hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-md"
+            className="group p-2.5 hover:bg-[#6366f1]/10 rounded-lg transition-all duration-150 ease-out"
           >
-            <Menu className="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
+            <Menu className="w-6 h-6 text-[#64748b] group-hover:text-[#6366f1] transition-colors duration-150" />
           </button>
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 transition-colors peer-focus:text-blue-600" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#64748b] transition-colors duration-150 peer-focus:text-[#6366f1]" />
             <input
               type="text"
               placeholder="بحث..."
-              className="peer w-64 pr-10 pl-4 py-2.5 border border-gray-200 rounded-xl bg-white/70 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-300 placeholder:text-gray-400 hover:border-gray-300 hover:shadow-sm"
+              className="peer w-64 pr-10 pl-4 py-2.5 border border-[#e2e8f0] rounded-lg bg-white focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out placeholder:text-[#64748b] hover:border-[#6366f1]/50"
             />
           </div>
         </div>
@@ -62,19 +62,19 @@ export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderPro
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2.5 hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-md group"
+              className="relative p-2.5 hover:bg-[#6366f1]/10 rounded-lg transition-all duration-150 ease-out group"
             >
-              <Bell className="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
+              <Bell className="w-6 h-6 text-[#64748b] group-hover:text-[#6366f1] transition-colors duration-150" />
               {hasNotifications && (
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-br from-red-500 to-red-600 rounded-full animate-pulse shadow-lg shadow-red-500/50"></span>
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#ef4444] rounded-full animate-pulse"></span>
               )}
             </button>
 
             {/* Notifications Dropdown */}
             {showNotifications && (
-              <div className="absolute left-0 mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in slide-in-from-top-2 duration-300">
-                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
-                  <h3 className="font-bold text-gray-900">الإشعارات</h3>
+              <div className="absolute left-0 mt-2 w-80 bg-white rounded-lg shadow-sm border border-[#e2e8f0] z-50 overflow-hidden">
+                <div className="p-4 border-b border-[#e2e8f0] bg-white">
+                  <h3 className="font-semibold text-[#0f172a]">الإشعارات</h3>
                 </div>
                 <div className="p-1 max-h-96 overflow-y-auto">
                   {notifications.length === 0 ? (
@@ -84,20 +84,20 @@ export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderPro
                       </p>
                     </div>
                   ) : (
-                    <ul className="divide-y divide-gray-100">
+                    <ul className="divide-y divide-[#e2e8f0]">
                       {notifications.map((apt) => (
                         <li key={apt.id}>
                           <button
-                            className="w-full px-4 py-3 text-right hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-purple-50/60 transition-colors duration-200"
+                            className="w-full px-4 py-3 text-right hover:bg-[#6366f1]/10 transition-colors duration-150 ease-out"
                             onClick={() => {
                               navigate(`/appointments/${apt.id}`);
                               setShowNotifications(false);
                             }}
                           >
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-sm font-medium text-[#0f172a]">
                               حجز موعد جديد
                             </p>
-                            <p className="mt-1 text-xs text-gray-600">
+                            <p className="mt-1 text-xs text-[#64748b]">
                               {apt.patientName
                                 ? `المريض ${apt.patientName}`
                                 : 'مريض جديد'}{' '}
@@ -128,38 +128,38 @@ export default function AdminHeader({ onMenuClick, sidebarOpen }: AdminHeaderPro
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-3 p-2 pr-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all duration-300 hover:shadow-md group"
+              className="flex items-center gap-3 p-2 pr-4 hover:bg-[#6366f1]/10 rounded-lg transition-all duration-150 ease-out group"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <div className="w-10 h-10 bg-[#6366f1] rounded-lg flex items-center justify-center shadow-sm transition-all duration-150 ease-out group-hover:scale-[1.02]">
                 <User className="w-5 h-5 text-white" />
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{user?.name}</p>
-                <p className="text-xs font-medium text-gray-500">{user?.role}</p>
+                <p className="text-sm font-semibold text-[#0f172a] group-hover:text-[#6366f1] transition-colors duration-150">{user?.name}</p>
+                <p className="text-xs font-medium text-[#64748b]">{user?.role}</p>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-all group-hover:translate-y-0.5" />
+              <ChevronDown className="w-4 h-4 text-[#64748b] group-hover:text-[#6366f1] transition-all duration-150" />
             </button>
 
             {/* User Dropdown */}
             {showUserMenu && (
-              <div className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in slide-in-from-top-2 duration-300">
+              <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-sm border border-[#e2e8f0] z-50 overflow-hidden">
                 <div className="p-2">
                   <button
                     onClick={() => {
                       navigate('/settings');
                       setShowUserMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 rounded-xl transition-all duration-300 group"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-[#0f172a] hover:bg-[#6366f1]/10 rounded-lg transition-all duration-150 ease-out group"
                   >
-                    <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                    <Settings className="w-4 h-4 group-hover:text-[#6366f1] transition-colors duration-150" />
                     <span>الإعدادات</span>
                   </button>
                   
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 rounded-xl transition-all duration-300 group"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-[#ef4444] hover:bg-[#ef4444]/10 rounded-lg transition-all duration-150 ease-out group"
                   >
-                    <LogOut className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                    <LogOut className="w-4 h-4 transition-colors duration-150" />
                     <span>تسجيل الخروج</span>
                   </button>
                 </div>

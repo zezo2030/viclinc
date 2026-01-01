@@ -172,30 +172,30 @@ export default function Login() {
   // عرض loading إذا كان النظام يتحقق من المصادقة
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6366f1]"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo & Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 text-white rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#6366f1] text-white rounded-full mb-4 shadow-sm">
             <LogIn className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">لوحة الإدارة</h1>
-          <p className="text-gray-600 mt-2">تسجيل الدخول إلى حسابك</p>
+          <h1 className="text-3xl font-semibold text-[#0f172a]">لوحة الإدارة</h1>
+          <p className="text-[#64748b] mt-2">تسجيل الدخول إلى حسابك</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-xl shadow-sm p-8 border border-[#e2e8f0]">
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[#0f172a] mb-2">
                 البريد الإلكتروني
               </label>
               <input
@@ -203,7 +203,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border border-[#e2e8f0] rounded-lg focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out"
                 placeholder="admin@clinic.com"
                 disabled={isLoading}
                 autoComplete="email"
@@ -212,7 +212,7 @@ export default function Login() {
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[#0f172a] mb-2">
                 كلمة المرور
               </label>
               <div className="relative">
@@ -221,7 +221,7 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-[#e2e8f0] rounded-lg focus:ring-2 focus:ring-[#6366f1] focus:border-transparent transition-all duration-150 ease-out"
                   placeholder="••••••••"
                   disabled={isLoading}
                   autoComplete="current-password"
@@ -229,7 +229,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#0f172a] transition-colors duration-150"
                   disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -241,7 +241,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full bg-[#6366f1] text-white py-3 rounded-lg font-medium hover:bg-[#4f46e5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-out shadow-sm"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -255,9 +255,9 @@ export default function Login() {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm font-medium text-gray-700 mb-2">بيانات تجريبية:</p>
-            <div className="text-xs text-gray-600 space-y-1">
+          <div className="mt-6 p-4 bg-[#f8fafc] rounded-lg border border-[#e2e8f0]">
+            <p className="text-sm font-medium text-[#0f172a] mb-2">بيانات تجريبية:</p>
+            <div className="text-xs text-[#64748b] space-y-1">
               <p>📧 admin@clinic.com</p>
               <p>🔒 password123</p>
             </div>
@@ -265,7 +265,7 @@ export default function Login() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-sm text-[#64748b] mt-6">
           © 2024 نظام إدارة العيادات. جميع الحقوق محفوظة.
         </p>
       </div>

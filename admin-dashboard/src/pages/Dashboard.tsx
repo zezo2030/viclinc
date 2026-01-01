@@ -10,19 +10,16 @@ export default function Dashboard() {
     <AdminLayout>
       <Breadcrumbs />
 
-      {/* Welcome Header with Gradient */}
-      <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 p-8 shadow-2xl">
+      {/* Welcome Header */}
+      <div className="mb-8 relative overflow-hidden rounded-xl bg-[#6366f1] p-8 shadow-sm">
         <div className="relative z-10">
-          <h1 className="text-4xl font-black text-white drop-shadow-lg">
+          <h1 className="text-3xl font-semibold text-white">
             لوحة التحكم
           </h1>
-          <p className="mt-2 text-lg font-medium text-blue-100">
+          <p className="mt-2 text-base font-medium text-white/90">
             مرحباً بك في لوحة الإدارة - نظرة شاملة على أداء عيادتك
           </p>
         </div>
-        {/* Decorative Elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-32 -translate-y-32 blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full translate-x-32 translate-y-32 blur-3xl"></div>
       </div>
 
       {/* المؤشرات العامة */}

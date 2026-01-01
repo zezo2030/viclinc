@@ -23,16 +23,22 @@ export class SessionAccessGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // البحث عن الموعد
-    const appointment = await this.appointmentModel.findById(appointmentId);
+    // البحث عن الموعد مع تعبئة userId الخاص بالطبيب
+    const appointment = await this.appointmentModel.findById(appointmentId).populate('doctorId', 'userId');
     if (!appointment) {
       throw new NotFoundException('Appointment not found');
     }
 
     // التحقق من صلاحيات الوصول
-    const userId = user._id || user.sub;
-    const isDoctor = appointment.doctorId.toString() === userId;
-    const isPatient = appointment.patientId.toString() === userId;
+    const userId = (user._id || user.sub)?.toString();
+    const patientId = appointment.patientId?._id?.toString() || appointment.patientId?.toString();
+    const isPatient = patientId === userId;
+    
+    let isDoctor = false;
+    if (!isPatient && appointment.doctorId) {
+      // بما أننا قمنا بالتعبئة، فإن doctorId أصبح كائناً يحتوي على userId
+      isDoctor = (appointment.doctorId as any).userId?.toString() === userId;
+    }
 
     if (!isDoctor && !isPatient) {
       throw new ForbiddenException('You are not authorized to access this appointment');

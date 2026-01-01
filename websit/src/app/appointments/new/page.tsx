@@ -18,6 +18,13 @@ function NewAppointmentContent() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   
+  // التأكد من أن weekStart يبدأ من اليوم الحالي وليس تاريخ قديم
+  const getTodayDate = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.toISOString().split('T')[0];
+  };
+  
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [selectedService, setSelectedService] = useState<ServiceApi | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -25,9 +32,7 @@ function NewAppointmentContent() {
   const [appointmentType, setAppointmentType] = useState<'IN_PERSON' | 'VIDEO' | 'CHAT'>('IN_PERSON');
   const [reason, setReason] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [weekStart, setWeekStart] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  const [weekStart, setWeekStart] = useState<string>(getTodayDate());
 
   // Get URL parameters
   const doctorId = searchParams.get('doctorId');
@@ -68,6 +73,8 @@ function NewAppointmentContent() {
       setSelectedService(null);
       setSelectedDate('');
       setSelectedSlot(null);
+      // إعادة تعيين weekStart إلى اليوم الحالي
+      setWeekStart(getTodayDate());
     }
   }, [doctorData]);
 
@@ -91,13 +98,22 @@ function NewAppointmentContent() {
     enabled: !!selectedDoctor && !!selectedService && !!(selectedDoctor._id || selectedDoctor.id) && !!(selectedService._id || selectedService.id),
   });
 
-  // استخراج التواريخ المتاحة من الفتحات
+  // استخراج التواريخ المتاحة من الفتحات مع تصفية التواريخ القديمة
   const availableDates = React.useMemo(() => {
     if (!availability?.availableSlots) return [];
     const datesSet = new Set<string>();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // إزالة الوقت للتحقق من التاريخ فقط
+    
     availability.availableSlots.forEach((slot) => {
-      const date = new Date(slot.startTime).toISOString().split('T')[0];
-      datesSet.add(date);
+      const slotDate = new Date(slot.startTime);
+      slotDate.setHours(0, 0, 0, 0); // إزالة الوقت للتحقق من التاريخ فقط
+      
+      // تصفية التواريخ القديمة - فقط التواريخ من اليوم فصاعداً
+      if (slotDate >= today) {
+        const date = new Date(slot.startTime).toISOString().split('T')[0];
+        datesSet.add(date);
+      }
     });
     return Array.from(datesSet).sort();
   }, [availability]);
@@ -137,7 +153,12 @@ function NewAppointmentContent() {
       // استخدام startAt (ISO string) مباشرة من selectedSlot
       const startAt = selectedSlot.startTime; // ISO string
       
-      await appointmentsService.createAppointment({
+      // #region agent log
+      fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/new/page.tsx:141',message:'Creating appointment',data:{appointmentType,doctorId:doctorIdValue,serviceId:serviceIdValue,startAt},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'PAYMENT_FIX'})}).catch(()=>{});
+      // #endregion
+
+      // إنشاء الموعد
+      const appointment = await appointmentsService.createAppointment({
         doctorId: typeof doctorIdValue === 'string' ? doctorIdValue : String(doctorIdValue),
         serviceId: typeof serviceIdValue === 'string' ? serviceIdValue : String(serviceIdValue),
         startAt: startAt,
@@ -145,7 +166,24 @@ function NewAppointmentContent() {
         metadata: reason.trim() ? { reason: reason.trim() } : undefined,
       });
 
-      router.push('/dashboard');
+      // #region agent log
+      fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/new/page.tsx:150',message:'Appointment created successfully',data:{appointmentId:appointment.id,appointmentType,price:appointment.price,requiresPayment:appointment.requiresPayment,paymentStatus:appointment.paymentStatus,willRedirectToPayment:appointment.requiresPayment && appointment.paymentStatus === 'PENDING'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'PAYMENT_FIX'})}).catch(()=>{});
+      // #endregion
+
+      // ✅ التحقق من الدفع
+      const appointmentId = typeof appointment.id === 'string' ? appointment.id : String(appointment.id);
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7246/ingest/e8220b3a-738c-43f7-9083-e1ee47743b54',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'appointments/new/page.tsx:152',message:'Before redirect',data:{appointmentId,requiresPayment:appointment.requiresPayment,paymentStatus:appointment.paymentStatus,redirectPath:appointment.requiresPayment && appointment.paymentStatus === 'PENDING' ? `/appointments/${appointmentId}/payment` : `/appointments/confirmation?id=${appointmentId}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      
+      if (appointment.requiresPayment && appointment.paymentStatus === 'PENDING') {
+        // إعادة التوجيه إلى صفحة الدفع
+        router.push(`/appointments/${appointmentId}/payment`);
+      } else {
+        // إعادة التوجيه إلى صفحة التأكيد
+        router.push(`/appointments/confirmation?id=${appointmentId}`);
+      }
     } catch (error) {
       console.error('Error creating appointment:', error);
       alert('حدث خطأ في إنشاء الموعد');
@@ -325,6 +363,8 @@ function NewAppointmentContent() {
                         setSelectedService(service || null);
                         setSelectedDate('');
                         setSelectedSlot(null);
+                        // إعادة تعيين weekStart إلى اليوم الحالي عند تغيير الخدمة
+                        setWeekStart(getTodayDate());
                       }}
                     >
                       <option value="">اختر الخدمة</option>
@@ -382,12 +422,34 @@ function NewAppointmentContent() {
                           type="button"
                           variant="outline"
                           size="sm"
+                          disabled={(() => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const weekStartDate = new Date(weekStart);
+                            weekStartDate.setHours(0, 0, 0, 0);
+                            // تعطيل الزر إذا كان الأسبوع الحالي هو اليوم أو قبل اليوم
+                            return weekStartDate <= today;
+                          })()}
                           onClick={() => {
                             const currentWeek = new Date(weekStart);
                             currentWeek.setDate(currentWeek.getDate() - 7);
-                            setWeekStart(currentWeek.toISOString().split('T')[0]);
-                            setSelectedDate('');
-                            setSelectedSlot(null);
+                            // التأكد من عدم الانتقال إلى تاريخ قديم
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const newWeekStart = currentWeek.toISOString().split('T')[0];
+                            const newWeekStartDate = new Date(newWeekStart);
+                            newWeekStartDate.setHours(0, 0, 0, 0);
+                            
+                            if (newWeekStartDate >= today) {
+                              setWeekStart(newWeekStart);
+                              setSelectedDate('');
+                              setSelectedSlot(null);
+                            } else {
+                              // إذا كان التاريخ قديماً، استخدم اليوم كحد أدنى
+                              setWeekStart(getTodayDate());
+                              setSelectedDate('');
+                              setSelectedSlot(null);
+                            }
                           }}
                         >
                           الأسبوع السابق
