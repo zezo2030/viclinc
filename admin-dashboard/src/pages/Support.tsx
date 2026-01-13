@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/api/client';
+import AdminLayout from '@/components/layout/AdminLayout';
+import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import {
     Search,
     MessageSquare,
@@ -110,12 +112,14 @@ export default function Support() {
     };
 
     return (
-        <div className="h-[calc(100vh-120px)] flex gap-6 text-right" dir="rtl">
-            {/* Tickets List */}
-            <div className={cn(
-                "flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 transition-all",
-                selectedTicketId ? "max-w-md hidden lg:flex" : "max-w-full"
-            )}>
+        <AdminLayout>
+            <Breadcrumbs />
+            <div className="h-[calc(100vh-180px)] flex gap-6 text-right">
+                {/* Tickets List */}
+                <div className={cn(
+                    "flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 transition-all",
+                    selectedTicketId ? "max-w-md hidden lg:flex" : "max-w-full"
+                )}>
                 <div className="p-6 border-b border-gray-100">
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">تذاكر الدعم الفني</h1>
                     <div className="relative">
@@ -284,5 +288,6 @@ export default function Support() {
                 )}
             </div>
         </div>
-    );
+    </AdminLayout>
+);
 }

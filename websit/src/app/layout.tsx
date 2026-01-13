@@ -10,17 +10,17 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: 'Med Flow',
+  title: 'Tajazal',
   description: 'احجز موعدك بسهولة، احصل على استشارات طبية افتراضية، وأدار صحتك بطريقة ذكية',
   keywords: ['عيادة', 'طبيب', 'حجز موعد', 'رعاية صحية', 'استشارة طبية'],
-  authors: [{ name: 'MedFlow' }],
+  authors: [{ name: 'Tajazal' }],
   icons: {
     icon: '/logotajal.png',
     shortcut: '/logotajal.png',
     apple: '/logotajal.png',
   },
   openGraph: {
-    title: 'Med Flow',
+    title: 'Tajazal',
     description: 'احجز موعدك بسهولة، احصل على استشارات طبية افتراضية، وأدار صحتك بطريقة ذكية',
     type: 'website',
     locale: 'ar_SA',

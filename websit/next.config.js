@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost', 'medflowsa.cloud'],
+    domains: ['localhost', 'tajazalclinics.online', 'www.tajazalclinics.online'],
     unoptimized: true, // للصور المحلية
   },
   env: {

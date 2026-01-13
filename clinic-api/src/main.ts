@@ -81,14 +81,18 @@ async function bootstrap() {
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3001',
     'http://127.0.0.1:3002',
-    'http://medflowsa.cloud',
-    'https://medflowsa.cloud',
+    'http://tajazalclinics.online',
+    'https://tajazalclinics.online',
+    'http://www.tajazalclinics.online',
+    'https://www.tajazalclinics.online',
   ]);
 
   if (isProduction) {
     const productionDefaults = [
-      'http://medflowsa.cloud',
-      'https://medflowsa.cloud',
+      'http://tajazalclinics.online',
+      'https://tajazalclinics.online',
+      'http://www.tajazalclinics.online',
+      'https://www.tajazalclinics.online',
     ];
 
     const envOrigins = (process.env.ALLOWED_ORIGINS ?? '')

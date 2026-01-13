@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 
 export const siteConfig = {
-  name: 'MedFlow',
+  name: 'Tajazal',
   description: 'احجز موعدك بسهولة، احصل على استشارات طبية افتراضية، وأدار صحتك بطريقة ذكية',
-  url: 'https://medflow.sa',
+  url: 'https://tajazalclinics.online',
+
   ogImage: 'https://medflow.sa/og-image.jpg',
   locale: 'ar_SA',
 };
